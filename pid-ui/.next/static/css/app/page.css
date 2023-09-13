@@ -1,0 +1,83 @@
+/*!****************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[5].oneOf[7].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[5].oneOf[7].use[3]!./src/app/landing/landing.module.css ***!
+  \****************************************************************************************************************************************************************************************************************************************************************************/
+/* landing.module.css */
+
+/* Estilos para la página de inicio */
+.landing_landing-page___o68j {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  text-align: center;
+  background-color: #fff;
+}
+
+/* Estilos para el encabezado de la página de inicio */
+.landing_landing-page-header__NUVjZ {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+/* Estilos para el contenido principal */
+.landing_main-content__Q_bUc {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  color: #555;
+}
+
+/* Estilos para las secciones */
+.landing_section__9hSVD {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+/* Estilos para los títulos de sección */
+.landing_section-title__pbgHs {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #333; /* Cambia el color del título */
+}
+
+/* Estilos para los párrafos de sección */
+.landing_section-paragraph__xaKtM {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  color: #555; /* Cambia el color del párrafo */
+}
+
+/* Estilos para los botones de llamada a la acción (CTA) */
+.landing_cta-buttons__kwt6_ {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.landing_cta-button__Zdjti {
+  padding: 0.5rem 1rem;
+  background-color: #007bff;
+  color: #fff;
+  text-decoration: none;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  width: 100%;
+  text-align: center;
+}
+
+.landing_cta-button__Zdjti:hover {
+  background-color: #0056b3;
+}
+
+/* Estilos para el pie de página de la página de inicio */
+.landing_landing-page-footer__aptEl {
+  font-size: 0.8rem;
+  margin-top: 2rem;
+  color: #777;
+}
+

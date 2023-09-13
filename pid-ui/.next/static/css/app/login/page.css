@@ -1,0 +1,105 @@
+/*!**************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[5].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[5].oneOf[12].use[3]!./src/app/styles.css ***!
+  \**************************************************************************************************************************************************************************************************************************************************************/
+/* styles.css */
+
+/* Estilos generales para títulos */
+.title {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #333;
+  }
+  
+  /* Estilos generales para botones */
+  .button {
+    padding: 0.5rem 1rem;
+    background-color: #007bff;
+    color: #fff;
+    text-decoration: none;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .button:hover {
+    background-color: #0056b3;
+  }
+  
+/*!************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[5].oneOf[7].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[5].oneOf[7].use[3]!./src/app/login/login.module.css ***!
+  \************************************************************************************************************************************************************************************************************************************************************************/
+/* login.module.css */
+
+/* Estilos para la página de inicio de sesión */
+.login_login-page__6aEJ8 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+    background-color: #fff;
+  }
+  
+  /* Estilos para el título de la página de inicio de sesión */
+  .login_login-page-title__6V75B {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #333;
+  }
+  
+  /* Estilos para el formulario de inicio de sesión */
+  .login_login-form__p1bzu {
+    width: 100%;
+    max-width: 400px;
+    margin-top: 2rem;
+  }
+  
+  /* Estilos para los mensajes de error */
+  .login_error-message__B3gQJ {
+    color: red;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  /* Estilos para los grupos de formulario */
+  .login_form-group__repun {
+    text-align: left;
+    margin-bottom: 1rem;
+  }
+  
+  /* Estilos para las etiquetas de formulario */
+  .login_form-group__repun label {
+    display: block;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+  }
+  
+  /* Estilos para los campos de entrada de formulario */
+  .login_form-group__repun input {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  /* Estilos para el enlace de registro */
+  .login_register-link__i9hS9 {
+    margin-top: 1rem;
+    font-size: 1rem;
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  .login_register-link__i9hS9 a {
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  .login_register-link__i9hS9 a:hover {
+    text-decoration: underline;
+  }
+  
