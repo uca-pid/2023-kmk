@@ -30,7 +30,7 @@ const Login = () => {
 
   return (
     <div className={styles['login-page']}>
-      <div className="title">Iniciar Sesión</div>
+      <div className="title">Iniciar Sesión como Paciente</div>
       <form className={styles['login-form']} onSubmit={handleLogin}>
         <div className={styles['form-group']}>
           <label htmlFor="email">Correo Electrónico</label>
@@ -57,7 +57,7 @@ const Login = () => {
       </form>
       <div className={styles['register-link']}>
         ¿No tienes una cuenta?{' '}
-        <Link legacyBehavior href="/">
+        <Link legacyBehavior href="/registro-paciente">
           <a>Registrarse</a>
         </Link>
       </div>
