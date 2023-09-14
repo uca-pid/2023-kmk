@@ -1,33 +1,37 @@
-"use client"; // This is a client component 👈🏽
-
+"use client";
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import styles from './login.module.css'; // Estilos específicos de Login
-import '../styles.css'; // Importa estilos generales
+import styles from './login.module.css';
+import '../styles.css';
+import signIn from '../firebase/auth/signin';
+import { useRouter } from 'next/navigation'
 
 const login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const router = useRouter()
+
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    // Aquí puedes agregar la lógica de autenticación
-    // por ejemplo, usando una API o una base de datos
+    const { result, error } = await signIn(email, password);
 
-    // Si hay un error en la autenticación, muestra el mensaje de error
-    setError('Usuario o contraseña incorrectos');
+    if (error) {
+      setError('Usuario o contraseña incorrectos');  
+      return console.log(error)
+    }
 
-    // Si la autenticación es exitosa, puedes redirigir al usuario a la página principal
+    console.log(result)
+    return router.push("/admin")
   };
 
   return (
     <div className={styles['login-page']}>
       <div className="title">Iniciar Sesión</div>
       <form className={styles['login-form']} onSubmit={handleLogin}>
-        {error && <div className={styles['error-message']}>{error}</div>}
         <div className={styles['form-group']}>
           <label htmlFor="email">Correo Electrónico</label>
           <input
@@ -48,6 +52,7 @@ const login = () => {
             required
           />
         </div>
+        {error && <div className={styles['error-message']}>{error}</div>}
         <button type="submit" className="button">Iniciar Sesión</button>
       </form>
       <div className={styles['register-link']}>
