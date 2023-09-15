@@ -1,4 +1,4 @@
-import LandingPage from './landing/LandingPage.js'; // Ajusta la ruta según la ubicación real del componente
+import LandingPage from './landing/Login.js';
 
 const HomePage = () => {
   return (
