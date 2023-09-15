@@ -1,9 +1,9 @@
-import LandingPage from './landing/Login.js';
+import Landing from './landing/page.js';
 
 const HomePage = () => {
   return (
     <div>
-      <LandingPage />
+      <Landing />
     </div>
   );
 };

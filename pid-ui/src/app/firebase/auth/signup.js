@@ -9,6 +9,7 @@ export default async function signUp(email, password, role) {
     error = null;
   try {
     result = await createUserWithEmailAndPassword(auth, email, password);
+    console.log("UPDATING ROLE")
     await updateRole(result.user, role);
   } catch (e) {
     error = e;
