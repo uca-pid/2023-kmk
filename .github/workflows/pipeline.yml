@@ -27,7 +27,14 @@ jobs:
         working-directory: pid-ui
         run: npm run build
 
-      - name: Deploy frontend
+      - name: Deploy frontend to production
+        if: github.ref == 'refs/heads/main' # Deploy only from main branch
+        working-directory: pid-ui
+        run: |
+          # Deployment steps for production environment (main branch)
+          # Replace with your deployment commands.
+      
+      - name: Deploy frontend to pre-production
         if: github.ref == 'refs/heads/main' # Deploy only from main branch
         working-directory: pid-ui
         run: |
@@ -46,10 +53,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.x
 
