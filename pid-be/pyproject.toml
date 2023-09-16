@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "Gestion Medica KMK - Back End"
+version = "1.0.0"
+description = "Back end del sistema de gestion medica KMK"
+authors = ["tommudano <mudano.tomas@gmail.com>", "FelicitasKlix <felikpc@gmail.com>", "aguskrembs <agustin.krembs@gmail.com>"]
+
+packages = [{ include = "app" }, { include = "tests" }]
+
+[tool.poetry.scripts]
+start = "app.main:start"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = {extras = ["all"], version = "^0.103.1"}
+python-dotenv = "^1.0.0"
+uvicorn = "^0.23.2"
+pydantic = "^2.3.0"
+requests = "^2.31.0"
+firebase-admin = "^6.2.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
