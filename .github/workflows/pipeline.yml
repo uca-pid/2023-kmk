@@ -1,0 +1,69 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build-and-deploy-frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.6.1
+
+      - name: Install dependencies
+        working-directory: pid-ui
+        run: npm install
+
+      - name: Build frontend
+        working-directory: pid-ui
+        run: npm run build
+
+      - name: Deploy frontend to production
+        if: github.ref == 'refs/heads/main' # Deploy only from main branch
+        working-directory: pid-ui
+        run: |
+          # Deployment steps for production environment (main branch)
+          # Replace with your deployment commands.
+      
+      - name: Deploy frontend to pre-production
+        if: github.ref == 'refs/heads/main' # Deploy only from main branch
+        working-directory: pid-ui
+        run: |
+          # Deployment steps for production environment (main branch)
+          # Replace with your deployment commands.
+
+      - name: Deploy frontend to staging
+        if: github.ref == 'refs/heads/develop' # Deploy from develop branch
+        working-directory: pid-ui
+        run: |
+          # Deployment steps for staging environment (develop branch)
+          # Replace with your deployment commands.
+
+  test-backend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+
+      - name: Install Python dependencies
+        working-directory: pid-be
+        run: pip install -r requirements.txt
+
+      - name: Run backend tests
+        working-directory: pid-be
+        run: pytest
