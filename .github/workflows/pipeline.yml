@@ -62,7 +62,7 @@ jobs:
 
       - name: Install Python dependencies
         working-directory: pid-be
-        run: poetry install
+        run: pip install poetry
 
       - name: Build backend
         working-directory: pid-be
