@@ -9,13 +9,13 @@
   text-align: center;
   background-color: #fff;
   padding: 0;
+  margin-top: 4rem;
 }
 
 /* Estilos para el encabezado */
 .header {
   background-color: rgb(238, 238, 238); /* Color de fondo del encabezado */
   padding: 1rem; /* Espaciado del encabezado */
-  width: 100%;
   text-align: center;
   position: fixed; /* Establece la posición como fija */
   top: 0; /* Pega el encabezado al borde superior */
@@ -25,6 +25,7 @@
   display: flex; /* Activa el diseño flexible para centrar el contenido verticalmente */
   justify-content: center; /* Centra el contenido horizontalmente */
   align-items: center; /* Centra el contenido verticalmente */
+  height: 100px; /* Fija una altura fija para el encabezado */
 }
 
 /* Estilos para los mensajes de error */
@@ -101,9 +102,29 @@
   background-color: #0056b3;
 }
 
+/* Estilos para el botón deshabilitado */
+.disabled-button {
+  background-color: #ccc; /* Color de fondo gris */
+  cursor: not-allowed; /* Cursor no permitido (para indicar que está deshabilitado) */
+}
+
 /* Estilos para el pie de página de la página de inicio */
 .page-footer {
   font-size: 0.8rem;
   margin-top: 2rem;
   color: #777;
+}
+
+/* Estilos para el campo de selección (select) */
+.form-group select {
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  color: #000; /* Cambia el color del texto a negro */
+  background-color: #fff; /* Cambia el color de fondo a blanco */
+  appearance: none; /* Elimina la apariencia nativa del select */
+  outline: none; /* Elimina el resaltado del borde al enfocar */
+  cursor: pointer;
 }
