@@ -1,0 +1,184 @@
+/* Estilos para la página de Dashboard */
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+  background-color: #fff;
+  padding: 0;
+  margin-top: 4rem;
+}
+
+/* Estilos para el encabezado */
+.header {
+  background-color: rgb(238, 238, 238); /* Color de fondo del encabezado */
+  padding: 1rem; /* Espaciado del encabezado */
+  text-align: center;
+  position: fixed; /* Establece la posición como fija */
+  top: 0; /* Pega el encabezado al borde superior */
+  left: 0; /* Alinea el encabezado a la izquierda */
+  right: 0; /* Alinea el encabezado a la derecha */
+  z-index: 999; /* Ajusta el valor de z-index para superponer sobre el contenido */
+  display: flex; /* Activa el diseño flexible para centrar el contenido verticalmente */
+  justify-content: center; /* Centra el contenido horizontalmente */
+  align-items: center; /* Centra el contenido verticalmente */
+  height: 100px; /* Fija una altura fija para el encabezado */
+}
+
+/* Estilos para los mensajes de error */
+.error-message {
+  color: red;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Estilos para el logo */
+.logo {
+  width: 250px; /* Tamaño del logo */
+  height: auto;
+}
+
+/* Estilos para el título de la página de inicio de sesión */
+.title {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+/* Estilos para el subtítulo "Iniciar Sesión" */
+.subtitle {
+  font-size: 1.5rem; /* Tamaño del subtítulo */
+  color: #333;
+}
+
+/* Estilos para la barra superior de navegación por pestañas */
+.tab-bar {
+  display: flex;
+  background-color: rgb(238, 238, 238);
+  padding: 1rem;
+  text-align: center;
+  position: fixed;
+  top: 100px; /* Alinea la barra debajo del encabezado */
+  left: 0;
+  right: 0;
+  z-index: 999;
+  justify-content: center;
+  align-items: center;
+  height: 50px; /* Altura fija para la barra */
+  width: 100%; /* Ancho del 100% para ocupar toda la pantalla */
+}
+
+/* Estilos para las pestañas */
+.tab {
+  flex: 1;
+  text-align: center;
+  cursor: pointer;
+  padding: 10px 20px; /* Añade espaciado a las pestañas */
+}
+
+/* Estilos para el contenido de la pestaña activa */
+.tab-content {
+  margin-top: 150px; /* Separa el contenido del encabezado y la barra de navegación */
+}
+
+/* Estilos para el formulario de selección de especialidad y doctor */
+.form {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  text-align: left;
+}
+
+/* Estilos para los grupos de formulario */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+/* Estilos para las etiquetas de formulario */
+.form-group label {
+  display: block;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+/* Estilos para los campos de entrada de formulario */
+.form-group input {
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  color: #333;
+}
+
+/* Estilos para los campos de selección (select) */
+.form-group select {
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  color: #000;
+  background-color: #fff;
+  appearance: none;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Estilos para el botón de envío */
+.submit-button {
+  padding: 0.5rem 1rem;
+  background-color: #007bff;
+  color: #fff;
+  text-decoration: none;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  width: 100%;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.submit-button:hover {
+  background-color: #0056b3;
+}
+
+/* Estilos para el botón deshabilitado */
+.disabled-button {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Estilos para el pie de página de la página de inicio */
+.page-footer {
+  font-size: 0.8rem;
+  margin-top: 2rem;
+  color: #777;
+}
+
+/* Estilos para el campo de selección (select) */
+.form-group select {
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  color: #000;
+  background-color: #fff;
+  appearance: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.calendar {
+  /* Estilos del calendario aquí */
+}
