@@ -7,6 +7,15 @@ from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.openapi.utils import get_openapi
+from fastapi import Request
+import firebase_admin
+from firebase_admin import credentials, auth
+
+# Cargamos las credenciales de Firebase desde el archivo JSON
+cred = credentials.Certificate(
+    "credentials/pid-kmk-firebase-adminsdk-bwvix-1b5972579a.json"
+)
+firebase_admin.initialize_app(cred)
 
 load_dotenv()
 
@@ -34,13 +43,31 @@ async def root() -> RedirectResponse:
     return RedirectResponse(url="/redoc", status_code=status.HTTP_303_SEE_OTHER)
 
 
+@app.post("/api/register")
+async def register_user(request: Request):
+    data = await request.json()
+    print(data)  # Esto imprimirá los datos en la consola del servidor
+    # Utiliza Firebase Authentication para crear una cuenta de usuario
+    try:
+        user = auth.create_user(
+            email=data["email"],
+            password=data["password"],
+            display_name=data["role"],
+            email_verified=False,  # Cambia a True si deseas que el email esté verificado
+        )
+        print(f"Usuario registrado: {user.uid}")
+        return {"message": "Registro exitoso"}
+    except Exception as e:
+        print(f"Error en el registro: {str(e)}")
+        return {"message": "Error en el registro"}
+
+
 def start():
     """
     _summary_: Start the application
     """
     is_reloading = True
-    uvicorn.run("app.main:app", host="0.0.0.0",
-                port=CTX_PORT, reload=is_reloading)
+    uvicorn.run("app.main:app", host="0.0.0.0", port=CTX_PORT, reload=is_reloading)
 
 
 def custom_openapi():
