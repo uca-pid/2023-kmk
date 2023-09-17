@@ -5,6 +5,7 @@ import Link from "next/link";
 import styles from "./landing.module.css";
 import signIn from "../firebase/auth/signin";
 import { useRouter } from "next/navigation"; // Importa el enrutador de Next.js
+import axios from "axios";
 
 const Landing = () => {
   const [email, setEmail] = useState("");
@@ -19,6 +20,10 @@ const Landing = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    const userData = {
+      email,
+      password,
+    };
 
     try {
       const { result, error } = await signIn(email, password);

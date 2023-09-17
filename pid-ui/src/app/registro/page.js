@@ -5,6 +5,7 @@ import Link from "next/link";
 import styles from "./registro.module.css";
 import signUp from "../firebase/auth/signup";
 import { useRouter } from "next/navigation"; // Importa el enrutador de Next.js
+import axios from "axios";
 
 const Registro = () => {
   const [nombre, setNombre] = useState("");
@@ -24,22 +25,43 @@ const Registro = () => {
   };
 
   const handleSubmit = async (e) => {
-    if (role === "paciente") {
-      // Lógica para registro de pacientes
-    } else if (role === "medico") {
-      // Lógica para registro de médicos
+    e.preventDefault();
+    //const { result, error } = await signUp(email, password, role);
+    const userData = {
+      nombre,
+      apellido,
+      numeroMatricula,
+      especialidad,
+      email,
+      password,
+      role: role, // Asegúrate de incluir el rol en los datos
+    };
+
+    try {
+      const response = await axios.post(
+        "http://localhost:8080/api/register",
+        userData
+      );
+      console.log(response.data); // Esto mostrará la respuesta del backend en la consola del navegador
+      // Realiza acciones adicionales en función de la respuesta, como redirigir al usuario
+      if (response.data) {
+        // Usuario inició sesión exitosamente, puedes mostrar un mensaje de éxito.
+        console.log("Registro exitoso");
+        // Redirige al usuario a la página home u otra página deseada.
+        //router.push("/");
+      }
+    } catch (error) {
+      console.error(error);
+      // Maneja los errores, como mostrar mensajes al usuario
     }
 
-    e.preventDefault();
-    const { result, error } = await signUp(email, password, role);
-
-    if (error) {
+    /*if (error) {
       setError("Usuario o contraseña incorrectos");
       return console.log(error);
     }
 
     console.log(result);
-    return router.push("/");
+    return router.push("/");*/
   };
 
   return (
