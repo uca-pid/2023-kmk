@@ -49,20 +49,12 @@ async def register_user(request: Request):
     print(data)  # Esto imprimirá los datos en la consola del servidor
     # Utiliza Firebase Authentication para crear una cuenta de usuario
     try:
-        if data["role"] == "paciente":
-            user = auth.create_user(
-                email=data["email"],
-                password=data["password"],
-                display_name=data["role"],
-                email_verified=False,  # Cambia a True si deseas que el email esté verificado
-            )
-        elif data["role"] == "medico":
-            user = auth.create_user(
-                email=data["email"],
-                password=data["password"],
-                display_name=data["role"],
-                email_verified=False,  # Cambia a True si deseas que el email esté verificado
-            )
+        user = auth.create_user(
+            email=data["email"],
+            password=data["password"],
+            display_name=data["role"],
+            email_verified=False,  # Cambia a True si deseas que el email esté verificado
+        )
         print(f"Usuario registrado: {user.uid}")
         return {"message": "Registro exitoso"}
     except Exception as e:
