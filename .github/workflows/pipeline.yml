@@ -89,4 +89,4 @@ jobs:
                   CLIENT_X509_CERT_URL: ${{ secrets.CLIENT_X509_CERT_URL }}
                   UNIVERSE_DOMAIN: ${{ secrets.UNIVERSE_DOMAIN }}
               working-directory: pid-be
-              run: firebase emulators:exec \"poetry run pytest\"
+              run: firebase emulators:exec "poetry run pytest"
