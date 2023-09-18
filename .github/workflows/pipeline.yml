@@ -80,13 +80,11 @@ jobs:
               env:
                   FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
               working-directory: pid-be
-              run: |
-                  firebase setup:emulators:firestore
-                  firebase setup:emulators:authentication
+              run: firebase emulators:start
 
             - name: Run emualtors
               working-directory: pid-be
-              run: "firebase emulators:start --only firestore,authentication"
+              run: "firebase emulators:start"
 
             - name: Run Backend
               working-directory: pid-be
