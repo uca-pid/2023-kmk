@@ -60,10 +60,41 @@ jobs:
         with:
           python-version: 3.x
 
-      - name: Install Python dependencies
+      - name: Install Poetry
         working-directory: pid-be
         run: pip install poetry
 
       - name: Build backend
         working-directory: pid-be
         run: poetry build
+
+      - name: Build backend
+        working-directory: pid-be
+        run: poetry build
+
+      - name: Install firebase
+        env: 
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        working-directory: pid-be
+        run: npm install -g firebase-tools
+        run: firebase login:ci
+        run: "firebase emulators:start"
+      
+      - name: Run Backend
+        working-directory: pid-be
+        run: poetry run start
+
+      - name: Run Backend Tests
+        env: 
+          PROJECT_ID: ${{ secrets.PROJECT_ID }}
+          PRIVATE_KEY_ID: ${{ secrets.PRIVATE_KEY_ID }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          CLIENT_EMAIL: ${{ secrets.CLIENT_EMAIL }}
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          AUTH_URI: ${{ secrets.AUTH_URI }}
+          TOKEN_URI: ${{ secrets.TOKEN_URI }}
+          AUTH_PROVIDER_X509_CERT_URL: ${{ secrets.AUTH_PROVIDER_X509_CERT_URL }}
+          CLIENT_X509_CERT_URL: ${{ secrets.CLIENT_X509_CERT_URL }}
+          UNIVERSE_DOMAIN: ${{ secrets.UNIVERSE_DOMAIN }}
+        working-directory: pid-be
+        run: poetry run pytest ./tests
