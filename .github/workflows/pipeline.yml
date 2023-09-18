@@ -72,15 +72,11 @@ jobs:
               working-directory: pid-be
               run: npm install -g firebase-tools
 
-            - name: Run emualtors
-              working-directory: pid-be
-              run: "firebase emulators:start &"
-
             - name: Run Backend
               working-directory: pid-be
               run: poetry run start &
 
-            - name: Run Backend Tests
+            - name: Run emualtors and backend tests
               env:
                   PROJECT_ID: ${{ secrets.PROJECT_ID }}
                   PRIVATE_KEY_ID: ${{ secrets.PRIVATE_KEY_ID }}
@@ -93,4 +89,4 @@ jobs:
                   CLIENT_X509_CERT_URL: ${{ secrets.CLIENT_X509_CERT_URL }}
                   UNIVERSE_DOMAIN: ${{ secrets.UNIVERSE_DOMAIN }}
               working-directory: pid-be
-              run: poetry run pytest
+              run: firebase emulators:exec \"poetry run pytest\"
