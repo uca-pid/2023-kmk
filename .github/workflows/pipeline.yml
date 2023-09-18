@@ -66,11 +66,7 @@ jobs:
 
             - name: Build backend
               working-directory: pid-be
-              run: poetry build
-
-            - name: Build backend
-              working-directory: pid-be
-              run: poetry build
+              run: poetry init
 
             - name: Install firebase
               working-directory: pid-be
@@ -97,4 +93,4 @@ jobs:
                   CLIENT_X509_CERT_URL: ${{ secrets.CLIENT_X509_CERT_URL }}
                   UNIVERSE_DOMAIN: ${{ secrets.UNIVERSE_DOMAIN }}
               working-directory: pid-be
-              run: poetry run pytest ./tests
+              run: poetry run pytest .\tests\
