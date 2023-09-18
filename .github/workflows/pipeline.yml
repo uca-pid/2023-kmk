@@ -80,7 +80,7 @@ jobs:
               env:
                   FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
               working-directory: pid-be
-              run: firebase login:ci
+              run: firebase init emulators
 
             - name: Run emualtors
               working-directory: pid-be
