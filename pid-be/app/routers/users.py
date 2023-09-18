@@ -1,5 +1,7 @@
 import requests
 import json
+import os
+from dotenv import load_dotenv
 
 from fastapi import APIRouter, status, Depends
 from fastapi.responses import JSONResponse
@@ -11,6 +13,8 @@ from app.models.responses.UserResponses import (
 )
 
 from app.models.entities.Auth import Auth
+
+load_dotenv()
 
 router = APIRouter(
     prefix="/users", tags=["Users"], responses={404: {"description": "Not found"}}
@@ -44,7 +48,7 @@ async def login_user(
     * Return the users Bearer token if login is successful.
     * Throw an error if login fails.
     """
-    url = f"http://localhost:9099/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={firebaseClientConfig['apiKey']}"
+    url = os.environ.get("LOGIN_URL")
     loginResponse = requests.post(
         url,
         json={
@@ -52,6 +56,7 @@ async def login_user(
             "password": userLoginRequest.password,
             "return_secure_token": True,
         },
+        params={"key": firebaseClientConfig["apiKey"]},
     )
     if loginResponse.status_code == 400:
         return JSONResponse(
