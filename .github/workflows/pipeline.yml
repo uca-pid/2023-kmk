@@ -73,6 +73,8 @@ jobs:
               run: npm install -g firebase-tools
 
             - name: Run Backend
+              env:
+                  LOGIN_URL: ${{ secrets.LOGIN_URL }}
               working-directory: pid-be
               run: poetry run start &
 
@@ -88,6 +90,5 @@ jobs:
                   AUTH_PROVIDER_X509_CERT_URL: ${{ secrets.AUTH_PROVIDER_X509_CERT_URL }}
                   CLIENT_X509_CERT_URL: ${{ secrets.CLIENT_X509_CERT_URL }}
                   UNIVERSE_DOMAIN: ${{ secrets.UNIVERSE_DOMAIN }}
-                  LOGIN_URL: ${{ secrets.LOGIN_URL }}
               working-directory: pid-be
               run: firebase emulators:exec "poetry run pytest"
