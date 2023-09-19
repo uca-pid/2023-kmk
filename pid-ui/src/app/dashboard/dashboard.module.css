@@ -68,6 +68,7 @@
   align-items: center;
   height: 50px; /* Altura fija para la barra */
   width: 100%; /* Ancho del 100% para ocupar toda la pantalla */
+  padding: 2rem;
 }
 
 /* Estilos para las pestañas */
@@ -76,6 +77,21 @@
   text-align: center;
   cursor: pointer;
   padding: 10px 20px; /* Añade espaciado a las pestañas */
+  color: #333;
+  border-radius: 6px;
+  background-color: #d2d2d2;
+  margin: 10px 10px 10px 10px;
+}
+
+.disabledtab {
+  flex: 1;
+  text-align: center;
+  cursor: pointer;
+  padding: 10px 20px; /* Añade espaciado a las pestañas */
+  color: #5d5d5d;
+  border-radius: 6px;
+  background-color: #d2d2d2;
+  margin: 10px 10px 10px 10px;
 }
 
 /* Estilos para el contenido de la pestaña activa */

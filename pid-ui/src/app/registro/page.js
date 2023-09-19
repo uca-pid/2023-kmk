@@ -177,12 +177,12 @@ const Registro = () => {
           Registrarse
         </button>
       </form>
-      <p>
+      <div className={styles["sign-in-link"]}>
         ¿Ya tienes una cuenta?{" "}
-        <Link legacyBehavior href="/login">
-          <a>Iniciar Sesión</a>
+        <Link legacyBehavior href="/">
+          <a>Inicia Sesión</a>
         </Link>
-      </p>
+      </div>
       <footer className={styles["page-footer"]}>
         <p>Derechos de autor © 2023 KMK</p>
       </footer>
