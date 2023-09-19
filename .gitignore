@@ -2,6 +2,6 @@ __pycache__/
 
 .pytest_cache/
 
-pid-be/credentials/
+pid-be/credentials/credentials.json
 
 .DS_Store
