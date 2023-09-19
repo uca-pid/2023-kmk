@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 from firebase_admin import auth, credentials, initialize_app
 
 load_dotenv()
-os.environ["FIREBASE_AUTH_EMULATOR_HOST"] = "localhost:9099"
 
 credentialsToUse = credentials.Certificate(
     {
