@@ -27,19 +27,20 @@ const Registro = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     //const { result, error } = await signUp(email, password, role);
+
     const userData = {
-      nombre,
-      apellido,
-      numeroMatricula,
-      especialidad,
-      email,
-      password,
-      role: role, // Asegúrate de incluir el rol en los datos
+      role: role,
+      name: nombre,
+      last_name: apellido,
+      matricula: numeroMatricula,
+      specialty: especialidad,
+      email: email,
+      password: password,
     };
 
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/register",
+        "http://localhost:8080/users/register",
         userData
       );
       console.log(response.data); // Esto mostrará la respuesta del backend en la consola del navegador
@@ -54,14 +55,6 @@ const Registro = () => {
       console.error(error);
       // Maneja los errores, como mostrar mensajes al usuario
     }
-
-    /*if (error) {
-      setError("Usuario o contraseña incorrectos");
-      return console.log(error);
-    }
-
-    console.log(result);
-    return router.push("/");*/
   };
 
   return (
