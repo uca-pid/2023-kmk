@@ -8,9 +8,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.openapi.utils import get_openapi
 
+from .config import initialize_firebase_app
+
 # from fastapi import Request
 # import firebase_admin
-from firebase_admin import credentials, auth
 
 # Cargamos las credenciales de Firebase desde el archivo JSON
 # cred = credentials.Certificate(
@@ -69,8 +70,8 @@ def start():
     """
     _summary_: Start the application
     """
-    is_reloading = True
-    uvicorn.run("app.main:app", host="0.0.0.0", port=CTX_PORT, reload=is_reloading)
+    initialize_firebase_app()
+    uvicorn.run("app.main:app", host="0.0.0.0", port=CTX_PORT, reload=True)
 
 
 def custom_openapi():
