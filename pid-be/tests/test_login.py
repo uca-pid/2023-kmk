@@ -1,138 +1,120 @@
 import pytest
 import requests
-import os
-from dotenv import load_dotenv
-from firebase_admin import auth, credentials, initialize_app
+from .config import *
+from firebase_admin import auth
 
-load_dotenv()
-os.environ["FIREBASE_AUTH_EMULATOR_HOST"] = "localhost:9099"
-
-credentialsToUse = credentials.Certificate(
-    {
-        "type": "service_account",
-        "project_id": os.environ.get("PROJECT_ID"),
-        "private_key_id": os.environ.get("PRIVATE_KEY_ID"),
-        "private_key": os.environ.get("PRIVATE_KEY"),
-        "client_email": os.environ.get("CLIENT_EMAIL"),
-        "client_id": os.environ.get("CLIENT_ID"),
-        "auth_uri": os.environ.get("AUTH_URI"),
-        "token_uri": os.environ.get("TOKEN_URI"),
-        "auth_provider_x509_cert_url": os.environ.get("AUTH_PROVIDER_X509_CERT_URL"),
-        "client_x509_cert_url": os.environ.get("CLIENT_X509_CERT_URL"),
-        "universe_domain": os.environ.get("UNIVERSE_DOMAIN"),
-    }
-)
-initialize_app(credentialsToUse)
-
-aKMKUserInformation = {
+a_KMK_user_information = {
     "display_name": "KMK Test User",
-    "email": "testUser@kmk.com",
+    "email": "loginTestUser@kmk.com",
     "email_verified": True,
     "password": "verySecurePassword123",
 }
 
 
 @pytest.fixture(scope="session", autouse=True)
-def createTestUser():
-    createdUser = auth.create_user(**aKMKUserInformation)
-    aKMKUserInformation["uid"] = createdUser.uid
+def create_test_user():
+    created_user = auth.create_user(**a_KMK_user_information)
+    a_KMK_user_information["uid"] = created_user.uid
     yield
-    auth.delete_user(aKMKUserInformation["uid"])
+    auth.delete_user(a_KMK_user_information["uid"])
 
 
-def testLoginWithValidCredentialsReturnsA200Code():
-    responseToLoginEndpoint = requests.post(
+def test_Login_With_Valid_Credentials_Returns_A_200_Code():
+    response_to_login_endpoint = requests.post(
         "http://localhost:8080/users/login",
         json={
-            "email": aKMKUserInformation["email"],
-            "password": aKMKUserInformation["password"],
+            "email": a_KMK_user_information["email"],
+            "password": a_KMK_user_information["password"],
         },
     )
 
-    assert responseToLoginEndpoint.status_code == 200
+    assert response_to_login_endpoint.status_code == 200
 
 
-def testLoginWithValidCredentialsReturnsAToken():
-    responseToLoginEndpoint = requests.post(
+def test_Login_With_Valid_Credentials_Returns_A_Token():
+    response_to_login_endpoint = requests.post(
         "http://localhost:8080/users/login",
         json={
-            "email": aKMKUserInformation["email"],
-            "password": aKMKUserInformation["password"],
+            "email": a_KMK_user_information["email"],
+            "password": a_KMK_user_information["password"],
         },
     )
 
-    assert responseToLoginEndpoint.json().get("token") != None
-    assert type(responseToLoginEndpoint.json()["token"]) == str
+    assert response_to_login_endpoint.json().get("token") != None
+    assert type(response_to_login_endpoint.json()["token"]) == str
 
 
-def testReturnedBearerIsValid():
-    responseToLoginEndpoint = requests.post(
+def test_Returned_Bearer_Is_Valid():
+    response_to_login_endpoint = requests.post(
         "http://localhost:8080/users/login",
         json={
-            "email": aKMKUserInformation["email"],
-            "password": aKMKUserInformation["password"],
+            "email": a_KMK_user_information["email"],
+            "password": a_KMK_user_information["password"],
         },
     )
 
-    bearer = responseToLoginEndpoint.json()["token"]
-    print(bearer)
+    bearer = response_to_login_endpoint.json()["token"]
     assert type(auth.verify_id_token(bearer)) == dict
 
 
-def testLoginWithInvalidEmailCredentialReturnsA400CodeAndMessage():
-    responseToLoginEndpoint = requests.post(
+def test_Login_With_Invalid_Email_Credential_Returns_A_400_Code_And_Message():
+    response_to_login_endpoint = requests.post(
         "http://localhost:8080/users/login",
         json={
             "email": "invalid@email.com",
-            "password": aKMKUserInformation["password"],
+            "password": a_KMK_user_information["password"],
         },
     )
 
-    assert responseToLoginEndpoint.status_code == 400
-    assert responseToLoginEndpoint.json()["detail"] == "Invalid email and/or password"
-
-
-def testLoginWithInvalidPasswordCredentialReturnsA400CodeAndMessage():
-    responseToLoginEndpoint = requests.post(
-        "http://localhost:8080/users/login",
-        json={"email": aKMKUserInformation["email"], "password": "invalidPassword"},
+    assert response_to_login_endpoint.status_code == 400
+    assert (
+        response_to_login_endpoint.json()["detail"] == "Invalid email and/or password"
     )
 
-    assert responseToLoginEndpoint.status_code == 400
-    assert responseToLoginEndpoint.json()["detail"] == "Invalid email and/or password"
+
+def test_Login_With_Invalid_Password_Credential_Returns_A_400_Code_And_Message():
+    response_to_login_endpoint = requests.post(
+        "http://localhost:8080/users/login",
+        json={"email": a_KMK_user_information["email"], "password": "invalidPassword"},
+    )
+
+    assert response_to_login_endpoint.status_code == 400
+    assert (
+        response_to_login_endpoint.json()["detail"] == "Invalid email and/or password"
+    )
 
 
-def testInvalidEmailFormatForLoginReturnsA422Code():
-    responseToLoginEndpoint = requests.post(
+def test_Invalid_Email_Format_For_Login_Returns_A_422_Code():
+    response_to_login_endpoint = requests.post(
         "http://localhost:8080/users/login",
         json={"email": "invalidEmail@format", "password": "aPassword"},
     )
 
-    assert responseToLoginEndpoint.status_code == 422
+    assert response_to_login_endpoint.status_code == 422
 
 
-def testLogginEndpointReturnsA401CodeAndMessageIfUserIsLoggedIn():
-    responseToLoginEndpoint = requests.post(
+def test_Loggin_Endpoint_Returns_A_401_Code_And_Message_If_User_Is_Logged_In():
+    response_to_login_endpoint = requests.post(
         "http://localhost:8080/users/login",
         json={
-            "email": aKMKUserInformation["email"],
-            "password": aKMKUserInformation["password"],
+            "email": a_KMK_user_information["email"],
+            "password": a_KMK_user_information["password"],
         },
     )
 
-    bearer = responseToLoginEndpoint.json()["token"]
+    bearer = response_to_login_endpoint.json()["token"]
 
-    responseToSecondRequestToLoginEndpoint = requests.post(
+    response_to_second_request_to_login_endpoint = requests.post(
         "http://localhost:8080/users/login",
         headers={"Authorization": f"Bearer {bearer}"},
         json={
-            "email": aKMKUserInformation["email"],
-            "password": aKMKUserInformation["password"],
+            "email": a_KMK_user_information["email"],
+            "password": a_KMK_user_information["password"],
         },
     )
 
-    assert responseToSecondRequestToLoginEndpoint.status_code == 401
+    assert response_to_second_request_to_login_endpoint.status_code == 401
     assert (
-        responseToSecondRequestToLoginEndpoint.json()["detail"]
+        response_to_second_request_to_login_endpoint.json()["detail"]
         == "User has already logged in"
     )

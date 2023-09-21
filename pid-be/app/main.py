@@ -1,3 +1,7 @@
+from .config import initialize_firebase_app
+
+initialize_firebase_app()
+
 import os
 
 import uvicorn
@@ -8,9 +12,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.openapi.utils import get_openapi
 
+
 # from fastapi import Request
 # import firebase_admin
-from firebase_admin import credentials, auth
 
 # Cargamos las credenciales de Firebase desde el archivo JSON
 # cred = credentials.Certificate(
@@ -18,7 +22,7 @@ from firebase_admin import credentials, auth
 # )
 # firebase_admin.initialize_app(cred)
 
-from app.routers import users
+from app.routers import users, appointments
 
 load_dotenv()
 
@@ -30,7 +34,7 @@ app.add_middleware(
     CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"]
 )
 
-routers = [users.router]
+routers = [users.router, appointments.router]
 
 for router in routers:
     app.include_router(router)
@@ -69,8 +73,7 @@ def start():
     """
     _summary_: Start the application
     """
-    is_reloading = True
-    uvicorn.run("app.main:app", host="0.0.0.0", port=CTX_PORT, reload=is_reloading)
+    uvicorn.run("app.main:app", host="0.0.0.0", port=CTX_PORT, reload=True)
 
 
 def custom_openapi():
