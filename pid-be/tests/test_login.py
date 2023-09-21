@@ -1,13 +1,11 @@
 import pytest
 import requests
-from .config import credentials_to_use
-from firebase_admin import auth, initialize_app
-
-initialize_app(credentials_to_use, name="test_login_app")
+from .config import *
+from firebase_admin import auth
 
 a_KMK_user_information = {
     "display_name": "KMK Test User",
-    "email": "testUser@kmk.com",
+    "email": "loginTestUser@kmk.com",
     "email_verified": True,
     "password": "verySecurePassword123",
 }

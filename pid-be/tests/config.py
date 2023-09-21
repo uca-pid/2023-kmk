@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from firebase_admin import credentials
+from firebase_admin import credentials, initialize_app
 
 load_dotenv()
 
@@ -19,3 +19,5 @@ credentials_to_use = credentials.Certificate(
         "universe_domain": os.environ.get("UNIVERSE_DOMAIN"),
     }
 )
+
+initialize_app(credentials_to_use)

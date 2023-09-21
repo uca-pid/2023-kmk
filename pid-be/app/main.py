@@ -1,3 +1,7 @@
+from .config import initialize_firebase_app
+
+initialize_firebase_app()
+
 import os
 
 import uvicorn
@@ -8,7 +12,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.openapi.utils import get_openapi
 
-from .config import initialize_firebase_app
 
 # from fastapi import Request
 # import firebase_admin
@@ -70,7 +73,6 @@ def start():
     """
     _summary_: Start the application
     """
-    initialize_firebase_app()
     uvicorn.run("app.main:app", host="0.0.0.0", port=CTX_PORT, reload=True)
 
 

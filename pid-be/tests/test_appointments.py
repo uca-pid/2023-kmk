@@ -1,10 +1,9 @@
 import pytest
 import requests
 import time
-from .config import credentials_to_use
-from firebase_admin import auth, initialize_app, firestore
+from .config import *
+from firebase_admin import auth, firestore
 
-initialize_app(credentials_to_use)
 db = firestore.client()
 
 valid_physician_id = "validphysicianid"
@@ -17,7 +16,7 @@ appointment_data = {
 
 a_KMK_user_information = {
     "display_name": "KMK Test User",
-    "email": "testUser@kmk.com",
+    "email": "apppointmentTestUser@kmk.com",
     "email_verified": True,
     "password": "verySecurePassword123",
 }
