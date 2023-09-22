@@ -75,6 +75,16 @@ jobs:
             - name: Run Backend
               env:
                   LOGIN_URL: ${{ secrets.LOGIN_URL }}
+                  PROJECT_ID: ${{ secrets.PROJECT_ID }}
+                  PRIVATE_KEY_ID: ${{ secrets.PRIVATE_KEY_ID }}
+                  PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+                  CLIENT_EMAIL: ${{ secrets.CLIENT_EMAIL }}
+                  CLIENT_ID: ${{ secrets.CLIENT_ID }}
+                  AUTH_URI: ${{ secrets.AUTH_URI }}
+                  TOKEN_URI: ${{ secrets.TOKEN_URI }}
+                  AUTH_PROVIDER_X509_CERT_URL: ${{ secrets.AUTH_PROVIDER_X509_CERT_URL }}
+                  CLIENT_X509_CERT_URL: ${{ secrets.CLIENT_X509_CERT_URL }}
+                  UNIVERSE_DOMAIN: ${{ secrets.UNIVERSE_DOMAIN }}
                   FIREBASE_AUTH_EMULATOR_HOST: ${{ secrets.FIREBASE_AUTH_EMULATOR_HOST }}
                   FIRESTORE_EMULATOR_HOST: ${{ secrets.FIRESTORE_EMULATOR_HOST }}
               working-directory: pid-be
