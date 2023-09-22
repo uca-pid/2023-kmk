@@ -1,12 +1,14 @@
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 from .config import initialize_firebase_app
 
 initialize_firebase_app()
 
-import os
 
 import uvicorn
 
-from dotenv import load_dotenv
 from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
@@ -24,7 +26,6 @@ from fastapi.openapi.utils import get_openapi
 
 from app.routers import users, appointments
 
-load_dotenv()
 
 CTX_PORT: int = int(os.environ.get("PORT")) if os.environ.get("PORT") else 8080
 
