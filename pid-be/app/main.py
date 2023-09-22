@@ -1,7 +1,9 @@
 import os
-from dotenv import load_dotenv
-from .config import *
 import uvicorn
+from dotenv import load_dotenv
+from .config import initialize_firebase_app
+
+initialize_firebase_app()
 
 from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -70,7 +72,6 @@ def start():
     """
     _summary_: Start the application
     """
-    print(os.environ)
     uvicorn.run("app.main:app", host="0.0.0.0", port=CTX_PORT, reload=True)
 
 
