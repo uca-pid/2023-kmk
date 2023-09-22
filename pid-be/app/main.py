@@ -74,6 +74,7 @@ def start():
     """
     _summary_: Start the application
     """
+    print(os.environ)
     uvicorn.run("app.main:app", host="0.0.0.0", port=CTX_PORT, reload=True)
 
 
