@@ -1,12 +1,6 @@
 import os
 from dotenv import load_dotenv
-
-load_dotenv()
-from .config import initialize_firebase_app
-
-initialize_firebase_app()
-
-
+from .config import *
 import uvicorn
 
 from fastapi import FastAPI, status
@@ -23,6 +17,8 @@ from fastapi.openapi.utils import get_openapi
 #     "credentials/pid-kmk-firebase-adminsdk-bwvix-1b5972579a.json"
 # )
 # firebase_admin.initialize_app(cred)
+
+load_dotenv()
 
 from app.routers import users, appointments
 
