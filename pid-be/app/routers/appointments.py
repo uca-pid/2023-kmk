@@ -7,6 +7,9 @@ from app.models.requests.AppointmentRequests import AppointmentCreationRequest
 from app.models.responses.AppointmentResponses import (
     SuccessfulAppointmentCreationResponse,
     AppointmentCreationError,
+    GetAppointmentError,
+    AllAppointmentsResponse,
+    BasicAppointmentResponse,
 )
 
 router = APIRouter(
@@ -46,6 +49,74 @@ async def create_appointment(
     try:
         appointment_id = appointment.create()
         return {"appointment_id": appointment_id}
+    except:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "Internal server error"},
+        )
+
+
+@router.get(
+    "/",
+    status_code=status.HTTP_200_OK,
+    response_model=AllAppointmentsResponse,
+    responses={
+        401: {"model": GetAppointmentError},
+        500: {"model": GetAppointmentError},
+    },
+)
+def get_all_appointments(uid=Depends(Auth.is_logged_in)):
+    """
+    Get all appointment.
+
+    This will allow authenticated users to retrieve all their appointments.
+
+    This path operation will:
+
+    * Return all of users appointments.
+    * Throw an error if appointment retrieving fails.
+    """
+    try:
+        appointments = Appointment.get_all_appointments_for_user_with(uid)
+        return {"appointments": appointments}
+    except:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "Internal server error"},
+        )
+
+
+@router.get(
+    "/{id}",
+    status_code=status.HTTP_200_OK,
+    response_model=BasicAppointmentResponse,
+    responses={
+        400: {"model": GetAppointmentError},
+        401: {"model": GetAppointmentError},
+        500: {"model": GetAppointmentError},
+    },
+)
+def get_appointment_by_id(id: str, uid=Depends(Auth.is_logged_in)):
+    """
+    Get an appointment.
+
+    This will allow authenticated users to retrieve one of their appointments.
+
+    This path operation will:
+
+    * Return an appointments.
+    * Throw an error if appointment doesn't exist.
+    * Throw an error if appointment doesn't belong to the authenticated user.
+    * Throw an error if appointment retrieving fails.
+    """
+    try:
+        appointment = Appointment.get_by_id(id)
+        if not appointment or appointment["patient_id"] != uid:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"detail": "Invalid appointment id"},
+            )
+        return appointment
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
