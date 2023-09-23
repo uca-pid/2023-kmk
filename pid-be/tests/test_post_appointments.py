@@ -7,7 +7,7 @@ from firebase_admin import auth, firestore
 db = firestore.client()
 
 valid_physician_id = "validphysicianid"
-db.collection("physicians").document(valid_physician_id).set({"firstName": "Doc"})
+db.collection("physicians").document(valid_physician_id).set({"first_name": "Doc"})
 
 appointment_data = {
     "physician_id": valid_physician_id,
@@ -16,7 +16,7 @@ appointment_data = {
 
 a_KMK_user_information = {
     "display_name": "KMK Test User",
-    "email": "apppointmentTestUser@kmk.com",
+    "email": "postApppointmentTestUser@kmk.com",
     "email_verified": True,
     "password": "verySecurePassword123",
 }
