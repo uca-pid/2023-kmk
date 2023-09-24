@@ -21,7 +21,7 @@ router = APIRouter(
 )
 
 with open("credentials/client.json") as fp:
-    firebaseClientConfig = json.loads(fp.read())
+    firebase_client_config = json.loads(fp.read())
 
 
 @router.post(
@@ -35,7 +35,7 @@ with open("credentials/client.json") as fp:
     },
 )
 async def login_user(
-    userLoginRequest: UserLoginRequest, token=Depends(Auth.has_bearer_token)
+    user_login_request: UserLoginRequest, token=Depends(Auth.has_bearer_token)
 ):
     """
     Login a user.
@@ -49,22 +49,22 @@ async def login_user(
     * Throw an error if login fails.
     """
     url = os.environ.get("LOGIN_URL")
-    loginResponse = requests.post(
+    login_response = requests.post(
         url,
         json={
-            "email": userLoginRequest.email,
-            "password": userLoginRequest.password,
+            "email": user_login_request.email,
+            "password": user_login_request.password,
             "return_secure_token": True,
         },
-        params={"key": firebaseClientConfig["apiKey"]},
+        params={"key": firebase_client_config["apiKey"]},
     )
-    if loginResponse.status_code == 400:
+    if login_response.status_code == 400:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"detail": "Invalid email and/or password"},
         )
-    elif loginResponse.status_code == 200:
-        return {"token": loginResponse.json()["idToken"]}
+    elif login_response.status_code == 200:
+        return {"token": login_response.json()["idToken"]}
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={"detail": "Internal Server Error"},
