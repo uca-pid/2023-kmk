@@ -1,9 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
 import styles from "./dashboard.module.css";
 import { useRouter } from "next/navigation";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { registerLocale, setDefaultLocale } from "react-datepicker";
+import es from "date-fns/locale/es";
+registerLocale("es", es);
 
 const Dashboard = () => {
   const router = useRouter();
@@ -18,6 +22,8 @@ const Dashboard = () => {
   const [selectedEspecialidad, setSelectedEspecialidad] = useState("");
   // Estado para el valor seleccionado del médico
   const [selectedMedico, setSelectedMedico] = useState("");
+  // Estado para el valor seleccionado de la fecha
+  const [date, setDate] = useState(new Date());
 
   // Efecto para cargar las especialidades al cargar la página
   useEffect(() => {
@@ -82,7 +88,7 @@ const Dashboard = () => {
         <div className={styles.tab} onClick={handleLogoClick}>
           Turnos
         </div>
-        <div className={styles.tab_disabled}>Mi Ficha (Coming soon)</div>
+        <div className={styles.tab_disabled}>Mi Ficha</div>
       </div>
 
       <div className={styles["tab-content"]}>
@@ -118,16 +124,30 @@ const Dashboard = () => {
               </option>
             ))}
           </select>
+
+          {/* Selector de fechas */}
+          <label htmlFor="fecha">Fechas disponibles:</label>
+
+          <DatePicker
+            wrapperClassName="datePicker"
+            locale="es"
+            dateFormat="d 'de' MMMM 'del' yyyy   h:mm aa"
+            selected={date}
+            onChange={(date) => {
+              setDate(date);
+              console.log(date);
+            }}
+            timeCaption="Hora"
+            timeIntervals={30}
+            showPopperArrow={false}
+            showTimeSelect
+            inline
+          />
         </div>
 
         {/* Lista de turnos disponibles */}
         <div className={styles["turnos-disponibles"]}>
-          <h2>Turnos Disponibles</h2>
-          <ul>
-            {turnosDisponibles.map((turno, index) => (
-              <li key={index}>{turno}</li>
-            ))}
-          </ul>
+          <div className="subtitle">Turnos Disponibles</div>
         </div>
       </div>
 

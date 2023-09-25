@@ -8,7 +8,7 @@
   text-align: center;
   background-color: #fff;
   padding: 0;
-  margin-top: 4rem;
+  margin-top: 10rem;
 }
 
 /* Estilos para el encabezado */
@@ -96,12 +96,15 @@
 
 /* Estilos para el contenido de la pestaña activa */
 .tab-content {
+  flex: 1;
   padding: 2rem;
   width: 100%;
 }
 
 /* Estilos para el formulario de selección de especialidad y doctor */
 .form {
+  flex: 1;
+  align-self: flex-start;
   display: flex;
   width: 60rem;
   max-width: 100%;
@@ -117,29 +120,49 @@
 
 /* Estilos para los grupos de formulario */
 .form {
+  text-align: left;
   margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column; /* Apila los elementos verticalmente */
 }
 
 /* Estilos para las etiquetas de formulario */
 .form label {
-  display: block;
   font-size: 1rem;
-  margin: 0.5rem;
+  margin-bottom: 0.5rem;
   color: #333;
 }
 
-/* Estilos para los campos de entrada de formulario */
+/* Estilos para los campos de selección (select) */
+.form select {
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  color: #000;
+  background-color: #fff;
+  appearance: none;
+  outline: none;
+  cursor: pointer;
+  margin-bottom: 2rem;
+}
+
 .form input {
   width: 100%;
   padding: 0.5rem;
   font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 5px;
-  color: #333;
+  color: #000;
+  background-color: #fff;
+  appearance: none;
+  outline: none;
+  cursor: pointer;
+  margin-bottom: 2rem;
 }
 
-/* Estilos para los campos de selección (select) */
-.form select {
+.datePicker {
   width: 100%;
   padding: 0.5rem;
   font-size: 1rem;
@@ -185,20 +208,6 @@
   color: #777;
   position: fixed;
   bottom: 0;
-}
-
-/* Estilos para el campo de selección (select) */
-.form-group select {
-  width: 100%;
-  padding: 0.5rem;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  color: #000;
-  background-color: #fff;
-  appearance: none;
-  outline: none;
-  cursor: pointer;
 }
 
 /* Estilos para la lista de "Turnos Disponibles" */
