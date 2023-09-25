@@ -101,45 +101,45 @@ def test_get_specialties_endpoint_returns_the_list_of_all_specialties():
     )
 
 
-def test_creation_of_appointment_with_no_authorization_header_returns_401_code():
-    response_to_appointment_creation_endpoint = requests.get(
+def test_get_specialties_with_no_authorization_header_returns_401_code():
+    response_to_get_specialties_endpoint = requests.get(
         "http://localhost:8080/specialties"
     )
 
-    assert response_to_appointment_creation_endpoint.status_code == 401
+    assert response_to_get_specialties_endpoint.status_code == 401
     assert (
-        response_to_appointment_creation_endpoint.json()["detail"]
+        response_to_get_specialties_endpoint.json()["detail"]
         == "User must be logged in"
     )
 
 
-def test_creation_of_appointment_with_empty_authorization_header_returns_401_code():
-    response_to_appointment_creation_endpoint = requests.get(
+def test_get_specialties_with_empty_authorization_header_returns_401_code():
+    response_to_get_specialties_endpoint = requests.get(
         "http://localhost:8080/specialties",
         headers={"Authorization": ""},
     )
 
-    assert response_to_appointment_creation_endpoint.status_code == 401
+    assert response_to_get_specialties_endpoint.status_code == 401
     assert (
-        response_to_appointment_creation_endpoint.json()["detail"]
+        response_to_get_specialties_endpoint.json()["detail"]
         == "User must be logged in"
     )
 
 
-def test_creation_of_appointment_with_empty_bearer_token_returns_401_code():
-    response_to_appointment_creation_endpoint = requests.get(
+def test_get_specialties_with_empty_bearer_token_returns_401_code():
+    response_to_get_specialties_endpoint = requests.get(
         "http://localhost:8080/specialties",
         headers={"Authorization": f"Bearer "},
     )
 
-    assert response_to_appointment_creation_endpoint.status_code == 401
+    assert response_to_get_specialties_endpoint.status_code == 401
     assert (
-        response_to_appointment_creation_endpoint.json()["detail"]
+        response_to_get_specialties_endpoint.json()["detail"]
         == "User must be logged in"
     )
 
 
-def test_creation_of_appointment_with_non_bearer_token_returns_401_code():
+def test_get_specialties_with_non_bearer_token_returns_401_code():
     response_from_login_endpoint = requests.post(
         "http://localhost:8080/users/login",
         json={
@@ -147,26 +147,26 @@ def test_creation_of_appointment_with_non_bearer_token_returns_401_code():
             "password": a_KMK_user_information["password"],
         },
     )
-    response_to_appointment_creation_endpoint = requests.get(
+    response_to_get_specialties_endpoint = requests.get(
         "http://localhost:8080/specialties",
         headers={"Authorization": response_from_login_endpoint.json()["token"]},
     )
 
-    assert response_to_appointment_creation_endpoint.status_code == 401
+    assert response_to_get_specialties_endpoint.status_code == 401
     assert (
-        response_to_appointment_creation_endpoint.json()["detail"]
+        response_to_get_specialties_endpoint.json()["detail"]
         == "User must be logged in"
     )
 
 
-def test_creation_of_appointment_with_invalid_bearer_token_returns_401_code():
-    response_to_appointment_creation_endpoint = requests.get(
+def test_get_specialties_with_invalid_bearer_token_returns_401_code():
+    response_to_get_specialties_endpoint = requests.get(
         "http://localhost:8080/specialties",
         headers={"Authorization": "Bearer smth"},
     )
 
-    assert response_to_appointment_creation_endpoint.status_code == 401
+    assert response_to_get_specialties_endpoint.status_code == 401
     assert (
-        response_to_appointment_creation_endpoint.json()["detail"]
+        response_to_get_specialties_endpoint.json()["detail"]
         == "User must be logged in"
     )

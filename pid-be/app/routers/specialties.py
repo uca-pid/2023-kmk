@@ -33,7 +33,7 @@ def get_all_specialties(uid=Depends(Auth.is_logged_in)):
     This path operation will:
 
     * Return all the specialties in the system.
-    * Throw an error if appointment retrieving fails.
+    * Throw an error if specialty retrieving fails.
     """
     try:
         specialties = Specialty.get_all()
