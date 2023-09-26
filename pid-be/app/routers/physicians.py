@@ -20,8 +20,8 @@ router = APIRouter(
     status_code=status.HTTP_200_OK,
     response_model=GetPhysiciansResponse,
     responses={
-        401: {"models": GetPhysiciansError},
-        500: {"models": GetPhysiciansError},
+        401: {"model": GetPhysiciansError},
+        500: {"model": GetPhysiciansError},
     },
 )
 def get_physicians_by_specialty(specialty_name: str, uid=Depends(Auth.is_logged_in)):
