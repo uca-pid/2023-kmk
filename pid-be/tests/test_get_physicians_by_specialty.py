@@ -21,7 +21,7 @@ specialties = [
 
 a_KMK_user_information = {
     "display_name": "KMK Test User",
-    "email": "postApppointmentTestUser@kmk.com",
+    "email": "getPhysiciansBySpecialtyTestUser@kmk.com",
     "email_verified": True,
     "password": "verySecurePassword123",
 }
