@@ -67,7 +67,7 @@ async def create_appointment(
 )
 def get_all_appointments(uid=Depends(Auth.is_logged_in)):
     """
-    Get all appointment.
+    Get all appointments.
 
     This will allow authenticated users to retrieve all their appointments.
 

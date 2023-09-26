@@ -31,10 +31,20 @@ a_valid_physician_id = "avalidphysicianid"
 another_valid_physician_id = "anothervalidphysicianid"
 
 db.collection("physicians").document(a_valid_physician_id).set(
-    {"id": a_valid_physician_id, "first_name": "Doc", "last_name": "Docson"}
+    {
+        "id": a_valid_physician_id,
+        "first_name": "Doc",
+        "last_name": "Docson",
+        "specialty": "surgeon",
+    }
 )
 db.collection("physicians").document(another_valid_physician_id).set(
-    {"id": another_valid_physician_id, "first_name": "Doctor", "last_name": "The Doc"}
+    {
+        "id": another_valid_physician_id,
+        "first_name": "Doctor",
+        "last_name": "The Doc",
+        "specialty": "surgeon",
+    }
 )
 
 an_appointment_data = {
@@ -211,6 +221,7 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects():
         "id": a_valid_physician_id,
         "first_name": "Doc",
         "last_name": "Docson",
+        "specialty": "surgeon",
     }
     assert first_appointment_to_validate["patient"] == {
         "id": a_KMK_user_information["uid"],
@@ -227,6 +238,7 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects():
         "id": another_valid_physician_id,
         "first_name": "Doctor",
         "last_name": "The Doc",
+        "specialty": "surgeon",
     }
     assert second_appointment_to_validate["patient"] == {
         "id": a_KMK_user_information["uid"],
@@ -260,6 +272,7 @@ def test_get_single_appointment_returns_appointment_object_if_valid():
         "id": a_valid_physician_id,
         "first_name": "Doc",
         "last_name": "Docson",
+        "specialty": "surgeon",
     }
     assert appointment["patient"] == {
         "id": a_KMK_user_information["uid"],
