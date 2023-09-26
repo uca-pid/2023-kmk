@@ -3,12 +3,12 @@
 import React, { useState, useEffect } from "react";
 import styles from "./dashboard.module.css";
 import { useRouter } from "next/navigation";
-import DatePicker from "react-datepicker";
+import DatePicker, { registerLocale, setDefaultLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { registerLocale, setDefaultLocale } from "react-datepicker";
 import es from "date-fns/locale/es";
 import { mockAppointments, mockDoctors, mockSpecialties } from "./mockData";
 import Modal from "react-modal";
+import withAuth from "./withAuth";
 
 registerLocale("es", es);
 
@@ -87,7 +87,6 @@ const Dashboard = () => {
   // }, [selectedDoctor]);
 
   const handleEditAppointment = (appointment) => {
-    // Abre el modal de edición y establece los valores de la cita seleccionada
     console.log(isEditModalOpen);
     setIsEditModalOpen(true);
     setEditingAppointment({
@@ -99,7 +98,6 @@ const Dashboard = () => {
   };
 
   const handleCloseEditModal = () => {
-    // Cierra el modal de edición
     setIsEditModalOpen(false);
   };
 
@@ -109,6 +107,7 @@ const Dashboard = () => {
     // Una vez guardados los cambios, cierra el modal
     // y actualiza la lista de citas o realiza cualquier otra acción necesaria
     setIsEditModalOpen(false);
+    alert("Turno modificado exitosamente");
   };
 
   const handleDeleteAppointment = (appointmentId) => {
@@ -142,7 +141,6 @@ const Dashboard = () => {
       {isEditModalOpen && (
         <Modal
           isOpen={isEditModalOpen}
-          //onAfterOpen={afterOpenModal}
           onRequestClose={handleCloseEditModal}
           style={customStyles}
           contentLabel="Example Modal"
@@ -151,9 +149,6 @@ const Dashboard = () => {
 
           <div className={styles.form}>
             <div className={styles["title"]}>Editar Cita</div>
-            {/* <div className={styles["subtitle"]}>
-              Seleccione un nuevo horario para su cita
-            </div> */}
 
             {/* Selector de fechas */}
             <label htmlFor="fecha">Fechas disponibles:</label>
@@ -189,7 +184,6 @@ const Dashboard = () => {
           </button>
         </Modal>
       )}
-
       <header className={styles.header} onClick={handleLogoClick}>
         <img src="/logo.png" alt="Logo de la empresa" className={styles.logo} />
 
@@ -204,7 +198,6 @@ const Dashboard = () => {
       <div className={styles["tab-content"]}>
         <div className={styles.form}>
           <div className={styles["title"]}>Mis Proximos Turnos</div>
-          {/* Section for displaying patient's reserved appointments */}
           <div className={styles["appointments-section"]}>
             {appointments.length > 0 ? (
               // If there are appointments, map through them and display each appointment
@@ -278,7 +271,6 @@ const Dashboard = () => {
 
           <DatePicker
             locale="es"
-            //dateFormat="dd-MM-yyyy HH:mm"
             selected={date}
             onChange={(date) => {
               setDate(date);
@@ -308,4 +300,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default withAuth(Dashboard);
