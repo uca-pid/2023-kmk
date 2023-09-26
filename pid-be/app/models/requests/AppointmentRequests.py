@@ -6,7 +6,9 @@ from app.models.entities.Physician import Physician
 
 
 class AppointmentCreationRequest(BaseModel):
-    date: int = Query(description="The _date_ must be after now")
+    date: int = Query(
+        description="Date should be in seconds. The _date_ must be after now"
+    )
     physician_id: str = Query(
         description="The _physician_id_ must be the id of an existant physician"
     )
