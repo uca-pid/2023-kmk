@@ -11,6 +11,8 @@ from app.models.responses.AdminResponses import (
 from app.models.responses.ValidationResponses import (
     SuccessfullValidationResponse,
     ValidationErrorResponse,
+    AllPendingValidationsResponse,
+    GetPendingValidationsError,
 )
 
 router = APIRouter(
@@ -95,6 +97,37 @@ async def deny_physician(
                 "approved_physician": denied_phyisician,
             },
         )
+    except:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "Internal server error"},
+        )
+
+@router.get(
+    "/pending-validations",
+    status_code=status.HTTP_200_OK,
+    response_model=AllPendingValidationsResponse,
+    responses={
+        401: {"model": GetPendingValidationsError},
+        500: {"model": GetPendingValidationsError},
+    },
+    # dependencies=[Depends(Auth.is_admin)],
+)
+def get_all_pending_validations():
+    """
+    Get all physicians pending approval.
+
+    This will allow superusers to retrieve all pending validations.
+
+    This path operation will:
+
+    * Return all of physicians pending validations.
+    * Throw an error if appointment retrieving fails.
+    """
+    try:
+        physicians_to_validate = Physician.get_pending_physicians()
+        print(physicians_to_validate)
+        return {"physicians_pending_validation": physicians_to_validate}
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
