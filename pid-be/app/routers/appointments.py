@@ -30,7 +30,7 @@ router = APIRouter(
 )
 async def create_appointment(
     appointment_creation_request: AppointmentCreationRequest,
-    patient=Depends(Auth.is_logged_in),
+    patient_id=Depends(Auth.is_logged_in),
 ):
     """
     Create an appointment.
@@ -44,7 +44,7 @@ async def create_appointment(
     * Throw an error if appointment creation fails.
     """
     appointment = Appointment(
-        **{**appointment_creation_request.dict(), "patient": patient}
+        **{**appointment_creation_request.dict(), "patient_id": patient_id}
     )
     try:
         appointment_id = appointment.create()
