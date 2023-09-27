@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import styles from "./registro.module.css";
-import signUp from "../firebase/auth/signup";
 import { useRouter } from "next/navigation"; // Importa el enrutador de Next.js
 import axios from "axios";
 
