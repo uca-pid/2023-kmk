@@ -1,3 +1,4 @@
+from datetime import datetime
 from firebase_admin import firestore
 
 db = firestore.client()
@@ -51,6 +52,41 @@ class Physician:
             db.collection("physicians").where("specialty", "==", specialty_name).get()
         )
         return [physician.to_dict() for physician in physicians]
+
+    @staticmethod
+    def has_availability(id, date):
+        physician_doc = db.collection("physicians").document(id).get().to_dict()
+        day_of_week_of_appointment = str(datetime.fromtimestamp(date).isoweekday())
+        precise_start_hour_of_appointment = (
+            datetime.fromtimestamp(date).hour + datetime.fromtimestamp(date).minute / 60
+        )
+
+        if not physician_doc["agenda"].get(day_of_week_of_appointment):
+            return False
+
+        if physician_doc.get("appointments") and physician_doc["appointments"].get(
+            str(date)
+        ):
+            return False
+
+        appointment_begins_after_shift_starts = (
+            precise_start_hour_of_appointment
+            >= physician_doc["agenda"][day_of_week_of_appointment]["start"]
+        )
+
+        appointment_finishes_before_shift_ends = (
+            precise_start_hour_of_appointment + 0.5
+            <= physician_doc["agenda"][day_of_week_of_appointment]["finish"]
+        )
+
+        return (
+            appointment_begins_after_shift_starts
+            and appointment_finishes_before_shift_ends
+        )
+
+    @staticmethod
+    def schedule_appointment(id, date):
+        db.collection("physicians").document(id).update({f"appointments.{date}": True})
 
     def create(self):
         id = db.collection("physicians").document().id
