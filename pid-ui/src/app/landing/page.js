@@ -32,18 +32,6 @@ const Landing = () => {
       );
       console.log(response.data);
 
-      if (response.status != 200) {
-        setError("Error al iniciar sesión: " + response.error);
-
-        // Verificar si el elemento .error-message está presente en el DOM
-        const errorMessageElement = document.querySelector(".error-message");
-        if (errorMessageElement) {
-          errorMessageElement.style.visibility = "visible"; // Muestra el mensaje de error
-        }
-
-        return console.log(error);
-      }
-
       // Usuario inició sesión exitosamente, puedes mostrar un mensaje de éxito.
       console.log("Inicio de sesión exitoso");
       // Redirige al usuario a la página principal u otra página deseada.
