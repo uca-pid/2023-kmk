@@ -11,18 +11,9 @@ from fastapi.responses import RedirectResponse
 from fastapi.openapi.utils import get_openapi
 
 
-# from fastapi import Request
-# import firebase_admin
-
-# Cargamos las credenciales de Firebase desde el archivo JSON
-# cred = credentials.Certificate(
-#     "credentials/pid-kmk-firebase-adminsdk-bwvix-1b5972579a.json"
-# )
-# firebase_admin.initialize_app(cred)
-
 load_dotenv()
 
-from app.routers import users, appointments, specialties, physicians
+from app.routers import users, appointments, specialties, physicians, admins
 
 
 CTX_PORT: int = int(os.environ.get("PORT")) if os.environ.get("PORT") else 8080
@@ -33,7 +24,13 @@ app.add_middleware(
     CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"]
 )
 
-routers = [users.router, appointments.router, specialties.router, physicians.router]
+routers = [
+    users.router,
+    appointments.router,
+    specialties.router,
+    physicians.router,
+    admins.router,
+]
 
 for router in routers:
     app.include_router(router)
@@ -99,6 +96,10 @@ def custom_openapi():
             {
                 "name": "Physicians",
                 "description": "Operations that handle physicians",
+            },
+            {
+                "name": "Admins",
+                "description": "Operations that are handled by admins",
             },
         ],
     )

@@ -88,6 +88,28 @@ class Physician:
     def schedule_appointment(id, date):
         db.collection("physicians").document(id).update({f"appointments.{date}": True})
 
+    @staticmethod
+    def approve_physician(id):
+        # db.collection("physicians").document(id).update({"approved": "approved"})
+        # Obtener la referencia al documento del médico en Firestore
+        physician_ref = db.collection("physicians").document(id)
+        # Actualizar el campo "approved" a "approved"
+        physician_ref.update({"approved": "approved"})
+        # physician_ref.set({"approved": "approved"}, merge=True)
+
+        return id
+
+    @staticmethod
+    def deny_physician(id):
+        # db.collection("physicians").document(id).update({"approved": "approved"})
+        # Obtener la referencia al documento del médico en Firestore
+        physician_ref = db.collection("physicians").document(id)
+        # Actualizar el campo "approved" a "approved"
+        physician_ref.update({"approved": "denied"})
+        # physician_ref.set({"approved": "approved"}, merge=True)
+
+        return id
+      
     def create(self):
         id = db.collection("physicians").document().id
         db.collection("physicians").document(id).set(
