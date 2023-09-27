@@ -24,3 +24,10 @@ class PatientRegisterRequest(BaseModel):
     last_name: str
     email: Annotated[str, Query(regex="^[-\w\.]+@([-\w]+\.)+[-\w]{2,4}$")]
     password: str
+
+
+class AdminRegisterRequest(BaseModel):
+    name: str
+    last_name: str
+    email: Annotated[str, Query(regex="^[-\w\.]+@([-\w]+\.)+[-\w]{2,4}$")]
+    password: str
