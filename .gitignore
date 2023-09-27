@@ -5,3 +5,5 @@ __pycache__/
 pid-be/credentials/credentials.json
 
 .DS_Store
+
+.vscode

@@ -1,10 +1,18 @@
 import pytest
 import time
+from datetime import datetime, timedelta
 import requests
 from .config import *
 from firebase_admin import auth, firestore
 
 db = firestore.client()
+
+today_date = datetime.fromtimestamp(round(time.time()))
+number_of_day_of_week = today_date.isoweekday()
+next_week_day = today_date + timedelta(days=7)
+next_week_day_first_block = next_week_day.replace(hour=9)
+next_week_day_second_block = next_week_day.replace(hour=10)
+next_week_day_third_block = next_week_day.replace(hour=11)
 
 a_KMK_user_information = {
     "display_name": "KMK Test User",
@@ -36,6 +44,7 @@ db.collection("physicians").document(a_valid_physician_id).set(
         "first_name": "Doc",
         "last_name": "Docson",
         "specialty": "surgeon",
+        "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
     }
 )
 db.collection("physicians").document(another_valid_physician_id).set(
@@ -44,22 +53,23 @@ db.collection("physicians").document(another_valid_physician_id).set(
         "first_name": "Doctor",
         "last_name": "The Doc",
         "specialty": "surgeon",
+        "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
     }
 )
 
 an_appointment_data = {
     "physician_id": a_valid_physician_id,
-    "date": round(time.time()) + 3600,
+    "date": round(next_week_day_first_block.timestamp()),
 }
 
 another_appointment_data = {
     "physician_id": another_valid_physician_id,
-    "date": round(time.time()) + 3600,
+    "date": round(next_week_day_second_block.timestamp()),
 }
 
 other_appointment_data = {
     "physician_id": another_valid_physician_id,
-    "date": round(time.time()) + 3600,
+    "date": round(next_week_day_third_block.timestamp()),
 }
 
 pytest.first_bearer = ""
@@ -68,7 +78,7 @@ pytest.third_bearer = ""
 
 
 @pytest.fixture(scope="session", autouse=True)
-def create_test_user():
+def create_test_environment():
     first_created_user = auth.create_user(**a_KMK_user_information)
     second_created_user = auth.create_user(**another_KMK_user_information)
     third_created_user = auth.create_user(**other_KMK_user_information)
