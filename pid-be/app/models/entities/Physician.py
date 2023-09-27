@@ -109,10 +109,9 @@ class Physician:
         # physician_ref.set({"approved": "approved"}, merge=True)
 
         return id
-      
+
     def create(self):
-        id = db.collection("physicians").document().id
-        db.collection("physicians").document(id).set(
+        db.collection("physicians").document(self.id).set(
             {
                 "id": self.id,
                 "name": self.name,
