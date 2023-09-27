@@ -11,11 +11,15 @@ const Landing = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const router = useRouter(); // Inicializa el enrutador
+  const router = useRouter();
 
   const handleLogoClick = () => {
-    // Navega al home cuando se hace clic en el logo
     router.push("/");
+  };
+
+  const handleAdminLogin = async (e) => {
+    //Autenticar con el usuario admin y redirigir a la página de administrador
+    //router.push("/admin");
   };
 
   const handleLogin = async (e) => {
@@ -97,6 +101,9 @@ const Landing = () => {
           <Link legacyBehavior href="/registro">
             <a>Registrarse</a>
           </Link>
+        </div>
+        <div className={styles["register-link"]} onClick={handleAdminLogin}>
+          <a>Admin login</a>
         </div>
       </div>
       <footer className={styles["page-footer"]}>
