@@ -15,7 +15,6 @@
 .header {
   background-color: rgb(238, 238, 238); /* Color de fondo del encabezado */
   padding: 1rem; /* Espaciado del encabezado */
-  width: 100%;
   text-align: center;
   position: fixed; /* Establece la posición como fija */
   top: 0; /* Pega el encabezado al borde superior */
@@ -25,6 +24,7 @@
   display: flex; /* Activa el diseño flexible para centrar el contenido verticalmente */
   justify-content: center; /* Centra el contenido horizontalmente */
   align-items: center; /* Centra el contenido verticalmente */
+  height: 100px; /* Fija una altura fija para el encabezado */
 }
 
 /* Estilos para los mensajes de error */
@@ -124,5 +124,8 @@
 .page-footer {
   font-size: 0.8rem;
   margin-top: 2rem;
+  margin-bottom: 2rem;
   color: #777;
+  position: relative;
+  bottom: 0;
 }
