@@ -10,6 +10,7 @@ from app.models.requests.UserRequests import (
     UserLoginRequest,
     PhysicianRegisterRequest,
     PatientRegisterRequest,
+    AdminRegisterRequest,
 )
 from app.models.responses.UserResponses import (
     SuccessfulLoginResponse,
@@ -21,6 +22,7 @@ from app.models.responses.UserResponses import (
 from app.models.entities.Auth import Auth
 from app.models.entities.Patient import Patient
 from app.models.entities.Physician import Physician
+from app.models.entities.Admin import Admin
 
 load_dotenv()
 
@@ -169,6 +171,54 @@ async def register_patient(patientRegisterRequest: PatientRegisterRequest):
         auth_uid = registerResponse.json()["localId"]
         # Usamos el mismo uid como identificador en la base de datos
         patient = Patient(**patientRegisterRequest.dict(), id=auth_uid)
+        patient.create()
+        return {"message": "Successfull registration"}
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"detail": "Internal Server Error"},
+    )
+
+
+@router.post(
+    "/register-admin",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessfullRegisterResponse,
+    responses={
+        400: {"model": RegisterErrorResponse},
+        401: {"model": RegisterErrorResponse},
+        500: {"model": RegisterErrorResponse},
+    },
+)
+async def register_admin(adminRegisterRequest: AdminRegisterRequest):
+    """
+    Register a superuser.
+    This will allow admins to register.
+    This path operation will:
+    * Register admins, performing validations on data received and on its validity.
+    * Throw an error if registration fails.
+    """
+
+    url = os.environ.get("REGISTER_URL")
+    registerResponse = requests.post(
+        url,
+        json={
+            "email": adminRegisterRequest.email,
+            "password": adminRegisterRequest.password,
+            "returnSecureToken": True,
+        },
+        params={"key": firebase_client_config["apiKey"]},
+    )
+
+    if registerResponse.status_code == 400:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"detail": "Invalid email and/or password"},
+        )
+    elif registerResponse.status_code == 200:
+        # Obtenemos el uid de autenticación de Firebase
+        auth_uid = registerResponse.json()["localId"]
+        # Usamos el mismo uid como identificador en la base de datos
+        patient = Admin(**adminRegisterRequest.dict(), id=auth_uid)
         patient.create()
         return {"message": "Successfull registration"}
     return JSONResponse(
