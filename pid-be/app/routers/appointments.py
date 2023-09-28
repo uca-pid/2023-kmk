@@ -122,3 +122,33 @@ def get_appointment_by_id(id: str, uid=Depends(Auth.is_logged_in)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal server error"},
         )
+
+
+@router.delete("/{id}", status_code=status.HTTP_200_OK)
+def delete_appointment_by_id(id: str, uid=Depends(Auth.is_logged_in)):
+    """
+    Get an appointment.
+
+    This will allow authenticated users to retrieve one of their appointments.
+
+    This path operation will:
+
+    * Return an appointments.
+    * Throw an error if appointment doesn't exist.
+    * Throw an error if appointment doesn't belong to the authenticated user.
+    * Throw an error if appointment retrieving fails.
+    """
+    try:
+        appointment = Appointment.get_by_id(id)
+        if not appointment or appointment["patient_id"] != uid:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"detail": "Invalid appointment id"},
+            )
+        Appointment.delete_by_id(id)
+        return appointment
+    except:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "Internal server error"},
+        )
