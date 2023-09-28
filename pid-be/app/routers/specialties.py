@@ -24,7 +24,7 @@ router = APIRouter(
         500: {"model": GetSpecialtyError},
     },
 )
-def get_all_specialties(uid=Depends(Auth.is_logged_in)):
+def get_all_specialties():
     """
     Get all specialties.
 
