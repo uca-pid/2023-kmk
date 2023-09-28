@@ -118,8 +118,7 @@ class Physician:
         return [physician.to_dict() for physician in physicians]
       
     def create(self):
-        id = db.collection("physicians").document().id
-        db.collection("physicians").document(id).set(
+        db.collection("physicians").document(self.id).set(
             {
                 "id": self.id,
                 "name": self.name,
