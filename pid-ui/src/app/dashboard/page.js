@@ -16,8 +16,8 @@ registerLocale("es", es);
 const Dashboard = () => {
     const router = useRouter();
     const [appointments, setAppointments] = useState([]);
-    const [doctors, setDoctors] = useState(mockDoctors);
-    const [specialties, setSpecialties] = useState(mockSpecialties);
+    const [doctors, setDoctors] = useState([]);
+    const [specialties, setSpecialties] = useState([]);
     const [availableAppointments, setAvailableAppointments] = useState([]);
     const [selectedSpecialty, setSelectedSpecialty] = useState("");
     const [selectedDoctor, setSelectedDoctor] = useState("");
@@ -51,21 +51,31 @@ const Dashboard = () => {
                 }
             }
         };
+
+        const fetchSpecialties = async () => {
+            const response = await axios.get(
+                `http://localhost:8080/specialties`
+            );
+            console.log(response.data.specialties);
+            response.data.specialties == undefined
+                ? setSpecialties([])
+                : setSpecialties(response.data.specialties);
+        };
+
         fetchAppointments();
+        fetchSpecialties();
+        console.log(specialties);
     }, []);
 
-    // // Efecto para cargar las especialidades al cargar la página
-    // useEffect(() => {
-    //   // Llamada a la API para obtener la lista de especialidades
-    //   fetch("/api/especialidades")
-    //     .then((response) => response.json())
-    //     .then((data) => {
-    //       setSpecialties(data);
-    //     })
-    //     .catch((error) => {
-    //       console.error("Error al obtener las especialidades:", error);
-    //     });
-    // }, []);
+    const fetchPhysicians = async (specialty) => {
+        const response = await axios.get(
+            `http://localhost:8080/physicians/specialty/${specialty}`
+        );
+        console.log(response.data.physicians);
+        response.data.physicians == undefined
+            ? setDoctors([])
+            : setDoctors(response.data.physicians);
+    };
 
     // // Efecto para cargar los médicos cuando se selecciona una especialidad
     // useEffect(() => {
@@ -160,7 +170,7 @@ const Dashboard = () => {
                     isOpen={isEditModalOpen}
                     onRequestClose={handleCloseEditModal}
                     style={customStyles}
-                    contentLabel="Example Modal"
+                    contentLabel='Example Modal'
                 >
                     {/* Campos de edición de especialidad, médico y fecha */}
 
@@ -168,17 +178,17 @@ const Dashboard = () => {
                         <div className={styles["title"]}>Editar Cita</div>
 
                         {/* Selector de fechas */}
-                        <label htmlFor="fecha">Fechas disponibles:</label>
+                        <label htmlFor='fecha'>Fechas disponibles:</label>
 
                         <DatePicker
-                            locale="es"
+                            locale='es'
                             //dateFormat="dd-MM-yyyy HH:mm"
                             selected={date}
                             onChange={(date) => {
                                 setDate(date);
                                 console.log(date);
                             }}
-                            timeCaption="Hora"
+                            timeCaption='Hora'
                             timeIntervals={30}
                             showPopperArrow={false}
                             showTimeSelect
@@ -203,8 +213,8 @@ const Dashboard = () => {
             )}
             <header className={styles.header} onClick={handleLogoClick}>
                 <img
-                    src="/logo.png"
-                    alt="Logo de la empresa"
+                    src='/logo.png'
+                    alt='Logo de la empresa'
                     className={styles.logo}
                 />
 
@@ -285,47 +295,50 @@ const Dashboard = () => {
                     </div>
 
                     {/* Selector de especialidades */}
-                    <label htmlFor="specialty">Especialidad:</label>
+                    <label htmlFor='specialty'>Especialidad:</label>
                     <select
-                        id="specialty"
+                        id='specialty'
                         value={selectedSpecialty}
-                        onChange={(e) => setSelectedSpecialty(e.target.value)}
+                        onChange={(e) => {
+                            setSelectedSpecialty(e.target.value);
+                            fetchPhysicians(e.target.value);
+                        }}
                     >
-                        <option value="">Selecciona una especialidad</option>
+                        <option value=''>Selecciona una especialidad</option>
                         {specialties.map((specialty) => (
-                            <option key={specialty.id} value={specialty.id}>
-                                {specialty.name}
+                            <option key={specialty} value={specialty}>
+                                {specialty}
                             </option>
                         ))}
                     </select>
 
                     {/* Selector de médicos */}
-                    <label htmlFor="doctor">Médico:</label>
+                    <label htmlFor='doctor'>Médico:</label>
                     <select
-                        id="doctor"
+                        id='doctor'
                         value={selectedDoctor}
                         onChange={(e) => setSelectedDoctor(e.target.value)}
                         disabled={!selectedSpecialty} // Deshabilita si no se ha seleccionado una especialidad
                     >
-                        <option value="">Selecciona un médico</option>
+                        <option value=''>Selecciona un médico</option>
                         {doctors.map((doctor) => (
                             <option key={doctor.id} value={doctor.id}>
-                                {doctor.name}
+                                {doctor.first_name} {doctor.last_name}
                             </option>
                         ))}
                     </select>
 
                     {/* Selector de fechas */}
-                    <label htmlFor="fecha">Fechas disponibles:</label>
+                    <label htmlFor='fecha'>Fechas disponibles:</label>
 
                     <DatePicker
-                        locale="es"
+                        locale='es'
                         selected={date}
                         onChange={(date) => {
                             setDate(date);
                             console.log(date);
                         }}
-                        timeCaption="Hora"
+                        timeCaption='Hora'
                         timeIntervals={30}
                         showPopperArrow={false}
                         showTimeSelect
@@ -333,7 +346,7 @@ const Dashboard = () => {
                     />
 
                     <button
-                        type="submit"
+                        type='submit'
                         className={styles["submit-button"]}
                         onClick={handleSubmit}
                     >
