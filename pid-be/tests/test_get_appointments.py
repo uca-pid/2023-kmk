@@ -241,6 +241,7 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects():
                     "finish_time": 18.5,
                 }
             ],
+            "appointments": [an_appointment_data["date"]],
         },
     }
     assert first_appointment_to_validate["patient"] == {
@@ -254,6 +255,9 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects():
     assert second_appointment_to_validate["date"] == another_appointment_data["date"]
     assert second_appointment_to_validate.get("physician_id") == None
     assert second_appointment_to_validate.get("patient_id") == None
+    second_appointment_to_validate["physician"]["agenda"]["appointments"] = set(
+        second_appointment_to_validate["physician"]["agenda"]["appointments"]
+    )
     assert second_appointment_to_validate["physician"] == {
         "id": another_valid_physician_id,
         "first_name": "Doctor",
@@ -268,6 +272,10 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects():
                     "finish_time": 18.5,
                 }
             ],
+            "appointments": {
+                other_appointment_data["date"],
+                another_appointment_data["date"],
+            },
         },
     }
     assert second_appointment_to_validate["patient"] == {
@@ -312,6 +320,7 @@ def test_get_single_appointment_returns_appointment_object_if_valid():
                     "finish_time": 18.5,
                 }
             ],
+            "appointments": [an_appointment_data["date"]],
         },
     }
     assert appointment["patient"] == {
