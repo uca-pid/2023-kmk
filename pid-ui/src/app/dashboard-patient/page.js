@@ -79,10 +79,10 @@ const Dashboard = () => {
                 const response = await axios.get(
                     `http://localhost:8080/appointments`
                 );
-                console.log(response.appointments);
-                response.appointments == undefined
+                console.log(response.data.appointments);
+                response.data.appointments == undefined
                     ? setAppointments([])
-                    : setAppointments(response.appointments);
+                    : setAppointments(response.data.appointments);
             } catch (error) {
                 if (error.response.data.detail == "User must be logged in") {
                     console.error(error);
@@ -140,12 +140,26 @@ const Dashboard = () => {
         alert("Turno modificado exitosamente");
     };
 
-    const handleDeleteAppointment = (appointmentId) => {
-        // Aquí puedes implementar la lógica para eliminar el turno
-        // Puedes hacer una llamada a la API o realizar otras acciones necesarias
+    const handleDeleteAppointment = async (appointmentId) => {
+        await axios.delete(
+            `http://localhost:8080/appointments/${appointmentId}`
+        );
+        alert("Turno eliminado exitosamente");
+        router.push("/dashboard");
     };
 
     const handleSubmit = async (e) => {
+        const response = await axios.post(
+            `http://localhost:8080/appointments`,
+            {
+                physician_id: selectedDoctor,
+                date: Math.round(date.getTime() / 1000),
+            }
+        );
+        console.log(response.data.specialties);
+        response.data.specialties == undefined
+            ? setSpecialties([])
+            : setSpecialties(response.data.specialties);
         alert("Turno solicitado exitosamente");
         router.push("/dashboard-patient");
     };
@@ -266,7 +280,7 @@ const Dashboard = () => {
                                                 ]
                                             }
                                         >
-                                            <button
+                                            {/* <button
                                                 className={
                                                     styles["edit-button"]
                                                 }
@@ -277,7 +291,7 @@ const Dashboard = () => {
                                                 }
                                             >
                                                 Modificar
-                                            </button>
+                                            </button> */}
 
                                             <button
                                                 className={
