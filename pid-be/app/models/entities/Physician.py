@@ -109,10 +109,16 @@ class Physician:
         # physician_ref.set({"approved": "approved"}, merge=True)
 
         return id
+    
+    @staticmethod
+    def get_pending_physicians():
+        physicians = (
+            db.collection("physicians").where("approved", "==", "pending").get()
+        )
+        return [physician.to_dict() for physician in physicians]
       
     def create(self):
-        id = db.collection("physicians").document().id
-        db.collection("physicians").document(id).set(
+        db.collection("physicians").document(self.id).set(
             {
                 "id": self.id,
                 "name": self.name,

@@ -26,8 +26,7 @@ class Patient:
         return db.collection("patients").document(id).get().to_dict()
 
     def create(self):
-        id = db.collection("patients").document().id
-        db.collection("patients").document(id).set(
+        db.collection("patients").document(self.id).set(
             {
                 "id": self.id,
                 "name": self.name,
