@@ -87,7 +87,7 @@ def get_all_appointments(uid=Depends(Auth.is_logged_in)):
 
 
 @router.get(
-    "/",
+    "/physician/",
     status_code=status.HTTP_200_OK,
     response_model=AllAppointmentsResponse,
     responses={
