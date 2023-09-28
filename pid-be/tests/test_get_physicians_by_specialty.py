@@ -1,5 +1,7 @@
 import pytest
 import requests
+import time
+from datetime import datetime
 from .config import *
 from firebase_admin import firestore, auth
 
@@ -19,6 +21,9 @@ specialties = [
     "psychiatry",
 ]
 
+today_date = datetime.fromtimestamp(round(time.time()))
+number_of_day_of_week = today_date.isoweekday()
+
 a_KMK_user_information = {
     "display_name": "KMK Test User",
     "email": "getPhysiciansBySpecialtyTestUser@kmk.com",
@@ -31,6 +36,7 @@ a_physician_information = {
     "first_name": "Doc",
     "last_name": "Docson",
     "specialty": specialties[0],
+    "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
 }
 
 another_physician_information = {
@@ -38,6 +44,7 @@ another_physician_information = {
     "first_name": "Doc",
     "last_name": "Docson the Second",
     "specialty": specialties[0],
+    "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
 }
 
 other_physician_information = {
@@ -45,6 +52,7 @@ other_physician_information = {
     "first_name": "Doc",
     "last_name": "Docson the Third",
     "specialty": specialties[1],
+    "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
 }
 
 
@@ -207,6 +215,20 @@ def test_valid_request_to_get_physicians_endpoint_for_first_specialty_returns_a_
     assert (
         first_physician_to_assert["specialty"] == a_physician_information["specialty"]
     )
+    assert first_physician_to_assert["agenda"]["working_days"] == [
+        number_of_day_of_week
+    ]
+    assert first_physician_to_assert["agenda"]["working_hours"] == [
+        {
+            "day_of_week": number_of_day_of_week,
+            "start_time": a_physician_information["agenda"][str(number_of_day_of_week)][
+                "start"
+            ],
+            "finish_time": a_physician_information["agenda"][
+                str(number_of_day_of_week)
+            ]["finish"],
+        }
+    ]
 
     assert second_physician_to_assert["id"] == another_physician_information["id"]
     assert (
@@ -221,6 +243,20 @@ def test_valid_request_to_get_physicians_endpoint_for_first_specialty_returns_a_
         second_physician_to_assert["specialty"]
         == another_physician_information["specialty"]
     )
+    assert second_physician_to_assert["agenda"]["working_days"] == [
+        number_of_day_of_week
+    ]
+    assert second_physician_to_assert["agenda"]["working_hours"] == [
+        {
+            "day_of_week": number_of_day_of_week,
+            "start_time": another_physician_information["agenda"][
+                str(number_of_day_of_week)
+            ]["start"],
+            "finish_time": another_physician_information["agenda"][
+                str(number_of_day_of_week)
+            ]["finish"],
+        }
+    ]
 
 
 def test_get_physicians_by_specialty_with_no_authorization_header_returns_401_code():
