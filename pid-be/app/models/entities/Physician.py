@@ -117,6 +117,12 @@ class Physician:
         )
         return [physician.to_dict() for physician in physicians]
       
+    @staticmethod
+    def is_physician(id):
+        if db.collection("physicians").document(id).get().to_dict():
+            return True
+        return False
+
     def create(self):
         db.collection("physicians").document(self.id).set(
             {

@@ -255,7 +255,13 @@ def get_user_profile(user_id: str):
             # user is admin
             return {"profile": "Admin"}
         else:
-            return {"profile": "User"}
+            if Patient.is_patient(user_id):
+                # user is patient
+                return {"profile": "Patient"}
+            elif Physician.is_physician(user_id):
+                # user is physician
+                return {"profile": "Physician"}
+            
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
