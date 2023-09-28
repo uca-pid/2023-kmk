@@ -15,6 +15,7 @@ const Landing = () => {
 
     useEffect(() => {
         localStorage.setItem("token", "");
+        axios.delete;
     }, []);
 
     const handleLogoClick = () => {

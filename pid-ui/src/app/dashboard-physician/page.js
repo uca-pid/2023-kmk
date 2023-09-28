@@ -230,6 +230,7 @@ const Dashboard = () => {
                     height={200}
                     onClick={() => {
                         localStorage.removeItem("token");
+                        axios.delete;
                         router.push("/");
                     }}
                 />
