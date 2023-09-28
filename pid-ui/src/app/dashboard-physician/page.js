@@ -77,7 +77,7 @@ const Dashboard = () => {
         const fetchAppointments = async () => {
             try {
                 const response = await axios.get(
-                    `http://localhost:8080/appointments`
+                    `http://localhost:8080/appointments/physician`
                 );
                 console.log(response.appointments);
                 response.appointments == undefined
@@ -172,7 +172,7 @@ const Dashboard = () => {
                     isOpen={isEditModalOpen}
                     onRequestClose={handleCloseEditModal}
                     style={customStyles}
-                    contentLabel="Example Modal"
+                    contentLabel='Example Modal'
                 >
                     {/* Campos de edición de especialidad, médico y fecha */}
 
@@ -180,17 +180,17 @@ const Dashboard = () => {
                         <div className={styles["title"]}>Editar Cita</div>
 
                         {/* Selector de fechas */}
-                        <label htmlFor="fecha">Fechas disponibles:</label>
+                        <label htmlFor='fecha'>Fechas disponibles:</label>
 
                         <DatePicker
-                            locale="es"
+                            locale='es'
                             //dateFormat="dd-MM-yyyy HH:mm"
                             selected={date}
                             onChange={(date) => {
                                 setDate(date);
                                 console.log(date);
                             }}
-                            timeCaption="Hora"
+                            timeCaption='Hora'
                             timeIntervals={30}
                             showPopperArrow={false}
                             showTimeSelect
@@ -215,16 +215,16 @@ const Dashboard = () => {
             )}
             <header className={styles.header}>
                 <Image
-                    src="/logo.png"
-                    alt="Logo de la empresa"
+                    src='/logo.png'
+                    alt='Logo de la empresa'
                     className={styles.logo}
                     width={200}
                     height={200}
                     onClick={handleLogoClick}
                 />
                 <Image
-                    src="/logout-icon.png"
-                    alt="CerrarSesion"
+                    src='/logout-icon.png'
+                    alt='CerrarSesion'
                     className={styles["logout-icon"]}
                     width={200}
                     height={200}
