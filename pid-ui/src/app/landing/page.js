@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import styles from "./landing.module.css";
 import { useRouter } from "next/navigation";
@@ -11,6 +11,10 @@ const Landing = () => {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const router = useRouter();
+
+    useEffect(() => {
+        localStorage.setItem("token", "");
+    }, []);
 
     const handleLogoClick = () => {
         router.push("/");
