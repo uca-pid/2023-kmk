@@ -15,7 +15,6 @@ registerLocale("es", es);
 
 const Dashboard = () => {
     const router = useRouter();
-    const [bearerToken, setBearerToken] = useState("");
     const [appointments, setAppointments] = useState([]);
     const [doctors, setDoctors] = useState(mockDoctors);
     const [specialties, setSpecialties] = useState(mockSpecialties);
@@ -32,10 +31,8 @@ const Dashboard = () => {
     });
 
     useEffect(() => {
-        setBearerToken(localStorage.getItem("token"));
-        console.log(bearerToken);
         axios.defaults.headers.common = {
-            Authorization: `bearer ${bearerToken}`,
+            Authorization: `bearer ${localStorage.getItem("token")}`,
         };
 
         const fetchAppointments = async () => {
@@ -44,11 +41,14 @@ const Dashboard = () => {
                     `http://localhost:8080/appointments`
                 );
                 console.log(response.appointments);
-                setAppointments(response.appointments);
+                response.appointments == undefined
+                    ? setAppointments([])
+                    : setAppointments(response.appointments);
             } catch (error) {
-                if (error.response.data.detail == "User must be logged in")
-                    setAppointments(mockAppointments);
-                console.error(error);
+                if (error.response.data.detail == "User must be logged in") {
+                    console.error(error);
+                    router.push("/");
+                }
             }
         };
         fetchAppointments();
