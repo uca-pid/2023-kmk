@@ -232,6 +232,16 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects():
         "first_name": "Doc",
         "last_name": "Docson",
         "specialty": "surgeon",
+        "agenda": {
+            "working_days": [number_of_day_of_week],
+            "working_hours": [
+                {
+                    "day_of_week": number_of_day_of_week,
+                    "start_time": 8,
+                    "finish_time": 18.5,
+                }
+            ],
+        },
     }
     assert first_appointment_to_validate["patient"] == {
         "id": a_KMK_user_information["uid"],
@@ -249,6 +259,16 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects():
         "first_name": "Doctor",
         "last_name": "The Doc",
         "specialty": "surgeon",
+        "agenda": {
+            "working_days": [number_of_day_of_week],
+            "working_hours": [
+                {
+                    "day_of_week": number_of_day_of_week,
+                    "start_time": 8,
+                    "finish_time": 18.5,
+                }
+            ],
+        },
     }
     assert second_appointment_to_validate["patient"] == {
         "id": a_KMK_user_information["uid"],
@@ -283,6 +303,16 @@ def test_get_single_appointment_returns_appointment_object_if_valid():
         "first_name": "Doc",
         "last_name": "Docson",
         "specialty": "surgeon",
+        "agenda": {
+            "working_days": [number_of_day_of_week],
+            "working_hours": [
+                {
+                    "day_of_week": number_of_day_of_week,
+                    "start_time": 8,
+                    "finish_time": 18.5,
+                }
+            ],
+        },
     }
     assert appointment["patient"] == {
         "id": a_KMK_user_information["uid"],
