@@ -87,6 +87,27 @@ def get_all_appointments(uid=Depends(Auth.is_logged_in)):
 
 
 @router.get(
+    "/physician/",
+    status_code=status.HTTP_200_OK,
+    response_model=AllAppointmentsResponse,
+    responses={
+        401: {"model": GetAppointmentError},
+        500: {"model": GetAppointmentError},
+    },
+)
+def get_all_physicians_appointments(uid=Depends(Auth.is_logged_in)):
+    """ """
+    try:
+        appointments = Appointment.get_all_appointments_for_physician_with(uid)
+        return {"appointments": appointments}
+    except:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "Internal server error"},
+        )
+
+
+@router.get(
     "/{id}",
     status_code=status.HTTP_200_OK,
     response_model=BasicAppointmentResponse,
@@ -126,18 +147,7 @@ def get_appointment_by_id(id: str, uid=Depends(Auth.is_logged_in)):
 
 @router.delete("/{id}", status_code=status.HTTP_200_OK)
 def delete_appointment_by_id(id: str, uid=Depends(Auth.is_logged_in)):
-    """
-    Get an appointment.
-
-    This will allow authenticated users to retrieve one of their appointments.
-
-    This path operation will:
-
-    * Return an appointments.
-    * Throw an error if appointment doesn't exist.
-    * Throw an error if appointment doesn't belong to the authenticated user.
-    * Throw an error if appointment retrieving fails.
-    """
+    """ """
     try:
         appointment = Appointment.get_by_id(id)
         if not appointment or appointment["patient_id"] != uid:
