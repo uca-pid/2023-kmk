@@ -28,8 +28,7 @@ class Admin:
         return False
 
     def create(self):
-        id = db.collection("superusers").document().id
-        db.collection("superusers").document(id).set(
+        db.collection("superusers").document(self.id).set(
             {
                 "id": self.id,
                 "name": self.name,

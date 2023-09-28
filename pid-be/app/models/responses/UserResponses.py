@@ -15,3 +15,9 @@ class SuccessfullRegisterResponse(BaseModel):
 
 class RegisterErrorResponse(BaseModel):
     detail: str
+
+class UserProfileResponse(BaseModel):
+    profile: str
+
+class UserProfileErrorResponse(BaseModel):
+    detail: str

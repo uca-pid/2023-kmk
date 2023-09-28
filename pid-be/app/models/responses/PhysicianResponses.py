@@ -11,7 +11,14 @@ class PhysicianResponse(BaseModel):
     agenda: AgendaResponse
 
     def __init__(self, **data):
-        data["agenda"] = AgendaResponse(**{"agenda": data["agenda"]}).dict()
+        data["agenda"] = AgendaResponse(
+            **{
+                "agenda": data["agenda"],
+                "appointments": list(data["appointments"].keys())
+                if data.get("appointments")
+                else [],
+            }
+        ).dict()
         super().__init__(**data)
 
 

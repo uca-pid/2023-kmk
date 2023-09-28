@@ -10,6 +10,7 @@ class HoursAgendaResponse(BaseModel):
 class AgendaResponse(BaseModel):
     working_days: list[int]
     working_hours: list[HoursAgendaResponse]
+    appointments: list[int]
 
     def __init__(self, **data) -> None:
         parsed_data = {}

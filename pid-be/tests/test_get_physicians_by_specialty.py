@@ -218,6 +218,7 @@ def test_valid_request_to_get_physicians_endpoint_for_first_specialty_returns_a_
     assert first_physician_to_assert["agenda"]["working_days"] == [
         number_of_day_of_week
     ]
+    assert first_physician_to_assert["agenda"]["appointments"] == []
     assert first_physician_to_assert["agenda"]["working_hours"] == [
         {
             "day_of_week": number_of_day_of_week,
@@ -246,6 +247,7 @@ def test_valid_request_to_get_physicians_endpoint_for_first_specialty_returns_a_
     assert second_physician_to_assert["agenda"]["working_days"] == [
         number_of_day_of_week
     ]
+    assert second_physician_to_assert["agenda"]["appointments"] == []
     assert second_physician_to_assert["agenda"]["working_hours"] == [
         {
             "day_of_week": number_of_day_of_week,

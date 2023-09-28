@@ -21,6 +21,7 @@ const Dashboard = () => {
     const [availableAppointments, setAvailableAppointments] = useState([]);
     const [selectedSpecialty, setSelectedSpecialty] = useState("");
     const [selectedDoctor, setSelectedDoctor] = useState("");
+    const [physiciansAgenda, setPhysiciansAgenda] = useState({});
     const [date, setDate] = useState(new Date());
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingAppointment, setEditingAppointment] = useState({
@@ -294,12 +295,23 @@ const Dashboard = () => {
                     <select
                         id="doctor"
                         value={selectedDoctor}
-                        onChange={(e) => setSelectedDoctor(e.target.value)}
+                        onChange={(e) => {
+                            setSelectedDoctor(e.target.value);
+                            setPhysiciansAgenda(
+                                doctors.filter(
+                                    (doctor) => doctor.id == e.target.value
+                                )[0].agenda
+                            );
+                        }}
                         disabled={!selectedSpecialty} // Deshabilita si no se ha seleccionado una especialidad
                     >
                         <option value="">Selecciona un médico</option>
                         {doctors.map((doctor) => (
-                            <option key={doctor.id} value={doctor.id}>
+                            <option
+                                key={doctor.id}
+                                value={doctor.id}
+                                agenda={doctor.agenda}
+                            >
                                 {doctor.first_name} {doctor.last_name}
                             </option>
                         ))}
@@ -313,13 +325,44 @@ const Dashboard = () => {
                         selected={date}
                         onChange={(date) => {
                             setDate(date);
-                            console.log(date);
                         }}
                         timeCaption="Hora"
                         timeIntervals={30}
                         showPopperArrow={false}
                         showTimeSelect
                         inline
+                        filterDate={(date) => {
+                            if (physiciansAgenda.working_days) {
+                                return physiciansAgenda.working_days.includes(
+                                    date.getDay()
+                                );
+                            }
+                            return false;
+                        }}
+                        minDate={new Date()}
+                        filterTime={(time) => {
+                            if (
+                                physiciansAgenda.appointments &&
+                                !physiciansAgenda.appointments.includes(
+                                    Math.round(time.getTime() / 1000)
+                                ) &&
+                                physiciansAgenda.working_hours
+                            ) {
+                                let workingHour =
+                                    physiciansAgenda.working_hours.filter(
+                                        (workingHour) =>
+                                            workingHour.day_of_week ===
+                                            date.getDay()
+                                    )[0];
+                                let parsedTime =
+                                    time.getHours() + time.getMinutes() / 60;
+                                return (
+                                    workingHour.start_time <= parsedTime &&
+                                    workingHour.finish_time >= parsedTime
+                                );
+                            }
+                            return false;
+                        }}
                     />
 
                     <button

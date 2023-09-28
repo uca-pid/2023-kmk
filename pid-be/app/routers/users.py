@@ -17,6 +17,8 @@ from app.models.responses.UserResponses import (
     LoginErrorResponse,
     SuccessfullRegisterResponse,
     RegisterErrorResponse,
+    UserProfileResponse,
+    UserProfileErrorResponse
 )
 
 from app.models.entities.Auth import Auth
@@ -218,10 +220,50 @@ async def register_admin(adminRegisterRequest: AdminRegisterRequest):
         # Obtenemos el uid de autenticación de Firebase
         auth_uid = registerResponse.json()["localId"]
         # Usamos el mismo uid como identificador en la base de datos
-        patient = Admin(**adminRegisterRequest.dict(), id=auth_uid)
-        patient.create()
+        admin = Admin(**adminRegisterRequest.dict(), id=auth_uid)
+        admin.create()
         return {"message": "Successfull registration"}
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={"detail": "Internal Server Error"},
     )
+
+@router.get(
+    "/profile/{user_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=UserProfileResponse,
+    responses={
+        401: {"model": UserProfileErrorResponse},
+        500: {"model": UserProfileErrorResponse},
+    },
+    # dependencies=[Depends(Auth.is_admin)],
+)
+def get_user_profile(user_id: str):
+    """
+    Get a user profile.
+
+    This will return the user profile.
+
+    This path operation will:
+
+    * Return the user profile.
+    * Throw an error if user profile retrieving fails.
+    """
+    try:
+        #chequear si el usuario es admin
+        if Admin.is_admin(user_id):
+            # user is admin
+            return {"profile": "Admin"}
+        else:
+            if Patient.is_patient(user_id):
+                # user is patient
+                return {"profile": "Patient"}
+            elif Physician.is_physician(user_id):
+                # user is physician
+                return {"profile": "Physician"}
+            
+    except:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "Internal server error"},
+        )
