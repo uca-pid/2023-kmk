@@ -23,6 +23,8 @@ const Landing = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        localStorage.setItem("token", "");
+
         const userData = {
             email,
             password,

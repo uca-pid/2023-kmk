@@ -41,6 +41,17 @@
     cursor: pointer;
 }
 
+.logout-icon {
+    width: 35px;
+    height: auto;
+    cursor: pointer;
+    position: absolute;
+    right: 2rem;
+}
+.logout-icon:hover {
+    filter: brightness(0.8);
+}
+
 /* Estilos para el título de la página de inicio de sesión */
 .title {
     font-size: 2rem;

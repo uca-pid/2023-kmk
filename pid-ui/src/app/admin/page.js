@@ -9,14 +9,26 @@ import axios from "axios";
 const Admin = () => {
     const router = useRouter();
     const [specialties, setSpecialties] = useState([]);
-    const [selectedSpecialty, setSelectedSpecialty] = useState("");
-    const [selectedDoctor, setSelectedDoctor] = useState("");
-    const [date, setDate] = useState(new Date());
     const [doctors, setDoctors] = useState([]);
 
     useEffect(() => {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
+        };
+
+        const checkUserIsAdmin = async () => {
+            try {
+                const response = await axios.get(
+                    `http://localhost:8080/get-user-profile`
+                );
+                console.log(response.data);
+                if (response.data.user.role != "admin") {
+                    alert("No tiene permisos para acceder a esta página");
+                    router.push("/");
+                }
+            } catch (error) {
+                console.log(error);
+            }
         };
 
         const fetchSpecialties = async () => {
@@ -41,6 +53,7 @@ const Admin = () => {
             }
         };
 
+        checkUserIsAdmin();
         fetchPhysicians();
     }, []);
 
@@ -78,13 +91,25 @@ const Admin = () => {
 
     return (
         <div className={styles.admin}>
-            <header className={styles.header} onClick={handleLogoClick}>
+            <header className={styles.header}>
                 <Image
                     src="/logo.png"
                     alt="Logo de la empresa"
                     className={styles.logo}
                     width={200}
                     height={200}
+                    onClick={handleLogoClick}
+                />
+                <Image
+                    src="/logout-icon.png"
+                    alt="CerrarSesion"
+                    className={styles["logout-icon"]}
+                    width={200}
+                    height={200}
+                    onClick={() => {
+                        localStorage.removeItem("token");
+                        router.push("/");
+                    }}
                 />
             </header>
 

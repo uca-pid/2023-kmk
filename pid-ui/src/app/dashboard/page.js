@@ -174,13 +174,25 @@ const Dashboard = () => {
                     </button>
                 </Modal>
             )}
-            <header className={styles.header} onClick={handleLogoClick}>
+            <header className={styles.header}>
                 <Image
                     src="/logo.png"
                     alt="Logo de la empresa"
                     className={styles.logo}
                     width={200}
                     height={200}
+                    onClick={handleLogoClick}
+                />
+                <Image
+                    src="/logout-icon.png"
+                    alt="CerrarSesion"
+                    className={styles["logout-icon"]}
+                    width={200}
+                    height={200}
+                    onClick={() => {
+                        localStorage.removeItem("token");
+                        router.push("/");
+                    }}
                 />
 
                 <div className={styles["tab-bar"]}>
