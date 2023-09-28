@@ -24,6 +24,12 @@ class Patient:
     @staticmethod
     def get_by_id(id):
         return db.collection("patients").document(id).get().to_dict()
+    
+    @staticmethod
+    def is_patient(id):
+        if db.collection("patients").document(id).get().to_dict():
+            return True
+        return False
 
     def create(self):
         db.collection("patients").document(self.id).set(
