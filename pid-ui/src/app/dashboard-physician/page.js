@@ -35,6 +35,45 @@ const Dashboard = () => {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
 
+        const userCheck = async () => {
+            console.log("Checking user profile");
+
+            try {
+                const response = await axios.get(
+                    `http://localhost:8080/users/profile/`
+                );
+
+                console.log(response.data.profile);
+                switch (response.data.profile) {
+                    case "Admin":
+                        console.log("Checking if admin");
+                        router.push("/dashboard-admin");
+                        break;
+                    case "Physician":
+                        console.log("Checking if physician");
+                        router.push("/dashboard-physician");
+                        break;
+                    case "Patient":
+                        console.log("Checking if patient");
+                        router.push("/dashboard-patient");
+                        break;
+                    default:
+                        console.log("Error");
+                        break;
+                }
+            } catch (error) {
+                console.log(error.response.data.detail);
+                switch (error.response.data.detail) {
+                    case "User must be logged in":
+                        router.push("/");
+                        break;
+                    case "User has already logged in":
+                        router.push("/dashboard-redirect");
+                        break;
+                }
+            }
+        };
+
         const fetchAppointments = async () => {
             try {
                 const response = await axios.get(
@@ -61,7 +100,7 @@ const Dashboard = () => {
                 ? setSpecialties([])
                 : setSpecialties(response.data.specialties);
         };
-
+        userCheck();
         fetchAppointments();
         fetchSpecialties();
         console.log(specialties);

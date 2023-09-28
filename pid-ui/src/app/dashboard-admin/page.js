@@ -16,31 +16,43 @@ const Admin = () => {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
 
-        const checkUserIsAdmin = async () => {
+        const userCheck = async () => {
+            console.log("Checking user profile");
+
             try {
                 const response = await axios.get(
-                    `http://localhost:8080/users/profile/${localStorage.getItem(
-                        user_id
-                    )}}`
+                    `http://localhost:8080/users/profile/`
                 );
-                console.log(response.data);
-                if (response.data.user.role != "admin") {
-                    alert("No tiene permisos para acceder a esta página");
-                    router.push("/");
+
+                console.log(response.data.profile);
+                switch (response.data.profile) {
+                    case "Admin":
+                        console.log("Checking if admin");
+                        router.push("/dashboard-admin");
+                        break;
+                    case "Physician":
+                        console.log("Checking if physician");
+                        router.push("/dashboard-physician");
+                        break;
+                    case "Patient":
+                        console.log("Checking if patient");
+                        router.push("/dashboard-patient");
+                        break;
+                    default:
+                        console.log("Error");
+                        break;
                 }
             } catch (error) {
-                console.log(error);
+                console.log(error.response.data.detail);
+                switch (error.response.data.detail) {
+                    case "User must be logged in":
+                        router.push("/");
+                        break;
+                    case "User has already logged in":
+                        router.push("/dashboard-redirect");
+                        break;
+                }
             }
-        };
-
-        const fetchSpecialties = async () => {
-            const response = await axios.get(
-                `http://localhost:8080/specialties`
-            );
-            console.log(response.data.specialties);
-            response.data.specialties == undefined
-                ? setSpecialties([])
-                : setSpecialties(response.data.specialties);
         };
 
         const fetchPhysicians = async () => {
@@ -55,7 +67,7 @@ const Admin = () => {
             }
         };
 
-        checkUserIsAdmin();
+        checkUserProfile();
         fetchPhysicians();
     }, []);
 

@@ -6,7 +6,7 @@ import styles from "./dashboard-redirect.module.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
-const Admin = () => {
+const Redirect = () => {
     const router = useRouter();
 
     useEffect(() => {
@@ -14,24 +14,45 @@ const Admin = () => {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
 
-        let token = localStorage.getItem("token");
+        const userCheck = async () => {
+            console.log("Checking user profile");
 
-        const checkUserIsAdmin = async () => {
             try {
                 const response = await axios.get(
-                    `http://localhost:8080/users/profile/`,
-                    token
+                    `http://localhost:8080/users/profile/`
                 );
-                console.log(response.data);
-                if (response.data.user.role != "admin") {
-                    alert("No tiene permisos para acceder a esta página");
-                    router.push("/");
+
+                console.log(response.data.profile);
+                switch (response.data.profile) {
+                    case "Admin":
+                        console.log("Checking if admin");
+                        router.push("/dashboard-admin");
+                        break;
+                    case "Physician":
+                        console.log("Checking if physician");
+                        router.push("/dashboard-physician");
+                        break;
+                    case "Patient":
+                        console.log("Checking if patient");
+                        router.push("/dashboard-patient");
+                        break;
+                    default:
+                        console.log("Error");
+                        break;
                 }
             } catch (error) {
-                console.log(error);
+                console.log(error.response.data.detail);
+                switch (error.response.data.detail) {
+                    case "User must be logged in":
+                        router.push("/");
+                        break;
+                    case "User has already logged in":
+                        router.push("/dashboard-redirect");
+                        break;
+                }
             }
         };
-        checkUserIsAdmin();
+        userCheck();
     }, []);
 
     return (
@@ -66,4 +87,4 @@ const Admin = () => {
     );
 };
 
-export default Admin;
+export default Redirect;
