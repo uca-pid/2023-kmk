@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import styles from "./landing.module.css";
-import { useRouter } from "next/navigation"; // Importa el enrutador de Next.js
+import { useRouter } from "next/navigation";
 import axios from "axios";
 
 const Landing = () => {
@@ -28,8 +28,7 @@ const Landing = () => {
                 `http://localhost:8080/users/login`,
                 userData
             );
-            console.log(response.data);
-            console.log("Inicio de sesión exitoso");
+            localStorage.setItem("token", response.data.token);
             router.push("/dashboard");
         } catch (error) {
             setError("Error al iniciar sesión: " + error.response.data.detail);
@@ -42,9 +41,6 @@ const Landing = () => {
             }
 
             return console.log(error);
-
-            // Error en la función signIn, manejar de acuerdo a tus necesidades.
-            console.error(error);
         }
     };
 
@@ -52,7 +48,7 @@ const Landing = () => {
         <div className={styles["login-page"]}>
             <header className={styles["header"]} onClick={handleLogoClick}>
                 <img
-                    src="/logo.png" // Reemplaza con la ruta de tu logo
+                    src="/logo.png"
                     alt="Logo de la empresa"
                     className={styles["logo"]}
                 />

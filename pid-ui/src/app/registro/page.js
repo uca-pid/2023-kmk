@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import styles from "./registro.module.css";
-import { useRouter } from "next/navigation"; // Importa el enrutador de Next.js
+import { useRouter } from "next/navigation";
 import axios from "axios";
 
 const Registro = () => {
@@ -16,10 +16,9 @@ const Registro = () => {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
     const [role, setRole] = useState("paciente");
-    const router = useRouter(); // Inicializa el enrutador
+    const router = useRouter();
 
     const handleLogoClick = () => {
-        // Navega al home cuando se hace clic en el logo
         router.push("/");
     };
 
@@ -54,7 +53,6 @@ const Registro = () => {
             if (response.data) {
                 console.log("Registro exitoso");
                 alert("Se ha registrado exitosamente");
-                // Redirige al usuario a la página home u otra página deseada.
                 router.push("/");
             }
         } catch (error) {
@@ -67,7 +65,7 @@ const Registro = () => {
         <div className={styles["registro"]}>
             <header className={styles["header"]} onClick={handleLogoClick}>
                 <img
-                    src="/logo.png" // Reemplaza con la ruta de tu logo
+                    src="/logo.png"
                     alt="Logo de la empresa"
                     className={styles["logo"]}
                 />
