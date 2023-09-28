@@ -229,7 +229,7 @@ async def register_admin(adminRegisterRequest: AdminRegisterRequest):
     )
 
 @router.get(
-    "/profile/{user_id}",
+    "/profile",
     status_code=status.HTTP_200_OK,
     response_model=UserProfileResponse,
     responses={
@@ -238,7 +238,7 @@ async def register_admin(adminRegisterRequest: AdminRegisterRequest):
     },
     # dependencies=[Depends(Auth.is_admin)],
 )
-def get_user_profile(user_id: str):
+def get_user_profile(user_id=Depends(Auth.is_logged_in)):
     """
     Get a user profile.
 

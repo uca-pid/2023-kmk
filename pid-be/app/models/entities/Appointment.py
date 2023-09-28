@@ -35,6 +35,10 @@ class Appointment:
     def get_by_id(id):
         return db.collection("appointments").document(id).get().to_dict()
 
+    @staticmethod
+    def delete_by_id(id):
+        db.collection("appointments").document(id).delete()
+
     def create(self):
         id = db.collection("appointments").document().id
         db.collection("appointments").document(id).set(

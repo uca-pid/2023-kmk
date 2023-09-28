@@ -1,14 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import styles from "./dashboard.module.css";
+import Image from "next/image";
+import styles from "./dashboard-physician.module.css";
 import { useRouter } from "next/navigation";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import es from "date-fns/locale/es";
-import { mockAppointments, mockDoctors, mockSpecialties } from "./mockData";
 import Modal from "react-modal";
-import withAuth from "./withAuth";
 import axios from "axios";
 
 registerLocale("es", es);
@@ -34,6 +33,45 @@ const Dashboard = () => {
     useEffect(() => {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
+        };
+
+        const userCheck = async () => {
+            console.log("Checking user profile");
+
+            try {
+                const response = await axios.get(
+                    `http://localhost:8080/users/profile/`
+                );
+
+                console.log(response.data.profile);
+                switch (response.data.profile) {
+                    case "Admin":
+                        console.log("Checking if admin");
+                        router.push("/dashboard-admin");
+                        break;
+                    case "Physician":
+                        console.log("Checking if physician");
+                        router.push("/dashboard-physician");
+                        break;
+                    case "Patient":
+                        console.log("Checking if patient");
+                        router.push("/dashboard-patient");
+                        break;
+                    default:
+                        console.log("Error");
+                        break;
+                }
+            } catch (error) {
+                console.log(error.response.data.detail);
+                switch (error.response.data.detail) {
+                    case "User must be logged in":
+                        router.push("/");
+                        break;
+                    case "User has already logged in":
+                        router.push("/dashboard-redirect");
+                        break;
+                }
+            }
         };
 
         const fetchAppointments = async () => {
@@ -62,7 +100,7 @@ const Dashboard = () => {
                 ? setSpecialties([])
                 : setSpecialties(response.data.specialties);
         };
-
+        userCheck();
         fetchAppointments();
         fetchSpecialties();
         console.log(specialties);
@@ -77,42 +115,6 @@ const Dashboard = () => {
             ? setDoctors([])
             : setDoctors(response.data.physicians);
     };
-
-    // // Efecto para cargar los médicos cuando se selecciona una especialidad
-    // useEffect(() => {
-    //   if (selectedSpecialty) {
-    //     // Llamada a la API para obtener la lista de médicos para la especialidad seleccionada
-    //     fetch(`/api/medicos?especialidad=${selectedSpecialty}`)
-    //       .then((response) => response.json())
-    //       .then((data) => {
-    //         setDoctors(data);
-    //       })
-    //       .catch((error) => {
-    //         console.error("Error al obtener los médicos:", error);
-    //       });
-    //   } else {
-    //     // Si no se selecciona una especialidad, borra la lista de médicos
-    //     setDoctors([]);
-    //   }
-    // }, [selectedSpecialty]);
-
-    // // Efecto para cargar los turnos disponibles cuando se selecciona un médico
-    // useEffect(() => {
-    //   if (selectedDoctor) {
-    //     // Llamada a la API para obtener los turnos disponibles para el médico seleccionado
-    //     fetch(`/api/turnos?medico=${selectedDoctor}`)
-    //       .then((response) => response.json())
-    //       .then((data) => {
-    //         setAvailableAppointments(data);
-    //       })
-    //       .catch((error) => {
-    //         console.error("Error al obtener los turnos disponibles:", error);
-    //       });
-    //   } else {
-    //     // Si no se selecciona un médico, borra la lista de turnos disponibles
-    //     setAvailableAppointments([]);
-    //   }
-    // }, [selectedDoctor]);
 
     const handleEditAppointment = (appointment) => {
         console.log(isEditModalOpen);
@@ -151,7 +153,6 @@ const Dashboard = () => {
     const handleLogoClick = () => {
         router.push("/dashboard");
     };
-
     const customStyles = {
         content: {
             top: "50%",
@@ -171,7 +172,7 @@ const Dashboard = () => {
                     isOpen={isEditModalOpen}
                     onRequestClose={handleCloseEditModal}
                     style={customStyles}
-                    contentLabel='Example Modal'
+                    contentLabel="Example Modal"
                 >
                     {/* Campos de edición de especialidad, médico y fecha */}
 
@@ -179,17 +180,17 @@ const Dashboard = () => {
                         <div className={styles["title"]}>Editar Cita</div>
 
                         {/* Selector de fechas */}
-                        <label htmlFor='fecha'>Fechas disponibles:</label>
+                        <label htmlFor="fecha">Fechas disponibles:</label>
 
                         <DatePicker
-                            locale='es'
+                            locale="es"
                             //dateFormat="dd-MM-yyyy HH:mm"
                             selected={date}
                             onChange={(date) => {
                                 setDate(date);
                                 console.log(date);
                             }}
-                            timeCaption='Hora'
+                            timeCaption="Hora"
                             timeIntervals={30}
                             showPopperArrow={false}
                             showTimeSelect
@@ -212,11 +213,25 @@ const Dashboard = () => {
                     </button>
                 </Modal>
             )}
-            <header className={styles.header} onClick={handleLogoClick}>
-                <img
-                    src='/logo.png'
-                    alt='Logo de la empresa'
+            <header className={styles.header}>
+                <Image
+                    src="/logo.png"
+                    alt="Logo de la empresa"
                     className={styles.logo}
+                    width={200}
+                    height={200}
+                    onClick={handleLogoClick}
+                />
+                <Image
+                    src="/logout-icon.png"
+                    alt="CerrarSesion"
+                    className={styles["logout-icon"]}
+                    width={200}
+                    height={200}
+                    onClick={() => {
+                        localStorage.removeItem("token");
+                        router.push("/");
+                    }}
                 />
 
                 <div className={styles["tab-bar"]}>
@@ -240,8 +255,7 @@ const Dashboard = () => {
                                         className={styles["appointment"]}
                                     >
                                         <p>
-                                            Profesional:{" "}
-                                            {appointment.doctorName}
+                                            Paciente: {appointment.patientName}
                                         </p>
                                         <p>Fecha y hora: {appointment.date}</p>
                                         <div
@@ -288,114 +302,6 @@ const Dashboard = () => {
                         )}
                     </div>
                 </div>
-
-                {/* Formulario de selección de especialidad y doctor */}
-                <div className={styles.form}>
-                    <div className={styles["title"]}>
-                        Solicitar un nuevo turno
-                    </div>
-
-                    {/* Selector de especialidades */}
-                    <label htmlFor='specialty'>Especialidad:</label>
-                    <select
-                        id='specialty'
-                        value={selectedSpecialty}
-                        onChange={(e) => {
-                            setSelectedSpecialty(e.target.value);
-                            fetchPhysicians(e.target.value);
-                        }}
-                    >
-                        <option value=''>Selecciona una especialidad</option>
-                        {specialties.map((specialty) => (
-                            <option key={specialty} value={specialty}>
-                                {specialty}
-                            </option>
-                        ))}
-                    </select>
-
-                    {/* Selector de médicos */}
-                    <label htmlFor='doctor'>Médico:</label>
-                    <select
-                        id='doctor'
-                        value={selectedDoctor}
-                        onChange={(e) => {
-                            setSelectedDoctor(e.target.value);
-                            setPhysiciansAgenda(
-                                doctors.filter(
-                                    (doctor) => doctor.id == e.target.value
-                                )[0].agenda
-                            );
-                        }}
-                        disabled={!selectedSpecialty} // Deshabilita si no se ha seleccionado una especialidad
-                    >
-                        <option value=''>Selecciona un médico</option>
-                        {doctors.map((doctor) => (
-                            <option
-                                key={doctor.id}
-                                value={doctor.id}
-                                agenda={doctor.agenda}
-                            >
-                                {doctor.first_name} {doctor.last_name}
-                            </option>
-                        ))}
-                    </select>
-
-                    {/* Selector de fechas */}
-                    <label htmlFor='fecha'>Fechas disponibles:</label>
-
-                    <DatePicker
-                        locale='es'
-                        selected={date}
-                        onChange={(date) => {
-                            setDate(date);
-                        }}
-                        timeCaption='Hora'
-                        timeIntervals={30}
-                        showPopperArrow={false}
-                        showTimeSelect
-                        inline
-                        filterDate={(date) => {
-                            if (physiciansAgenda.working_days) {
-                                return physiciansAgenda.working_days.includes(
-                                    date.getDay()
-                                );
-                            }
-                            return false;
-                        }}
-                        minDate={new Date()}
-                        filterTime={(time) => {
-                            if (
-                                physiciansAgenda.appointments &&
-                                !physiciansAgenda.appointments.includes(
-                                    Math.round(time.getTime() / 1000)
-                                ) &&
-                                physiciansAgenda.working_hours
-                            ) {
-                                let workingHour =
-                                    physiciansAgenda.working_hours.filter(
-                                        (workingHour) =>
-                                            workingHour.day_of_week ===
-                                            date.getDay()
-                                    )[0];
-                                let parsedTime =
-                                    time.getHours() + time.getMinutes() / 60;
-                                return (
-                                    workingHour.start_time <= parsedTime &&
-                                    workingHour.finish_time >= parsedTime
-                                );
-                            }
-                            return false;
-                        }}
-                    />
-
-                    <button
-                        type='submit'
-                        className={styles["submit-button"]}
-                        onClick={handleSubmit}
-                    >
-                        Solicitar turno
-                    </button>
-                </div>
             </div>
 
             <footer className={styles["page-footer"]}>
@@ -405,4 +311,4 @@ const Dashboard = () => {
     );
 };
 
-export default withAuth(Dashboard);
+export default Dashboard;
