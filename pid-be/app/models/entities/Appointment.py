@@ -31,6 +31,13 @@ class Appointment:
 
         return [appointment.to_dict() for appointment in appointments]
 
+    def get_all_appointments_for_physician_with(uid):
+        appointments = (
+            db.collection("appointments").where("physician_id", "==", uid).get()
+        )
+
+        return [appointment.to_dict() for appointment in appointments]
+
     @staticmethod
     def get_by_id(id):
         return db.collection("appointments").document(id).get().to_dict()
