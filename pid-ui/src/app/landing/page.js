@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import styles from "./landing.module.css";
 import { useRouter } from "next/navigation";
@@ -54,10 +55,12 @@ const Landing = () => {
     return (
         <div className={styles["login-page"]}>
             <header className={styles["header"]} onClick={handleLogoClick}>
-                <img
+                <Image
                     src="/logo.png"
                     alt="Logo de la empresa"
                     className={styles["logo"]}
+                    width={200}
+                    height={200}
                 />
             </header>
             <div className={styles["login-form-container"]}>

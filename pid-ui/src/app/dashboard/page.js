@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import styles from "./dashboard.module.css";
 import { useRouter } from "next/navigation";
 import DatePicker, { registerLocale } from "react-datepicker";
@@ -8,7 +9,6 @@ import "react-datepicker/dist/react-datepicker.css";
 import es from "date-fns/locale/es";
 import { mockAppointments, mockDoctors, mockSpecialties } from "./mockData";
 import Modal from "react-modal";
-import withAuth from "./withAuth";
 import axios from "axios";
 
 registerLocale("es", es);
@@ -77,42 +77,6 @@ const Dashboard = () => {
             : setDoctors(response.data.physicians);
     };
 
-    // // Efecto para cargar los médicos cuando se selecciona una especialidad
-    // useEffect(() => {
-    //   if (selectedSpecialty) {
-    //     // Llamada a la API para obtener la lista de médicos para la especialidad seleccionada
-    //     fetch(`/api/medicos?especialidad=${selectedSpecialty}`)
-    //       .then((response) => response.json())
-    //       .then((data) => {
-    //         setDoctors(data);
-    //       })
-    //       .catch((error) => {
-    //         console.error("Error al obtener los médicos:", error);
-    //       });
-    //   } else {
-    //     // Si no se selecciona una especialidad, borra la lista de médicos
-    //     setDoctors([]);
-    //   }
-    // }, [selectedSpecialty]);
-
-    // // Efecto para cargar los turnos disponibles cuando se selecciona un médico
-    // useEffect(() => {
-    //   if (selectedDoctor) {
-    //     // Llamada a la API para obtener los turnos disponibles para el médico seleccionado
-    //     fetch(`/api/turnos?medico=${selectedDoctor}`)
-    //       .then((response) => response.json())
-    //       .then((data) => {
-    //         setAvailableAppointments(data);
-    //       })
-    //       .catch((error) => {
-    //         console.error("Error al obtener los turnos disponibles:", error);
-    //       });
-    //   } else {
-    //     // Si no se selecciona un médico, borra la lista de turnos disponibles
-    //     setAvailableAppointments([]);
-    //   }
-    // }, [selectedDoctor]);
-
     const handleEditAppointment = (appointment) => {
         console.log(isEditModalOpen);
         setIsEditModalOpen(true);
@@ -150,7 +114,6 @@ const Dashboard = () => {
     const handleLogoClick = () => {
         router.push("/dashboard");
     };
-
     const customStyles = {
         content: {
             top: "50%",
@@ -170,7 +133,7 @@ const Dashboard = () => {
                     isOpen={isEditModalOpen}
                     onRequestClose={handleCloseEditModal}
                     style={customStyles}
-                    contentLabel='Example Modal'
+                    contentLabel="Example Modal"
                 >
                     {/* Campos de edición de especialidad, médico y fecha */}
 
@@ -178,17 +141,17 @@ const Dashboard = () => {
                         <div className={styles["title"]}>Editar Cita</div>
 
                         {/* Selector de fechas */}
-                        <label htmlFor='fecha'>Fechas disponibles:</label>
+                        <label htmlFor="fecha">Fechas disponibles:</label>
 
                         <DatePicker
-                            locale='es'
+                            locale="es"
                             //dateFormat="dd-MM-yyyy HH:mm"
                             selected={date}
                             onChange={(date) => {
                                 setDate(date);
                                 console.log(date);
                             }}
-                            timeCaption='Hora'
+                            timeCaption="Hora"
                             timeIntervals={30}
                             showPopperArrow={false}
                             showTimeSelect
@@ -212,10 +175,12 @@ const Dashboard = () => {
                 </Modal>
             )}
             <header className={styles.header} onClick={handleLogoClick}>
-                <img
-                    src='/logo.png'
-                    alt='Logo de la empresa'
+                <Image
+                    src="/logo.png"
+                    alt="Logo de la empresa"
                     className={styles.logo}
+                    width={200}
+                    height={200}
                 />
 
                 <div className={styles["tab-bar"]}>
@@ -295,16 +260,16 @@ const Dashboard = () => {
                     </div>
 
                     {/* Selector de especialidades */}
-                    <label htmlFor='specialty'>Especialidad:</label>
+                    <label htmlFor="specialty">Especialidad:</label>
                     <select
-                        id='specialty'
+                        id="specialty"
                         value={selectedSpecialty}
                         onChange={(e) => {
                             setSelectedSpecialty(e.target.value);
                             fetchPhysicians(e.target.value);
                         }}
                     >
-                        <option value=''>Selecciona una especialidad</option>
+                        <option value="">Selecciona una especialidad</option>
                         {specialties.map((specialty) => (
                             <option key={specialty} value={specialty}>
                                 {specialty}
@@ -313,14 +278,14 @@ const Dashboard = () => {
                     </select>
 
                     {/* Selector de médicos */}
-                    <label htmlFor='doctor'>Médico:</label>
+                    <label htmlFor="doctor">Médico:</label>
                     <select
-                        id='doctor'
+                        id="doctor"
                         value={selectedDoctor}
                         onChange={(e) => setSelectedDoctor(e.target.value)}
                         disabled={!selectedSpecialty} // Deshabilita si no se ha seleccionado una especialidad
                     >
-                        <option value=''>Selecciona un médico</option>
+                        <option value="">Selecciona un médico</option>
                         {doctors.map((doctor) => (
                             <option key={doctor.id} value={doctor.id}>
                                 {doctor.first_name} {doctor.last_name}
@@ -329,16 +294,16 @@ const Dashboard = () => {
                     </select>
 
                     {/* Selector de fechas */}
-                    <label htmlFor='fecha'>Fechas disponibles:</label>
+                    <label htmlFor="fecha">Fechas disponibles:</label>
 
                     <DatePicker
-                        locale='es'
+                        locale="es"
                         selected={date}
                         onChange={(date) => {
                             setDate(date);
                             console.log(date);
                         }}
-                        timeCaption='Hora'
+                        timeCaption="Hora"
                         timeIntervals={30}
                         showPopperArrow={false}
                         showTimeSelect
@@ -346,7 +311,7 @@ const Dashboard = () => {
                     />
 
                     <button
-                        type='submit'
+                        type="submit"
                         className={styles["submit-button"]}
                         onClick={handleSubmit}
                     >
@@ -362,4 +327,4 @@ const Dashboard = () => {
     );
 };
 
-export default withAuth(Dashboard);
+export default Dashboard;

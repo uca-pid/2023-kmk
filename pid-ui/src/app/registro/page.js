@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import styles from "./registro.module.css";
 import { useRouter } from "next/navigation";
@@ -64,10 +65,12 @@ const Registro = () => {
     return (
         <div className={styles["registro"]}>
             <header className={styles["header"]} onClick={handleLogoClick}>
-                <img
+                <Image
                     src="/logo.png"
                     alt="Logo de la empresa"
                     className={styles["logo"]}
+                    width={200}
+                    height={200}
                 />
             </header>
             <div className={styles["title"]}>Registro</div>
