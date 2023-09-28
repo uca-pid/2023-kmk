@@ -2,12 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import styles from "./dashboard.module.css";
+import styles from "./dashboard-physician.module.css";
 import { useRouter } from "next/navigation";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import es from "date-fns/locale/es";
-import { mockAppointments, mockDoctors, mockSpecialties } from "./mockData";
 import Modal from "react-modal";
 import axios from "axios";
 
@@ -217,8 +216,7 @@ const Dashboard = () => {
                                         className={styles["appointment"]}
                                     >
                                         <p>
-                                            Profesional:{" "}
-                                            {appointment.doctorName}
+                                            Paciente: {appointment.patientName}
                                         </p>
                                         <p>Fecha y hora: {appointment.date}</p>
                                         <div
@@ -264,114 +262,6 @@ const Dashboard = () => {
                             </div>
                         )}
                     </div>
-                </div>
-
-                {/* Formulario de selección de especialidad y doctor */}
-                <div className={styles.form}>
-                    <div className={styles["title"]}>
-                        Solicitar un nuevo turno
-                    </div>
-
-                    {/* Selector de especialidades */}
-                    <label htmlFor="specialty">Especialidad:</label>
-                    <select
-                        id="specialty"
-                        value={selectedSpecialty}
-                        onChange={(e) => {
-                            setSelectedSpecialty(e.target.value);
-                            fetchPhysicians(e.target.value);
-                        }}
-                    >
-                        <option value="">Selecciona una especialidad</option>
-                        {specialties.map((specialty) => (
-                            <option key={specialty} value={specialty}>
-                                {specialty}
-                            </option>
-                        ))}
-                    </select>
-
-                    {/* Selector de médicos */}
-                    <label htmlFor="doctor">Médico:</label>
-                    <select
-                        id="doctor"
-                        value={selectedDoctor}
-                        onChange={(e) => {
-                            setSelectedDoctor(e.target.value);
-                            setPhysiciansAgenda(
-                                doctors.filter(
-                                    (doctor) => doctor.id == e.target.value
-                                )[0].agenda
-                            );
-                        }}
-                        disabled={!selectedSpecialty} // Deshabilita si no se ha seleccionado una especialidad
-                    >
-                        <option value="">Selecciona un médico</option>
-                        {doctors.map((doctor) => (
-                            <option
-                                key={doctor.id}
-                                value={doctor.id}
-                                agenda={doctor.agenda}
-                            >
-                                {doctor.first_name} {doctor.last_name}
-                            </option>
-                        ))}
-                    </select>
-
-                    {/* Selector de fechas */}
-                    <label htmlFor="fecha">Fechas disponibles:</label>
-
-                    <DatePicker
-                        locale="es"
-                        selected={date}
-                        onChange={(date) => {
-                            setDate(date);
-                        }}
-                        timeCaption="Hora"
-                        timeIntervals={30}
-                        showPopperArrow={false}
-                        showTimeSelect
-                        inline
-                        filterDate={(date) => {
-                            if (physiciansAgenda.working_days) {
-                                return physiciansAgenda.working_days.includes(
-                                    date.getDay()
-                                );
-                            }
-                            return false;
-                        }}
-                        minDate={new Date()}
-                        filterTime={(time) => {
-                            if (
-                                physiciansAgenda.appointments &&
-                                !physiciansAgenda.appointments.includes(
-                                    Math.round(time.getTime() / 1000)
-                                ) &&
-                                physiciansAgenda.working_hours
-                            ) {
-                                let workingHour =
-                                    physiciansAgenda.working_hours.filter(
-                                        (workingHour) =>
-                                            workingHour.day_of_week ===
-                                            date.getDay()
-                                    )[0];
-                                let parsedTime =
-                                    time.getHours() + time.getMinutes() / 60;
-                                return (
-                                    workingHour.start_time <= parsedTime &&
-                                    workingHour.finish_time >= parsedTime
-                                );
-                            }
-                            return false;
-                        }}
-                    />
-
-                    <button
-                        type="submit"
-                        className={styles["submit-button"]}
-                        onClick={handleSubmit}
-                    >
-                        Solicitar turno
-                    </button>
                 </div>
             </div>
 

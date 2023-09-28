@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import styles from "./admin.module.css";
+import styles from "./dashboard-admin.module.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
@@ -19,7 +19,9 @@ const Admin = () => {
         const checkUserIsAdmin = async () => {
             try {
                 const response = await axios.get(
-                    `http://localhost:8080/get-user-profile`
+                    `http://localhost:8080/users/profile/${localStorage.getItem(
+                        user_id
+                    )}}`
                 );
                 console.log(response.data);
                 if (response.data.user.role != "admin") {
@@ -86,7 +88,7 @@ const Admin = () => {
     };
 
     const handleLogoClick = () => {
-        router.push("/admin");
+        router.push("/dashboard-admin");
     };
 
     return (

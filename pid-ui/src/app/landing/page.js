@@ -36,10 +36,8 @@ const Landing = () => {
                 userData
             );
             localStorage.setItem("token", response.data.token);
-            console.log("Token recibido: " + response.data.token);
-            console.log("Token almacenado: " + localStorage.getItem("token"));
-
-            router.push("/dashboard");
+            localStorage.setItem("user_id", response.data.user_id);
+            router.push("/dashboard-redirect");
         } catch (error) {
             setError("Error al iniciar sesión: " + error.response.data.detail);
 
