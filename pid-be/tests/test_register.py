@@ -40,6 +40,7 @@ def test_Register_Physician_Returns_A_200_Code():
     assert response_to_register_physician_endpoint.status_code == 200
 
 
+@pytest.fixture(scope="session", autouse=True)
 def test_Register_Patient_Returns_A_200_Code():
     response_to_register_patient_endpoint = requests.post(
         "http://localhost:8080/users/register-patient",
