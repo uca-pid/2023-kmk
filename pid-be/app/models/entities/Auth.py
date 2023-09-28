@@ -1,9 +1,10 @@
 from fastapi import HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from firebase_admin import auth
+from firebase_admin import auth, firestore
 
 from app.models.entities.Admin import Admin
 
+db = firestore.client()
 
 class Auth:
     @staticmethod
@@ -28,6 +29,14 @@ class Auth:
             )
         try:
             verified_token = auth.verify_id_token(token.credentials)
+            member = db.collection("physicians").document(verified_token["uid"]).get()
+            print(member, member.exists, member.to_dict())
+            if member.exists:
+                if member.to_dict()["approved"] == "denied":
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="Physician must be approved by admin",
+                    )
             return verified_token["uid"]
         except:
             raise HTTPException(

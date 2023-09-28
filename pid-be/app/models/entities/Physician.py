@@ -133,6 +133,7 @@ class Physician:
                 "specialty": self.specialty,
                 "email": self.email,
                 "approved": self.approved,
+                "agenda": {"1": {"start": 8, "finish": 18}, "2": {"start": 8, "finish": 18}, "3": {"start": 8, "finish": 18}, "4": {"start": 8, "finish": 18}, "5": {"start": 8, "finish": 18}},
             }
         )
         return self.id

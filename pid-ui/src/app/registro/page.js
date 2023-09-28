@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import styles from "./registro.module.css";
@@ -10,6 +10,7 @@ import axios from "axios";
 const Registro = () => {
     const [nombre, setNombre] = useState("");
     const [apellido, setApellido] = useState("");
+    const [specialties, setSpecialties] = useState([]);
     const [especialidad, setEspecialidad] = useState("");
     const [numeroMatricula, setNumeroMatricula] = useState("");
     const [email, setEmail] = useState("");
@@ -18,6 +19,20 @@ const Registro = () => {
     const [error, setError] = useState("");
     const [role, setRole] = useState("paciente");
     const router = useRouter();
+
+    useEffect(() => {
+        const fetchSpecialties = async () => {
+            const response = await axios.get(
+                `http://localhost:8080/specialties`
+            );
+            console.log(response.data.specialties);
+            response.data.specialties == undefined
+                ? setSpecialties([])
+                : setSpecialties(response.data.specialties);
+        };
+
+        fetchSpecialties();
+    }, []);
 
     const handleLogoClick = () => {
         router.push("/");
@@ -127,16 +142,23 @@ const Registro = () => {
                             />
                         </div>
                         <div className={styles["form-group"]}>
-                            <label htmlFor="especialidad">Especialidad</label>
-                            <input
-                                type="text"
-                                id="especialidad"
+                            <label htmlFor="specialty">Especialidad:</label>
+                            <select
+                                id="specialty"
                                 value={especialidad}
-                                onChange={(e) =>
-                                    setEspecialidad(e.target.value)
-                                }
-                                required
-                            />
+                                onChange={(e) => {
+                                    setEspecialidad(e.target.value);
+                                }}
+                            >
+                                <option value="">
+                                    Selecciona una especialidad
+                                </option>
+                                {specialties.map((specialty) => (
+                                    <option key={specialty} value={specialty}>
+                                        {specialty}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                     </>
                 )}

@@ -26,6 +26,10 @@ from app.models.entities.Patient import Patient
 from app.models.entities.Physician import Physician
 from app.models.entities.Admin import Admin
 
+from firebase_admin import firestore
+
+db = firestore.client()
+
 load_dotenv()
 
 router = APIRouter(
@@ -260,7 +264,8 @@ def get_user_profile(user_id=Depends(Auth.is_logged_in)):
                 return {"profile": "Patient"}
             elif Physician.is_physician(user_id):
                 # user is physician
-                return {"profile": "Physician"}
+                physician = db.collection("physicians").document(user_id).get().to_dict()
+                return {"profile": "Physician", "approved": physician["approved"]}
             
     except:
         return JSONResponse(

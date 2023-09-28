@@ -22,13 +22,21 @@ const Redirect = () => {
                     `http://localhost:8080/users/profile/`
                 );
 
-                console.log(response.data.profile);
+                console.log(response.data);
                 switch (response.data.profile) {
                     case "Admin":
                         console.log("Checking if admin");
                         router.push("/dashboard-admin");
                         break;
                     case "Physician":
+                        if (
+                            response.data.approved == "denied" ||
+                            response.data.approved == "pending"
+                        ) {
+                            alert("Medico no validado");
+                            router.push("/");
+                            break;
+                        }
                         console.log("Checking if physician");
                         router.push("/dashboard-physician");
                         break;

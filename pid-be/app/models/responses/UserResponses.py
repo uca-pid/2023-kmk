@@ -18,6 +18,7 @@ class RegisterErrorResponse(BaseModel):
 
 class UserProfileResponse(BaseModel):
     profile: str
+    approved:str = None
 
 class UserProfileErrorResponse(BaseModel):
     detail: str
