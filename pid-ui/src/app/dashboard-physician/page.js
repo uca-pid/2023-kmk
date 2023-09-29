@@ -15,12 +15,6 @@ registerLocale("es", es);
 const Dashboard = () => {
     const router = useRouter();
     const [appointments, setAppointments] = useState([]);
-    const [doctors, setDoctors] = useState([]);
-    const [specialties, setSpecialties] = useState([]);
-    const [availableAppointments, setAvailableAppointments] = useState([]);
-    const [selectedSpecialty, setSelectedSpecialty] = useState("");
-    const [selectedDoctor, setSelectedDoctor] = useState("");
-    const [physiciansAgenda, setPhysiciansAgenda] = useState({});
     const [date, setDate] = useState(new Date());
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingAppointment, setEditingAppointment] = useState({
@@ -30,90 +24,56 @@ const Dashboard = () => {
         date: new Date(),
     });
 
-    useEffect(() => {
-        axios.defaults.headers.common = {
-            Authorization: `bearer ${localStorage.getItem("token")}`,
-        };
+    const userCheck = async () => {
+        console.log("Checking user profile");
 
-        const userCheck = async () => {
-            console.log("Checking user profile");
-
-            try {
-                const response = await axios.get(
-                    `http://localhost:8080/users/profile/`
-                );
-
-                console.log(response.data.profile);
-                switch (response.data.profile) {
-                    case "Admin":
-                        console.log("Checking if admin");
-                        router.push("/dashboard-admin");
-                        break;
-                    case "Physician":
-                        console.log("Checking if physician");
-                        router.push("/dashboard-physician");
-                        break;
-                    case "Patient":
-                        console.log("Checking if patient");
-                        router.push("/dashboard-patient");
-                        break;
-                    default:
-                        console.log("Error");
-                        break;
-                }
-            } catch (error) {
-                console.log(error.response.data.detail);
-                switch (error.response.data.detail) {
-                    case "User must be logged in":
-                        router.push("/");
-                        break;
-                    case "User has already logged in":
-                        router.push("/dashboard-redirect");
-                        break;
-                }
-            }
-        };
-
-        const fetchAppointments = async () => {
-            try {
-                const response = await axios.get(
-                    `http://localhost:8080/appointments/physician`
-                );
-                console.log(response.appointments);
-                response.appointments == undefined
-                    ? setAppointments([])
-                    : setAppointments(response.appointments);
-            } catch (error) {
-                if (error.response.data.detail == "User must be logged in") {
-                    console.error(error);
-                    router.push("/");
-                }
-            }
-        };
-
-        const fetchSpecialties = async () => {
+        try {
             const response = await axios.get(
-                `http://localhost:8080/specialties`
+                `http://localhost:8080/users/profile/`
             );
-            console.log(response.data.specialties);
-            response.data.specialties == undefined
-                ? setSpecialties([])
-                : setSpecialties(response.data.specialties);
-        };
-        userCheck();
-        fetchAppointments();
-        fetchSpecialties();
-        console.log(specialties);
-    }, []);
 
-    const fetchPhysicians = async (specialty) => {
-        const response = await axios.get(
-            `http://localhost:8080/physicians/specialty/${specialty}`
-        );
-        console.log(response.data.physicians);
-        response.data.physicians == undefined
-            ? setDoctors([])
-            : setDoctors(response.data.physicians);
+            console.log(response.data.profile);
+            switch (response.data.profile) {
+                case "Admin":
+                    console.log("Checking if admin");
+                    router.push("/dashboard-admin");
+                    break;
+                case "Physician":
+                    console.log("Checking if physician");
+                    router.push("/dashboard-physician");
+                    break;
+                case "Patient":
+                    console.log("Checking if patient");
+                    router.push("/dashboard-patient");
+                    break;
+                default:
+                    console.log("Error");
+                    break;
+            }
+        } catch (error) {
+            console.log(error.response.data.detail);
+            switch (error.response.data.detail) {
+                case "User must be logged in":
+                    router.push("/");
+                    break;
+                case "User has already logged in":
+                    router.push("/dashboard-redirect");
+                    break;
+            }
+        }
+    };
+
+    const fetchAppointments = async () => {
+        try {
+            const response = await axios.get(
+                `http://localhost:8080/appointments/physician/`
+            );
+            response.data.appointments == undefined
+                ? setAppointments([])
+                : setAppointments(response.data.appointments);
+        } catch (error) {
+            console.log(error);
+        }
     };
 
     const handleEditAppointment = (appointment) => {
@@ -125,6 +85,7 @@ const Dashboard = () => {
             doctor: appointment.doctor,
             date: new Date(appointment.date),
         });
+        fetchAppointments();
     };
 
     const handleCloseEditModal = () => {
@@ -138,16 +99,20 @@ const Dashboard = () => {
         // y actualiza la lista de citas o realiza cualquier otra acción necesaria
         setIsEditModalOpen(false);
         alert("Turno modificado exitosamente");
+        fetchAppointments();
     };
 
-    const handleDeleteAppointment = (appointmentId) => {
-        // Aquí puedes implementar la lógica para eliminar el turno
-        // Puedes hacer una llamada a la API o realizar otras acciones necesarias
-    };
-
-    const handleSubmit = async (e) => {
-        alert("Turno solicitado exitosamente");
-        router.push("/dashboard");
+    const handleDeleteAppointment = async (appointmentId) => {
+        console.log(appointmentId);
+        try {
+            await axios.delete(
+                `http://localhost:8080/appointments/${appointmentId}`
+            );
+            alert("Turno eliminado exitosamente");
+            fetchAppointments();
+        } catch (error) {
+            console.log(error);
+        }
     };
 
     const handleLogoClick = () => {
@@ -164,6 +129,19 @@ const Dashboard = () => {
         },
     };
 
+    useEffect(() => {
+        axios.defaults.headers.common = {
+            Authorization: `bearer ${localStorage.getItem("token")}`,
+        };
+
+        userCheck();
+        fetchAppointments();
+        const intervalId = setInterval(() => {
+            fetchAppointments();
+        }, 5 * 1000);
+        return () => clearInterval(intervalId);
+    }, []);
+
     return (
         <div className={styles.dashboard}>
             {/* Modal de edición */}
@@ -172,7 +150,7 @@ const Dashboard = () => {
                     isOpen={isEditModalOpen}
                     onRequestClose={handleCloseEditModal}
                     style={customStyles}
-                    contentLabel='Example Modal'
+                    contentLabel="Example Modal"
                 >
                     {/* Campos de edición de especialidad, médico y fecha */}
 
@@ -180,17 +158,17 @@ const Dashboard = () => {
                         <div className={styles["title"]}>Editar Cita</div>
 
                         {/* Selector de fechas */}
-                        <label htmlFor='fecha'>Fechas disponibles:</label>
+                        <label htmlFor="fecha">Fechas disponibles:</label>
 
                         <DatePicker
-                            locale='es'
+                            locale="es"
                             //dateFormat="dd-MM-yyyy HH:mm"
                             selected={date}
                             onChange={(date) => {
                                 setDate(date);
                                 console.log(date);
                             }}
-                            timeCaption='Hora'
+                            timeCaption="Hora"
                             timeIntervals={30}
                             showPopperArrow={false}
                             showTimeSelect
@@ -215,16 +193,16 @@ const Dashboard = () => {
             )}
             <header className={styles.header}>
                 <Image
-                    src='/logo.png'
-                    alt='Logo de la empresa'
+                    src="/logo.png"
+                    alt="Logo de la empresa"
                     className={styles.logo}
                     width={200}
                     height={200}
                     onClick={handleLogoClick}
                 />
                 <Image
-                    src='/logout-icon.png'
-                    alt='CerrarSesion'
+                    src="/logout-icon.png"
+                    alt="CerrarSesion"
                     className={styles["logout-icon"]}
                     width={200}
                     height={200}
@@ -256,9 +234,17 @@ const Dashboard = () => {
                                         className={styles["appointment"]}
                                     >
                                         <p>
-                                            Paciente: {appointment.patientName}
+                                            Paciente:{" "}
+                                            {appointment.patient.first_name +
+                                                " " +
+                                                appointment.patient.last_name}
                                         </p>
-                                        <p>Fecha y hora: {appointment.date}</p>
+                                        <p>
+                                            Fecha y hora:{" "}
+                                            {new Date(
+                                                appointment.date * 1000
+                                            ).toLocaleString("es-AR")}
+                                        </p>
                                         <div
                                             className={
                                                 styles[
@@ -272,7 +258,7 @@ const Dashboard = () => {
                                                 }
                                                 onClick={() =>
                                                     handleEditAppointment(
-                                                        appointment
+                                                        appointment.id
                                                     )
                                                 }
                                             >

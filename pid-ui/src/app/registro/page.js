@@ -6,6 +6,7 @@ import Link from "next/link";
 import styles from "./registro.module.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import validator from "validator";
 
 const Registro = () => {
     const [nombre, setNombre] = useState("");
@@ -19,6 +20,24 @@ const Registro = () => {
     const [error, setError] = useState("");
     const [role, setRole] = useState("paciente");
     const router = useRouter();
+
+    const validate = (value) => {
+        if (
+            validator.isStrongPassword(value, {
+                minLength: 8,
+                minLowercase: 1,
+                minUppercase: 1,
+                minNumbers: 1,
+                minSymbols: 0,
+            })
+        ) {
+            setError("");
+        } else {
+            setError(
+                "La contraseña no es lo suficientemente fuerte: debe incluir al menos 8 caracteres, 1 minúscula, 1 mayúscula y 1 número"
+            );
+        }
+    };
 
     useEffect(() => {
         const fetchSpecialties = async () => {
@@ -72,8 +91,19 @@ const Registro = () => {
                 router.push("/");
             }
         } catch (error) {
+            setError("Error al registrarse: " + error.response.data.detail);
+
+            if (error.response.data.detail == "User has already logged in") {
+                router.push("/dashboard-redirect");
+            }
+
+            // Verificar si el elemento .error-message está presente en el DOM
+            const errorMessageElement =
+                document.querySelector(".error-message");
+            if (errorMessageElement) {
+                errorMessageElement.style.visibility = "visible"; // Muestra el mensaje de error
+            }
             console.error(error);
-            setError("Usuario o contraseña incorrectos");
         }
     };
 
@@ -88,11 +118,11 @@ const Registro = () => {
                     height={200}
                 />
             </header>
-            <div className={styles["title"]}>Registro</div>
-            <div className={styles["subtitle"]}>
-                Ingrese sus datos para comenzar
-            </div>
             <form className={styles["form"]} onSubmit={handleSubmit}>
+                <div className={styles["title"]}>Registro</div>
+                <div className={styles["subtitle"]}>
+                    Ingrese sus datos para comenzar
+                </div>
                 <div className={styles["form-group"]}>
                     <label htmlFor="userType">Tipo de Usuario</label>
                     <select
@@ -178,7 +208,10 @@ const Registro = () => {
                         type="password"
                         id="password"
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => {
+                            setPassword(e.target.value);
+                            validate(e.target.value);
+                        }}
                         required
                     />
                 </div>
@@ -188,10 +221,16 @@ const Registro = () => {
                         type="password"
                         id="confirmPassword"
                         value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        onChange={(e) => {
+                            setConfirmPassword(e.target.value);
+                            validate(e.target.value);
+                        }}
                         required
                     />
                 </div>
+                {error && (
+                    <div className={styles["error-message"]}>{error}</div>
+                )}
                 {password !== confirmPassword && (
                     <div className={styles["error-message"]}>
                         Las contraseñas no coinciden.
@@ -199,12 +238,12 @@ const Registro = () => {
                 )}
                 <button
                     type="submit"
-                    className={`${styles["cta-button"]} ${
-                        password !== confirmPassword
+                    className={`${styles["button"]} ${
+                        password !== confirmPassword || error
                             ? styles["disabled-button"]
                             : ""
                     }`}
-                    disabled={password !== confirmPassword}
+                    disabled={password !== confirmPassword || error}
                 >
                     Registrarse
                 </button>

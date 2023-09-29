@@ -1,4 +1,3 @@
-/* Estilos para la página de Dashboard */
 .dashboard {
     display: flex;
     flex-direction: column;
@@ -9,22 +8,7 @@
     background-color: #fff;
     padding: 0;
     margin-top: 10rem;
-}
-
-/* Estilos para el encabezado */
-.header {
-    background-color: rgb(238, 238, 238); /* Color de fondo del encabezado */
-    padding: 1rem; /* Espaciado del encabezado */
-    text-align: center;
-    position: fixed; /* Establece la posición como fija */
-    top: 0; /* Pega el encabezado al borde superior */
-    left: 0; /* Alinea el encabezado a la izquierda */
-    right: 0; /* Alinea el encabezado a la derecha */
-    z-index: 999; /* Ajusta el valor de z-index para superponer sobre el contenido */
-    display: flex; /* Activa el diseño flexible para centrar el contenido verticalmente */
-    justify-content: center; /* Centra el contenido horizontalmente */
-    align-items: center; /* Centra el contenido verticalmente */
-    height: 100px; /* Fija una altura fija para el encabezado */
+    width: 100%;
 }
 
 /* Estilos para los mensajes de error */
@@ -122,24 +106,16 @@
     flex: 1;
     align-self: flex-start;
     display: flex;
-    width: 60rem;
-    max-width: 100%;
     margin: 0 auto;
     background-color: #fff;
     border: 1px solid #ccc;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     text-align: left;
-    width: 100%; /* Ancho del 100% para ocupar toda la pantalla */
+    width: 100%;
     padding: 2rem;
-}
-
-/* Estilos para los grupos de formulario */
-.form {
-    text-align: left;
     margin-bottom: 1rem;
-    display: flex;
-    flex-direction: column; /* Apila los elementos verticalmente */
+    flex-direction: column;
 }
 
 /* Estilos para las etiquetas de formulario */

@@ -96,7 +96,12 @@ def get_all_appointments(uid=Depends(Auth.is_logged_in)):
     },
 )
 def get_all_physicians_appointments(uid=Depends(Auth.is_logged_in)):
-    """ """
+    """ 
+    Get all appointments for physician.
+
+    This will allow authenticated physicians to retrieve all their appointments.
+    
+    """
     try:
         appointments = Appointment.get_all_appointments_for_physician_with(uid)
         return {"appointments": appointments}
@@ -150,7 +155,7 @@ def delete_appointment_by_id(id: str, uid=Depends(Auth.is_logged_in)):
     """ """
     try:
         appointment = Appointment.get_by_id(id)
-        if not appointment or appointment["patient_id"] != uid:
+        if not appointment or (appointment["physician_id"] != uid and appointment["patient_id"] != uid):
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={"detail": "Invalid appointment id"},

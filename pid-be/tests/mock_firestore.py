@@ -7,17 +7,25 @@ if __name__ == "__main__":
     db = firestore.client()
 
     specialties = [
-        "pediatrics",
-        "dermatology",
-        "gastroenterology",
-        "radiology",
-        "urology",
-        "ophtalmology",
-        "endocrynology",
-        "neurology",
-        "cardiology",
-        "family medicine",
-        "psychiatry",
+        "Cardiologia",
+        "Dermatologia",
+        "Endocrinologia",
+        "Gastroenterologia",
+        "Geriatria",
+        "Ginecologia",
+        "Hematologia",
+        "Infectologia",
+        "Nefrologia",
+        "Neurologia",
+        "Oftalmologia",
+        "Oncologia",
+        "Ortopedia",
+        "Otorrinolaringologia",
+        "Pediatria",
+        "Pneumologia",
+        "Psiquiatria",
+        "Reumatologia",
+        "Urologia",
     ]
 
     today_date = datetime.fromtimestamp(round(time.time()))

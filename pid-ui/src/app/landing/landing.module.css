@@ -1,30 +1,14 @@
-/* login.module.css */
-
 .login-page {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     height: 100vh;
     text-align: center;
     background-color: #fff;
     padding: 0;
-}
-
-/* Estilos para el encabezado */
-.header {
-    background-color: rgb(238, 238, 238); /* Color de fondo del encabezado */
-    padding: 1rem; /* Espaciado del encabezado */
-    text-align: center;
-    position: fixed; /* Establece la posición como fija */
-    top: 0; /* Pega el encabezado al borde superior */
-    left: 0; /* Alinea el encabezado a la izquierda */
-    right: 0; /* Alinea el encabezado a la derecha */
-    z-index: 999; /* Ajusta el valor de z-index para superponer sobre el contenido */
-    display: flex; /* Activa el diseño flexible para centrar el contenido verticalmente */
-    justify-content: center; /* Centra el contenido horizontalmente */
-    align-items: center; /* Centra el contenido verticalmente */
-    height: 100px; /* Fija una altura fija para el encabezado */
+    width: 100%;
+    margin-top: 100px;
 }
 
 /* Estilos para los mensajes de error */
@@ -32,40 +16,49 @@
     color: red;
     font-size: 1rem;
     margin-bottom: 1rem;
-    visibility: visible; /* Inicialmente, oculta el mensaje de error */
+    visibility: visible;
 }
 
 /* Estilos para el logo */
 .logo {
-    width: 250px; /* Tamaño del logo */
+    width: 250px;
     height: auto;
+    cursor: pointer;
 }
 
 /* Estilos para el título de la página de inicio de sesión */
 .title {
     font-size: 2rem;
-    margin-bottom: 1rem;
     color: #333;
 }
 
 /* Estilos para el subtítulo "Iniciar Sesión" */
 .subtitle {
-    font-size: 1.5rem; /* Tamaño del subtítulo */
+    font-size: 1.5rem;
     color: #333;
+    margin: 1rem 0;
 }
 
 /* Estilos para el formulario de inicio de sesión */
 .form {
-    width: 600px; /* Ancho fijo en píxeles */
-    /* max-width: 600px; Ancho máximo en píxeles */
-    margin: 0 auto; /* Centrar horizontalmente */
-    margin-top: 2rem;
+    align-self: flex-start;
+    justify-content: center;
+    display: flex;
+    background-color: #fff;
+    width: 100%;
+    padding: 2rem;
+    flex-direction: column;
+    max-width: 600px;
+    flex-wrap: wrap;
+    margin: 0 auto;
 }
 
 /* Estilos para los grupos de formulario */
 .form-group {
     text-align: left;
     margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Estilos para las etiquetas de formulario */
@@ -77,13 +70,18 @@
 }
 
 /* Estilos para los campos de entrada de formulario */
-.form-group input {
+.form input {
     width: 100%;
     padding: 0.5rem;
     font-size: 1rem;
     border: 1px solid #ccc;
     border-radius: 5px;
-    color: #333;
+    color: #000;
+    background-color: #fff;
+    appearance: none;
+    outline: none;
+    cursor: pointer;
+    margin-bottom: 2rem;
 }
 
 /* Estilos para el enlace de registro */
@@ -118,14 +116,4 @@
 
 .cta-button:hover {
     background-color: #0056b3;
-}
-
-/* Estilos para el pie de página de la página de inicio */
-.page-footer {
-    font-size: 0.8rem;
-    margin-top: 2rem;
-    margin-bottom: 2rem;
-    color: #777;
-    position: relative;
-    bottom: 0;
 }
