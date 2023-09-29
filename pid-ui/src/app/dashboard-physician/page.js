@@ -15,8 +15,6 @@ registerLocale("es", es);
 const Dashboard = () => {
     const router = useRouter();
     const [appointments, setAppointments] = useState([]);
-    const [doctors, setDoctors] = useState([]);
-    const [specialties, setSpecialties] = useState([]);
     const [date, setDate] = useState(new Date());
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingAppointment, setEditingAppointment] = useState({
@@ -26,70 +24,57 @@ const Dashboard = () => {
         date: new Date(),
     });
 
-    useEffect(() => {
-        axios.defaults.headers.common = {
-            Authorization: `bearer ${localStorage.getItem("token")}`,
-        };
+    const userCheck = async () => {
+        console.log("Checking user profile");
 
-        const userCheck = async () => {
-            console.log("Checking user profile");
+        try {
+            const response = await axios.get(
+                `http://localhost:8080/users/profile/`
+            );
 
-            try {
-                const response = await axios.get(
-                    `http://localhost:8080/users/profile/`
-                );
-
-                console.log(response.data.profile);
-                switch (response.data.profile) {
-                    case "Admin":
-                        console.log("Checking if admin");
-                        router.push("/dashboard-admin");
-                        break;
-                    case "Physician":
-                        console.log("Checking if physician");
-                        router.push("/dashboard-physician");
-                        break;
-                    case "Patient":
-                        console.log("Checking if patient");
-                        router.push("/dashboard-patient");
-                        break;
-                    default:
-                        console.log("Error");
-                        break;
-                }
-            } catch (error) {
-                console.log(error.response.data.detail);
-                switch (error.response.data.detail) {
-                    case "User must be logged in":
-                        router.push("/");
-                        break;
-                    case "User has already logged in":
-                        router.push("/dashboard-redirect");
-                        break;
-                }
+            console.log(response.data.profile);
+            switch (response.data.profile) {
+                case "Admin":
+                    console.log("Checking if admin");
+                    router.push("/dashboard-admin");
+                    break;
+                case "Physician":
+                    console.log("Checking if physician");
+                    router.push("/dashboard-physician");
+                    break;
+                case "Patient":
+                    console.log("Checking if patient");
+                    router.push("/dashboard-patient");
+                    break;
+                default:
+                    console.log("Error");
+                    break;
             }
-        };
-
-        const fetchAppointments = async () => {
-            try {
-                const response = await axios.get(
-                    `http://localhost:8080/appointments/physician/`
-                );
-                console.log(response.data.appointments);
-                response.data.appointments == undefined
-                    ? setAppointments([])
-                    : setAppointments(response.data.appointments);
-            } catch (error) {
-                if (error.response.data.detail == "User must be logged in") {
-                    console.error(error);
+        } catch (error) {
+            console.log(error.response.data.detail);
+            switch (error.response.data.detail) {
+                case "User must be logged in":
                     router.push("/");
-                }
+                    break;
+                case "User has already logged in":
+                    router.push("/dashboard-redirect");
+                    break;
             }
-        };
-        userCheck();
-        fetchAppointments();
-        console.log(appointments);
-    }, []);
+        }
+    };
+
+    const fetchAppointments = async () => {
+        try {
+            const response = await axios.get(
+                `http://localhost:8080/appointments/physician/`
+            );
+            response.data.appointments == undefined
+                ? setAppointments([])
+                : setAppointments(response.data.appointments);
+        } catch (error) {
+            console.log(error);
+        }
+    };
 
     const handleEditAppointment = (appointment) => {
         console.log(isEditModalOpen);
@@ -100,6 +85,7 @@ const Dashboard = () => {
             doctor: appointment.doctor,
             date: new Date(appointment.date),
         });
+        fetchAppointments();
     };
 
     const handleCloseEditModal = () => {
@@ -113,11 +99,20 @@ const Dashboard = () => {
         // y actualiza la lista de citas o realiza cualquier otra acción necesaria
         setIsEditModalOpen(false);
         alert("Turno modificado exitosamente");
+        fetchAppointments();
     };
 
-    const handleDeleteAppointment = (appointmentId) => {
-        // Aquí puedes implementar la lógica para eliminar el turno
-        // Puedes hacer una llamada a la API o realizar otras acciones necesarias
+    const handleDeleteAppointment = async (appointmentId) => {
+        console.log(appointmentId);
+        try {
+            await axios.delete(
+                `http://localhost:8080/appointments/${appointmentId}`
+            );
+            alert("Turno eliminado exitosamente");
+            fetchAppointments();
+        } catch (error) {
+            console.log(error);
+        }
     };
 
     const handleLogoClick = () => {
@@ -133,6 +128,19 @@ const Dashboard = () => {
             transform: "translate(-50%, -50%)",
         },
     };
+
+    useEffect(() => {
+        axios.defaults.headers.common = {
+            Authorization: `bearer ${localStorage.getItem("token")}`,
+        };
+
+        userCheck();
+        fetchAppointments();
+        const intervalId = setInterval(() => {
+            fetchAppointments();
+        }, 5 * 1000);
+        return () => clearInterval(intervalId);
+    }, []);
 
     return (
         <div className={styles.dashboard}>
@@ -250,7 +258,7 @@ const Dashboard = () => {
                                                 }
                                                 onClick={() =>
                                                     handleEditAppointment(
-                                                        appointment
+                                                        appointment.id
                                                     )
                                                 }
                                             >

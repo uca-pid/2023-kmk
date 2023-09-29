@@ -17,7 +17,6 @@ const Dashboard = () => {
     const [appointments, setAppointments] = useState([]);
     const [doctors, setDoctors] = useState([]);
     const [specialties, setSpecialties] = useState([]);
-    const [availableAppointments, setAvailableAppointments] = useState([]);
     const [selectedSpecialty, setSelectedSpecialty] = useState("");
     const [selectedDoctor, setSelectedDoctor] = useState("");
     const [physiciansAgenda, setPhysiciansAgenda] = useState({});
@@ -35,76 +34,59 @@ const Dashboard = () => {
             const response = await axios.get(
                 `http://localhost:8080/appointments`
             );
-            console.log(response.data.appointments);
             response.data.appointments == undefined
                 ? setAppointments([])
                 : setAppointments(response.data.appointments);
         } catch (error) {
-            if (error.response.data.detail == "User must be logged in") {
-                console.error(error);
-                router.push("/");
+            console.log(error);
+        }
+    };
+
+    const userCheck = async () => {
+        console.log("Checking user profile");
+
+        try {
+            const response = await axios.get(
+                `http://localhost:8080/users/profile/`
+            );
+
+            console.log(response.data.profile);
+            switch (response.data.profile) {
+                case "Admin":
+                    console.log("Checking if admin");
+                    router.push("/dashboard-admin");
+                    break;
+                case "Physician":
+                    console.log("Checking if physician");
+                    router.push("/dashboard-physician");
+                    break;
+                case "Patient":
+                    console.log("Checking if patient");
+                    router.push("/dashboard-patient");
+                    break;
+                default:
+                    console.log("Error");
+                    break;
+            }
+        } catch (error) {
+            console.log(error.response.data.detail);
+            switch (error.response.data.detail) {
+                case "User must be logged in":
+                    router.push("/");
+                    break;
+                case "User has already logged in":
+                    router.push("/dashboard-redirect");
+                    break;
             }
         }
     };
 
-    useEffect(() => {
-        axios.defaults.headers.common = {
-            Authorization: `bearer ${localStorage.getItem("token")}`,
-        };
-
-        const userCheck = async () => {
-            console.log("Checking user profile");
-
-            try {
-                const response = await axios.get(
-                    `http://localhost:8080/users/profile/`
-                );
-
-                console.log(response.data.profile);
-                switch (response.data.profile) {
-                    case "Admin":
-                        console.log("Checking if admin");
-                        router.push("/dashboard-admin");
-                        break;
-                    case "Physician":
-                        console.log("Checking if physician");
-                        router.push("/dashboard-physician");
-                        break;
-                    case "Patient":
-                        console.log("Checking if patient");
-                        router.push("/dashboard-patient");
-                        break;
-                    default:
-                        console.log("Error");
-                        break;
-                }
-            } catch (error) {
-                console.log(error.response.data.detail);
-                switch (error.response.data.detail) {
-                    case "User must be logged in":
-                        router.push("/");
-                        break;
-                    case "User has already logged in":
-                        router.push("/dashboard-redirect");
-                        break;
-                }
-            }
-        };
-
-        const fetchSpecialties = async () => {
-            const response = await axios.get(
-                `http://localhost:8080/specialties`
-            );
-            console.log(response.data.specialties);
-            response.data.specialties == undefined
-                ? setSpecialties([])
-                : setSpecialties(response.data.specialties);
-        };
-        userCheck();
-        fetchAppointments();
-        fetchSpecialties();
-        console.log(specialties);
-    }, []);
+    const fetchSpecialties = async () => {
+        const response = await axios.get(`http://localhost:8080/specialties`);
+        response.data.specialties == undefined
+            ? setSpecialties([])
+            : setSpecialties(response.data.specialties);
+    };
 
     const fetchPhysicians = async (specialty) => {
         const response = await axios.get(
@@ -141,11 +123,16 @@ const Dashboard = () => {
     };
 
     const handleDeleteAppointment = async (appointmentId) => {
-        await axios.delete(
-            `http://localhost:8080/appointments/${appointmentId}`
-        );
-        alert("Turno eliminado exitosamente");
-        router.refresh("/dashboard-patient");
+        console.log(appointmentId);
+        try {
+            await axios.delete(
+                `http://localhost:8080/appointments/${appointmentId}`
+            );
+            alert("Turno eliminado exitosamente");
+            fetchAppointments();
+        } catch (error) {
+            console.log(error);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -156,12 +143,7 @@ const Dashboard = () => {
                 date: Math.round(date.getTime() / 1000),
             }
         );
-        console.log(response.data.specialties);
-        response.data.specialties == undefined
-            ? setSpecialties([])
-            : setSpecialties(response.data.specialties);
         alert("Turno solicitado exitosamente");
-        router.refresh("/dashboard-patient");
         fetchAppointments();
     };
 
@@ -178,6 +160,20 @@ const Dashboard = () => {
             transform: "translate(-50%, -50%)",
         },
     };
+
+    useEffect(() => {
+        axios.defaults.headers.common = {
+            Authorization: `bearer ${localStorage.getItem("token")}`,
+        };
+
+        userCheck();
+        fetchSpecialties();
+        fetchAppointments();
+        const intervalId = setInterval(() => {
+            fetchAppointments();
+        }, 5 * 1000);
+        return () => clearInterval(intervalId);
+    }, []);
 
     return (
         <div className={styles.dashboard}>

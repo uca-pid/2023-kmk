@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import styles from "./landing.module.css";
 import { useRouter } from "next/navigation";
-import { handleLogoClick } from "../handlers/handleLogoClick.js";
 import axios from "axios";
 
 const Landing = () => {
@@ -39,7 +38,7 @@ const Landing = () => {
             setError("Error al iniciar sesión: " + error.response.data.detail);
 
             if (error.response.data.detail == "User has already logged in") {
-                // router.push("/dashboard-redirect");
+                router.push("/dashboard-redirect");
             }
 
             // Verificar si el elemento .error-message está presente en el DOM
@@ -48,21 +47,12 @@ const Landing = () => {
             if (errorMessageElement) {
                 errorMessageElement.style.visibility = "visible"; // Muestra el mensaje de error
             }
-
-            return console.log(error);
         }
     };
 
     return (
         <div className={styles["login-page"]}>
             <header className={styles["header"]}>
-                {/* <Image
-                    src="/logo.png"
-                    alt="Logo de la empresa"
-                    className={styles["logo"]}
-                    width={200}
-                    height={200}
-                /> */}
                 <Link href="/">
                     <img
                         src="/logo.png"

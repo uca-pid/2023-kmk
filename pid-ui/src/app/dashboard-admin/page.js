@@ -8,8 +8,19 @@ import axios from "axios";
 
 const Admin = () => {
     const router = useRouter();
-    const [specialties, setSpecialties] = useState([]);
     const [doctors, setDoctors] = useState([]);
+
+    const fetchPhysicians = async () => {
+        try {
+            const response = await axios.get(
+                `http://localhost:8080/admins/pending-validations`
+            );
+            console.log(response.data.physicians_pending_validation);
+            setDoctors(response.data.physicians_pending_validation);
+        } catch (error) {
+            console.log(error);
+        }
+    };
 
     useEffect(() => {
         axios.defaults.headers.common = {
@@ -55,18 +66,6 @@ const Admin = () => {
             }
         };
 
-        const fetchPhysicians = async () => {
-            try {
-                const response = await axios.get(
-                    `http://localhost:8080/admins/pending-validations`
-                );
-                console.log(response.data.physicians_pending_validation);
-                setDoctors(response.data.physicians_pending_validation);
-            } catch (error) {
-                console.log(error);
-            }
-        };
-
         // userCheck();
         fetchPhysicians();
     }, []);
@@ -79,7 +78,7 @@ const Admin = () => {
             );
             console.log(response.data);
             alert("Profesional aprobado");
-            router.push("/dashboard-admin");
+            fetchPhysicians();
         } catch (error) {
             console.log(error);
         }
@@ -93,7 +92,8 @@ const Admin = () => {
             );
             console.log(response.data);
             alert("Profesional denegado");
-            router.push("/dashboard-admin");
+            fetchPhysicians();
+            router.refresh("/dashboard-admin");
         } catch (error) {
             console.log(error);
         }
@@ -144,7 +144,7 @@ const Admin = () => {
                                     >
                                         <p>
                                             Profesional:{" "}
-                                            {doctor.name +
+                                            {doctor.first_name +
                                                 " " +
                                                 doctor.last_name}
                                         </p>

@@ -2,27 +2,26 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     height: 100vh;
     text-align: center;
     background-color: #fff;
     padding: 0;
     width: 100%;
+    margin-top: 100px;
 }
-
-/* Estilos para el encabezado */
 
 /* Estilos para los mensajes de error */
 .error-message {
     color: red;
     font-size: 1rem;
     margin-bottom: 1rem;
-    visibility: visible; /* Inicialmente, oculta el mensaje de error */
+    visibility: visible;
 }
 
 /* Estilos para el logo */
 .logo {
-    width: 250px; /* Tamaño del logo */
+    width: 250px;
     height: auto;
     cursor: pointer;
 }
@@ -30,30 +29,28 @@
 /* Estilos para el título de la página de inicio de sesión */
 .title {
     font-size: 2rem;
-    margin-bottom: 1rem;
     color: #333;
 }
 
 /* Estilos para el subtítulo "Iniciar Sesión" */
 .subtitle {
-    font-size: 1.5rem; /* Tamaño del subtítulo */
+    font-size: 1.5rem;
     color: #333;
+    margin: 1rem 0;
 }
 
 /* Estilos para el formulario de inicio de sesión */
 .form {
-    flex: 1;
     align-self: flex-start;
+    justify-content: center;
     display: flex;
-    margin-top: 20rem;
-    margin: auto;
     background-color: #fff;
-    width: 100%; /* Ancho del 100% para ocupar toda la pantalla */
+    width: 100%;
     padding: 2rem;
     flex-direction: column;
-    position: relative;
-    justify-content: center;
     max-width: 600px;
+    flex-wrap: wrap;
+    margin: 0 auto;
 }
 
 /* Estilos para los grupos de formulario */
