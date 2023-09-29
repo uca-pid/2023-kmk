@@ -1,0 +1,113 @@
+import os
+import uvicorn
+from dotenv import load_dotenv
+from .config import initialize_firebase_app
+
+initialize_firebase_app()
+
+from fastapi import FastAPI, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
+from fastapi.openapi.utils import get_openapi
+
+
+load_dotenv()
+
+from app.routers import users, appointments, specialties, physicians, admins
+
+
+CTX_PORT: int = int(os.environ.get("PORT")) if os.environ.get("PORT") else 8080
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"]
+)
+
+routers = [
+    users.router,
+    appointments.router,
+    specialties.router,
+    physicians.router,
+    admins.router,
+]
+
+for router in routers:
+    app.include_router(router)
+
+
+@app.get("/")
+async def root() -> RedirectResponse:
+    """
+    Root endpoint,
+
+    It returns the OPENAPI docs for the KMK API
+    """
+    return RedirectResponse(url="/redoc", status_code=status.HTTP_303_SEE_OTHER)
+
+
+# @app.post("/api/register")
+# async def register_user(request: Request):
+#     data = await request.json()
+#     print(data)  # Esto imprimirá los datos en la consola del servidor
+#     # Utiliza Firebase Authentication para crear una cuenta de usuario
+#     try:
+#         user = auth.create_user(
+#             email=data["email"],
+#             password=data["password"],
+#             display_name=data["role"],
+#             email_verified=False,  # Cambia a True si deseas que el email esté verificado
+#         )
+#         print(f"Usuario registrado: {user.uid}")
+#         return {"message": "Registro exitoso"}
+#     except Exception as e:
+#         print(f"Error en el registro: {str(e)}")
+#         return {"message": "Error en el registro"}
+
+
+def start():
+    """
+    _summary_: Start the application
+    """
+    uvicorn.run("app.main:app", host="0.0.0.0", port=CTX_PORT, reload=True)
+
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = get_openapi(
+        title="Gestion Medica KMK",
+        version="1.0.0",
+        description="Docs for the KMK API",
+        routes=app.routes,
+        tags=[
+            {
+                "name": "Users",
+                "description": "Operations that handle users, like **login** and **signup**",
+            },
+            {
+                "name": "Specialties",
+                "description": "Operations that handle specialties",
+            },
+            {
+                "name": "Appointments",
+                "description": "Operations that handle appointments",
+            },
+            {
+                "name": "Physicians",
+                "description": "Operations that handle physicians",
+            },
+            {
+                "name": "Admins",
+                "description": "Operations that are handled by admins",
+            },
+        ],
+    )
+    openapi_schema["info"]["x-logo"] = {
+        "url": "https://firebasestorage.googleapis.com/v0/b/pid-kmk.appspot.com/o/appResources%2FmediSyncLogo.png?alt=media&token=5fa730e3-a5cb-4a65-ad71-88af0c72b65a"
+    }
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+
+app.openapi = custom_openapi
