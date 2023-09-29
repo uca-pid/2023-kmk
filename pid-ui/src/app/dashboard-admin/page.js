@@ -67,7 +67,7 @@ const Admin = () => {
             }
         };
 
-        checkUserProfile();
+        // userCheck();
         fetchPhysicians();
     }, []);
 
@@ -79,7 +79,7 @@ const Admin = () => {
             );
             console.log(response.data);
             alert("Profesional aprobado");
-            router.push("/admin");
+            router.push("/dashboard-admin");
         } catch (error) {
             console.log(error);
         }
@@ -93,7 +93,7 @@ const Admin = () => {
             );
             console.log(response.data);
             alert("Profesional denegado");
-            router.push("/admin");
+            router.push("/dashboard-admin");
         } catch (error) {
             console.log(error);
         }

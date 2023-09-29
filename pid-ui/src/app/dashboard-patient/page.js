@@ -145,7 +145,7 @@ const Dashboard = () => {
             `http://localhost:8080/appointments/${appointmentId}`
         );
         alert("Turno eliminado exitosamente");
-        router.push("/dashboard");
+        router.refresh("/dashboard-patient");
     };
 
     const handleSubmit = async (e) => {
@@ -271,7 +271,9 @@ const Dashboard = () => {
                                     >
                                         <p>
                                             Profesional:{" "}
-                                            {appointment.doctorName}
+                                            {appointment.physician.first_name +
+                                                " " +
+                                                appointment.physician.last_name}
                                         </p>
                                         <p>Fecha y hora: {appointment.date}</p>
                                         <div
@@ -281,7 +283,7 @@ const Dashboard = () => {
                                                 ]
                                             }
                                         >
-                                            {/* <button
+                                            <button
                                                 className={
                                                     styles["edit-button"]
                                                 }
@@ -292,7 +294,7 @@ const Dashboard = () => {
                                                 }
                                             >
                                                 Modificar
-                                            </button> */}
+                                            </button>
 
                                             <button
                                                 className={

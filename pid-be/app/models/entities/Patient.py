@@ -35,7 +35,7 @@ class Patient:
         db.collection("patients").document(self.id).set(
             {
                 "id": self.id,
-                "name": self.name,
+                "first_name": self.name,
                 "last_name": self.last_name,
                 "email": self.email,
             }

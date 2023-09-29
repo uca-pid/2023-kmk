@@ -127,7 +127,7 @@ class Physician:
         db.collection("physicians").document(self.id).set(
             {
                 "id": self.id,
-                "name": self.name,
+                "first_name": self.name,
                 "last_name": self.last_name,
                 "matricula": self.matricula,
                 "specialty": self.specialty,
