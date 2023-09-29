@@ -30,6 +30,23 @@ const Dashboard = () => {
         date: new Date(),
     });
 
+    const fetchAppointments = async () => {
+        try {
+            const response = await axios.get(
+                `http://localhost:8080/appointments`
+            );
+            console.log(response.data.appointments);
+            response.data.appointments == undefined
+                ? setAppointments([])
+                : setAppointments(response.data.appointments);
+        } catch (error) {
+            if (error.response.data.detail == "User must be logged in") {
+                console.error(error);
+                router.push("/");
+            }
+        }
+    };
+
     useEffect(() => {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
@@ -70,23 +87,6 @@ const Dashboard = () => {
                     case "User has already logged in":
                         router.push("/dashboard-redirect");
                         break;
-                }
-            }
-        };
-
-        const fetchAppointments = async () => {
-            try {
-                const response = await axios.get(
-                    `http://localhost:8080/appointments`
-                );
-                console.log(response.data.appointments);
-                response.data.appointments == undefined
-                    ? setAppointments([])
-                    : setAppointments(response.data.appointments);
-            } catch (error) {
-                if (error.response.data.detail == "User must be logged in") {
-                    console.error(error);
-                    router.push("/");
                 }
             }
         };
@@ -161,7 +161,8 @@ const Dashboard = () => {
             ? setSpecialties([])
             : setSpecialties(response.data.specialties);
         alert("Turno solicitado exitosamente");
-        router.push("/dashboard-patient");
+        router.refresh("/dashboard-patient");
+        fetchAppointments();
     };
 
     const handleLogoClick = () => {
@@ -244,7 +245,9 @@ const Dashboard = () => {
                     height={200}
                     onClick={() => {
                         localStorage.removeItem("token");
-                        axios.delete;
+                        axios.defaults.headers.common = {
+                            Authorization: `bearer`,
+                        };
                         router.push("/");
                     }}
                 />
@@ -275,7 +278,12 @@ const Dashboard = () => {
                                                 " " +
                                                 appointment.physician.last_name}
                                         </p>
-                                        <p>Fecha y hora: {appointment.date}</p>
+                                        <p>
+                                            Fecha y hora:{" "}
+                                            {new Date(
+                                                appointment.date * 1000
+                                            ).toLocaleString("es-AR")}
+                                        </p>
                                         <div
                                             className={
                                                 styles[

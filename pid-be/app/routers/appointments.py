@@ -96,7 +96,12 @@ def get_all_appointments(uid=Depends(Auth.is_logged_in)):
     },
 )
 def get_all_physicians_appointments(uid=Depends(Auth.is_logged_in)):
-    """ """
+    """ 
+    Get all appointments for physician.
+
+    This will allow authenticated physicians to retrieve all their appointments.
+    
+    """
     try:
         appointments = Appointment.get_all_appointments_for_physician_with(uid)
         return {"appointments": appointments}

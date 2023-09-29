@@ -5,10 +5,10 @@
     font-size: 2rem;
     margin-bottom: 1rem;
     color: #333;
-  }
-  
-  /* Estilos generales para botones */
-  .button {
+}
+
+/* Estilos generales para botones */
+.button {
     padding: 0.5rem 1rem;
     background-color: #007bff;
     color: #fff;
@@ -17,9 +17,8 @@
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
-  }
-  
-  .button:hover {
+}
+
+.button:hover {
     background-color: #0056b3;
-  }
-  
+}

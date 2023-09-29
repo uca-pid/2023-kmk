@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import styles from "./landing.module.css";
 import { useRouter } from "next/navigation";
+import { handleLogoClick } from "../handlers/handleLogoClick.js";
 import axios from "axios";
 
 const Landing = () => {
@@ -14,18 +15,14 @@ const Landing = () => {
     const router = useRouter();
 
     useEffect(() => {
-        localStorage.setItem("token", "");
-        axios.delete;
+        localStorage.removeItem("token");
+        axios.defaults.headers.common = {
+            Authorization: `bearer`,
+        };
     }, []);
-
-    const handleLogoClick = () => {
-        router.push("/");
-    };
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        localStorage.setItem("token", "");
-
         const userData = {
             email,
             password,
@@ -42,7 +39,7 @@ const Landing = () => {
             setError("Error al iniciar sesión: " + error.response.data.detail);
 
             if (error.response.data.detail == "User has already logged in") {
-                router.push("/dashboard-redirect");
+                // router.push("/dashboard-redirect");
             }
 
             // Verificar si el elemento .error-message está presente en el DOM
@@ -58,54 +55,60 @@ const Landing = () => {
 
     return (
         <div className={styles["login-page"]}>
-            <header className={styles["header"]} onClick={handleLogoClick}>
-                <Image
+            <header className={styles["header"]}>
+                {/* <Image
                     src="/logo.png"
                     alt="Logo de la empresa"
                     className={styles["logo"]}
                     width={200}
                     height={200}
-                />
+                /> */}
+                <Link href="/">
+                    <img
+                        src="/logo.png"
+                        alt="logo"
+                        className={styles["logo"]}
+                    />
+                </Link>
             </header>
-            <div className={styles["login-form-container"]}>
+            <form className={styles["form"]} onSubmit={handleLogin}>
                 <div className={styles["title"]}>¡Bienvenido!</div>
                 <div className={styles["subtitle"]}>Iniciar Sesion</div>
-                <form className={styles["form"]} onSubmit={handleLogin}>
-                    <div className={styles["form-group"]}>
-                        <label htmlFor="email">Correo Electrónico</label>
-                        <input
-                            type="email"
-                            id="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div className={styles["form-group"]}>
-                        <label htmlFor="password">Contraseña</label>
-                        <input
-                            type="password"
-                            id="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </div>
-                    {error && (
-                        <div className={styles["error-message"]}>{error}</div>
-                    )}
-                    <button type="submit" className={styles["cta-button"]}>
-                        Iniciar Sesión
-                    </button>
-                </form>
+                <div className={styles["form-group"]}>
+                    <label htmlFor="email">Correo Electrónico</label>
+                    <input
+                        type="email"
+                        id="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
+                </div>
+                <div className={styles["form-group"]}>
+                    <label htmlFor="password">Contraseña</label>
+                    <input
+                        type="password"
+                        id="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
+                </div>
+                {error && (
+                    <div className={styles["error-message"]}>{error}</div>
+                )}
+                <button type="submit" className={styles["cta-button"]}>
+                    Iniciar Sesión
+                </button>
                 <div className={styles["register-link"]}>
                     ¿No tienes una cuenta?{" "}
                     <Link legacyBehavior href="/registro">
                         <a>Registrarse</a>
                     </Link>
                 </div>
-            </div>
-            <footer className={styles["page-footer"]}>
+            </form>
+
+            <footer>
                 <p>Derechos de autor © 2023 KMK</p>
             </footer>
         </div>

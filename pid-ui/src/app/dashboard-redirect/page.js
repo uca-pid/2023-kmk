@@ -26,7 +26,7 @@ const Redirect = () => {
                 switch (response.data.profile) {
                     case "Admin":
                         console.log("Checking if admin");
-                        router.push("/dashboard-admin");
+                        router.replace("/dashboard-admin");
                         break;
                     case "Physician":
                         if (
@@ -34,15 +34,15 @@ const Redirect = () => {
                             response.data.approved == "pending"
                         ) {
                             alert("Medico no validado");
-                            router.push("/");
+                            router.replace("/");
                             break;
                         }
                         console.log("Checking if physician");
-                        router.push("/dashboard-physician");
+                        router.replace("/dashboard-physician");
                         break;
                     case "Patient":
                         console.log("Checking if patient");
-                        router.push("/dashboard-patient");
+                        router.replace("/dashboard-patient");
                         break;
                     default:
                         console.log("Error");
@@ -52,10 +52,10 @@ const Redirect = () => {
                 console.log(error.response.data.detail);
                 switch (error.response.data.detail) {
                     case "User must be logged in":
-                        router.push("/");
+                        router.replace("/");
                         break;
                     case "User has already logged in":
-                        router.push("/dashboard-redirect");
+                        router.replace("/dashboard-redirect");
                         break;
                 }
             }
@@ -81,7 +81,7 @@ const Redirect = () => {
                     height={200}
                     onClick={() => {
                         localStorage.removeItem("token");
-                        router.push("/");
+                        router.replace("/");
                     }}
                 />
             </header>

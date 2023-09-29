@@ -17,10 +17,6 @@ const Dashboard = () => {
     const [appointments, setAppointments] = useState([]);
     const [doctors, setDoctors] = useState([]);
     const [specialties, setSpecialties] = useState([]);
-    const [availableAppointments, setAvailableAppointments] = useState([]);
-    const [selectedSpecialty, setSelectedSpecialty] = useState("");
-    const [selectedDoctor, setSelectedDoctor] = useState("");
-    const [physiciansAgenda, setPhysiciansAgenda] = useState({});
     const [date, setDate] = useState(new Date());
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingAppointment, setEditingAppointment] = useState({
@@ -77,12 +73,12 @@ const Dashboard = () => {
         const fetchAppointments = async () => {
             try {
                 const response = await axios.get(
-                    `http://localhost:8080/appointments/physician`
+                    `http://localhost:8080/appointments/physician/`
                 );
-                console.log(response.appointments);
-                response.appointments == undefined
+                console.log(response.data.appointments);
+                response.data.appointments == undefined
                     ? setAppointments([])
-                    : setAppointments(response.appointments);
+                    : setAppointments(response.data.appointments);
             } catch (error) {
                 if (error.response.data.detail == "User must be logged in") {
                     console.error(error);
@@ -90,31 +86,10 @@ const Dashboard = () => {
                 }
             }
         };
-
-        const fetchSpecialties = async () => {
-            const response = await axios.get(
-                `http://localhost:8080/specialties`
-            );
-            console.log(response.data.specialties);
-            response.data.specialties == undefined
-                ? setSpecialties([])
-                : setSpecialties(response.data.specialties);
-        };
         userCheck();
         fetchAppointments();
-        fetchSpecialties();
-        console.log(specialties);
+        console.log(appointments);
     }, []);
-
-    const fetchPhysicians = async (specialty) => {
-        const response = await axios.get(
-            `http://localhost:8080/physicians/specialty/${specialty}`
-        );
-        console.log(response.data.physicians);
-        response.data.physicians == undefined
-            ? setDoctors([])
-            : setDoctors(response.data.physicians);
-    };
 
     const handleEditAppointment = (appointment) => {
         console.log(isEditModalOpen);
@@ -145,11 +120,6 @@ const Dashboard = () => {
         // Puedes hacer una llamada a la API o realizar otras acciones necesarias
     };
 
-    const handleSubmit = async (e) => {
-        alert("Turno solicitado exitosamente");
-        router.push("/dashboard");
-    };
-
     const handleLogoClick = () => {
         router.push("/dashboard");
     };
@@ -172,7 +142,7 @@ const Dashboard = () => {
                     isOpen={isEditModalOpen}
                     onRequestClose={handleCloseEditModal}
                     style={customStyles}
-                    contentLabel='Example Modal'
+                    contentLabel="Example Modal"
                 >
                     {/* Campos de edición de especialidad, médico y fecha */}
 
@@ -180,17 +150,17 @@ const Dashboard = () => {
                         <div className={styles["title"]}>Editar Cita</div>
 
                         {/* Selector de fechas */}
-                        <label htmlFor='fecha'>Fechas disponibles:</label>
+                        <label htmlFor="fecha">Fechas disponibles:</label>
 
                         <DatePicker
-                            locale='es'
+                            locale="es"
                             //dateFormat="dd-MM-yyyy HH:mm"
                             selected={date}
                             onChange={(date) => {
                                 setDate(date);
                                 console.log(date);
                             }}
-                            timeCaption='Hora'
+                            timeCaption="Hora"
                             timeIntervals={30}
                             showPopperArrow={false}
                             showTimeSelect
@@ -215,16 +185,16 @@ const Dashboard = () => {
             )}
             <header className={styles.header}>
                 <Image
-                    src='/logo.png'
-                    alt='Logo de la empresa'
+                    src="/logo.png"
+                    alt="Logo de la empresa"
                     className={styles.logo}
                     width={200}
                     height={200}
                     onClick={handleLogoClick}
                 />
                 <Image
-                    src='/logout-icon.png'
-                    alt='CerrarSesion'
+                    src="/logout-icon.png"
+                    alt="CerrarSesion"
                     className={styles["logout-icon"]}
                     width={200}
                     height={200}
@@ -256,9 +226,17 @@ const Dashboard = () => {
                                         className={styles["appointment"]}
                                     >
                                         <p>
-                                            Paciente: {appointment.patientName}
+                                            Paciente:{" "}
+                                            {appointment.patient.first_name +
+                                                " " +
+                                                appointment.patient.last_name}
                                         </p>
-                                        <p>Fecha y hora: {appointment.date}</p>
+                                        <p>
+                                            Fecha y hora:{" "}
+                                            {new Date(
+                                                appointment.date * 1000
+                                            ).toLocaleString("es-AR")}
+                                        </p>
                                         <div
                                             className={
                                                 styles[
