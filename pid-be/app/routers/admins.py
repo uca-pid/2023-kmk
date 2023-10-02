@@ -103,6 +103,7 @@ async def deny_physician(
             content={"detail": "Internal server error"},
         )
 
+
 @router.get(
     "/pending-validations",
     status_code=status.HTTP_200_OK,

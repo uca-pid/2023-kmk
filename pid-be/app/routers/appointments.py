@@ -10,6 +10,8 @@ from app.models.responses.AppointmentResponses import (
     GetAppointmentError,
     AllAppointmentsResponse,
     BasicAppointmentResponse,
+    SuccessfulAppointmentDeletionResponse,
+    DeleteAppointmentError,
 )
 
 router = APIRouter(
@@ -24,6 +26,7 @@ router = APIRouter(
     status_code=status.HTTP_201_CREATED,
     response_model=SuccessfulAppointmentCreationResponse,
     responses={
+        400: {"model": AppointmentCreationError},
         401: {"model": AppointmentCreationError},
         500: {"model": AppointmentCreationError},
     },
@@ -96,11 +99,11 @@ def get_all_appointments(uid=Depends(Auth.is_logged_in)):
     },
 )
 def get_all_physicians_appointments(uid=Depends(Auth.is_logged_in)):
-    """ 
+    """
     Get all appointments for physician.
 
     This will allow authenticated physicians to retrieve all their appointments.
-    
+
     """
     try:
         appointments = Appointment.get_all_appointments_for_physician_with(uid)
@@ -150,18 +153,38 @@ def get_appointment_by_id(id: str, uid=Depends(Auth.is_logged_in)):
         )
 
 
-@router.delete("/{id}", status_code=status.HTTP_200_OK)
+@router.delete(
+    "/{id}",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessfulAppointmentDeletionResponse,
+    responses={
+        400: {"model": DeleteAppointmentError},
+        401: {"model": DeleteAppointmentError},
+        500: {"model": DeleteAppointmentError},
+    },
+)
 def delete_appointment_by_id(id: str, uid=Depends(Auth.is_logged_in)):
-    """ """
+    """
+    Delete an appointment.
+
+    This will allow authenticated users to delete one of their appointments.
+
+    This path operation will:
+
+    * Delete an appointments.
+    * Throw an error if appointment doesn't exist.
+    * Throw an error if appointment doesn't belong to the authenticated user.
+    * Throw an error if appointment retrieving fails.
+    """
     try:
         appointment = Appointment.get_by_id(id)
-        if not appointment or (appointment["physician_id"] != uid and appointment["patient_id"] != uid):
+        if not appointment or appointment["patient_id"] != uid:
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={"detail": "Invalid appointment id"},
             )
         Appointment.delete_by_id(id)
-        return appointment
+        return {"message": "Appointment cancelled successfully"}
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

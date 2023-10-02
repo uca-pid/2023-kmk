@@ -3,6 +3,7 @@ from firebase_admin import firestore
 from fastapi import HTTPException, status
 
 from .Physician import Physician
+from .Patient import Patient
 
 db = firestore.client()
 
@@ -13,6 +14,12 @@ class Appointment:
     patient_id: str
 
     def __init__(self, date: int, physician_id: str, patient_id: str):
+        if not Patient.is_patient(patient_id):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only patients can create appointments",
+            )
+
         if not Physician.has_availability(id=physician_id, date=date):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
