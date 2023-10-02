@@ -28,8 +28,8 @@ if __name__ == "__main__":
         "Urologia",
     ]
 
-    today_date = datetime.fromtimestamp(round(time.time()))
-    number_of_day_of_week = today_date.isoweekday()
+    today_date = datetime.now().date()
+    number_of_day_of_week = int(today_date.strftime("%w"))
 
     a_KMK_user_information = {
         "display_name": "KMK Test User",
@@ -61,7 +61,7 @@ if __name__ == "__main__":
         "specialty": specialties[1],
         "agenda": {
             str(number_of_day_of_week): {"start": 8, "finish": 18.5},
-            str(number_of_day_of_week + 1): {"start": 7, "finish": 16},
+            str((number_of_day_of_week + 1) % 7): {"start": 7, "finish": 16},
         },
     }
 
