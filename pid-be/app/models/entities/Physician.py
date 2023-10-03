@@ -56,7 +56,9 @@ class Physician:
     @staticmethod
     def has_availability(id, date):
         physician_doc = db.collection("physicians").document(id).get().to_dict()
-        day_of_week_of_appointment = str(datetime.fromtimestamp(date).isoweekday())
+        day_of_week_of_appointment = str(
+            datetime.fromtimestamp(date).date().strftime("%w")
+        )
         precise_start_hour_of_appointment = (
             datetime.fromtimestamp(date).hour + datetime.fromtimestamp(date).minute / 60
         )
@@ -109,14 +111,14 @@ class Physician:
         # physician_ref.set({"approved": "approved"}, merge=True)
 
         return id
-    
+
     @staticmethod
     def get_pending_physicians():
         physicians = (
             db.collection("physicians").where("approved", "==", "pending").get()
         )
         return [physician.to_dict() for physician in physicians]
-      
+
     @staticmethod
     def is_physician(id):
         if db.collection("physicians").document(id).get().to_dict():
@@ -133,7 +135,13 @@ class Physician:
                 "specialty": self.specialty,
                 "email": self.email,
                 "approved": self.approved,
-                "agenda": {"1": {"start": 8, "finish": 18}, "2": {"start": 8, "finish": 18}, "3": {"start": 8, "finish": 18}, "4": {"start": 8, "finish": 18}, "5": {"start": 8, "finish": 18}},
+                "agenda": {
+                    "1": {"start": 8, "finish": 18},
+                    "2": {"start": 8, "finish": 18},
+                    "3": {"start": 8, "finish": 18},
+                    "4": {"start": 8, "finish": 18},
+                    "5": {"start": 8, "finish": 18},
+                },
             }
         )
         return self.id

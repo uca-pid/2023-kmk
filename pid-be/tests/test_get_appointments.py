@@ -8,7 +8,7 @@ from firebase_admin import auth, firestore
 db = firestore.client()
 
 today_date = datetime.fromtimestamp(round(time.time()))
-number_of_day_of_week = today_date.isoweekday()
+number_of_day_of_week = int(today_date.date().strftime("%w"))
 next_week_day = today_date + timedelta(days=7)
 next_week_day_first_block = next_week_day.replace(hour=9)
 next_week_day_second_block = next_week_day.replace(hour=10)
