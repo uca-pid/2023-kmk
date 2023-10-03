@@ -91,9 +91,9 @@ const Landing = () => {
                     Iniciar Sesión
                 </button>
                 <div className={styles["register-link"]}>
-                    ¿No tienes una cuenta?{" "}
+                    {" "}
                     <Link legacyBehavior href="/registro">
-                        <a>Registrarse</a>
+                        <a>¿No tienes una cuenta? Registrarse</a>
                     </Link>
                 </div>
             </form>

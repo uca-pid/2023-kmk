@@ -338,6 +338,7 @@ const Dashboard = () => {
                         value={selectedSpecialty}
                         onChange={(e) => {
                             setSelectedSpecialty(e.target.value);
+                            console.log(selectedSpecialty);
                             fetchPhysicians(e.target.value);
                         }}
                     >
@@ -356,11 +357,9 @@ const Dashboard = () => {
                         value={selectedDoctor}
                         onChange={(e) => {
                             setSelectedDoctor(e.target.value);
-                            setPhysiciansAgenda(
-                                doctors.filter(
-                                    (doctor) => doctor.id == e.target.value
-                                )[0].agenda
-                            );
+                            console.log(selectedDoctor.agenda);
+                            setPhysiciansAgenda(selectedDoctor.agenda);
+                            console.log(physiciansAgenda);
                         }}
                         disabled={!selectedSpecialty} // Deshabilita si no se ha seleccionado una especialidad
                     >
