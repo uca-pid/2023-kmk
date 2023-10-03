@@ -89,13 +89,18 @@ const Dashboard = () => {
     };
 
     const fetchPhysicians = async (specialty) => {
-        const response = await axios.get(
-            `http://localhost:8080/physicians/specialty/${specialty}`
-        );
-        console.log(response.data.physicians);
-        response.data.physicians == undefined
-            ? setDoctors([])
-            : setDoctors(response.data.physicians);
+        if (specialty) {
+            const response = await axios.get(
+                `http://localhost:8080/physicians/specialty/${specialty}`
+            );
+            console.log(response.data.physicians);
+            response.data.physicians == undefined
+                ? setDoctors([])
+                : setDoctors(response.data.physicians);
+        } else {
+            setDoctors([]);
+            setPhysiciansAgenda({});
+        }
     };
 
     const handleEditAppointment = (appointment) => {
@@ -111,6 +116,14 @@ const Dashboard = () => {
 
     const handleCloseEditModal = () => {
         setIsEditModalOpen(false);
+    };
+
+    const saveAgenda = (doctorId) => {
+        if (doctorId)
+            setPhysiciansAgenda(
+                doctors.filter((doctor) => doctor.id == doctorId)[0].agenda
+            );
+        else setPhysiciansAgenda({});
     };
 
     const handleSaveAppointment = () => {
@@ -357,9 +370,7 @@ const Dashboard = () => {
                         value={selectedDoctor}
                         onChange={(e) => {
                             setSelectedDoctor(e.target.value);
-                            console.log(selectedDoctor.agenda);
-                            setPhysiciansAgenda(selectedDoctor.agenda);
-                            console.log(physiciansAgenda);
+                            saveAgenda(e.target.value);
                         }}
                         disabled={!selectedSpecialty} // Deshabilita si no se ha seleccionado una especialidad
                     >
@@ -416,7 +427,7 @@ const Dashboard = () => {
                                     time.getHours() + time.getMinutes() / 60;
                                 return (
                                     workingHour.start_time <= parsedTime &&
-                                    workingHour.finish_time >= parsedTime
+                                    workingHour.finish_time > parsedTime
                                 );
                             }
                             return false;

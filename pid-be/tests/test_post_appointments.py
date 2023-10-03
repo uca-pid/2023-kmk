@@ -8,7 +8,7 @@ from firebase_admin import auth, firestore
 db = firestore.client()
 
 today_date = datetime.fromtimestamp(round(time.time()))
-number_of_day_of_week = today_date.isoweekday()
+number_of_day_of_week = today_date.date().strftime("%w")
 next_week_day = today_date + timedelta(days=7)
 next_week_day_off_by_one_day = today_date + timedelta(days=8)
 next_week_day_first_block = next_week_day.replace(hour=9)
@@ -427,4 +427,34 @@ def test_creating_two_appointments_for_the_same_physician_in_the_same_valid_date
     assert (
         response_to_appointment_creation_endpoint.json()["detail"]
         == "Can only set appointment at physicians available hours"
+    )
+
+
+def test_non_patient_creating_appointment_returns_403_code_and_message():
+    physician_info = {
+        "role": "physician",
+        "name": "Doc",
+        "last_name": "Docson the Fourth",
+        "matricula": "11110010",
+        "specialty": "dermatologia",
+        "email": "doc@thedoc.com",
+        "password": "123456",
+    }
+
+    requests.post("http://localhost:8080/users/register-physician", json=physician_info)
+    physicians_token = requests.post(
+        "http://localhost:8080/users/login",
+        json={"email": physician_info["email"], "password": physician_info["password"]},
+    ).json()["token"]
+
+    response_to_appointment_creation_endpoint = requests.post(
+        "http://localhost:8080/appointments",
+        json=appointment_data,
+        headers={"Authorization": f"Bearer {physicians_token}"},
+    )
+
+    assert response_to_appointment_creation_endpoint.status_code == 403
+    assert (
+        response_to_appointment_creation_endpoint.json()["detail"]
+        == "Only patients can create appointments"
     )
