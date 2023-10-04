@@ -18,7 +18,7 @@ from app.models.responses.UserResponses import (
     SuccessfullRegisterResponse,
     RegisterErrorResponse,
     UserProfileResponse,
-    UserProfileErrorResponse
+    UserProfileErrorResponse,
 )
 
 from app.models.entities.Auth import Auth
@@ -51,7 +51,8 @@ with open("credentials/client.json") as fp:
     },
 )
 async def login_user(
-    user_login_request: UserLoginRequest, token=Depends(Auth.has_bearer_token)
+    user_login_request: UserLoginRequest,
+    token=Depends(Auth.has_bearer_token),
 ):
     """
     Login a user.
@@ -232,6 +233,7 @@ async def register_admin(adminRegisterRequest: AdminRegisterRequest):
         content={"detail": "Internal Server Error"},
     )
 
+
 @router.get(
     "/profile",
     status_code=status.HTTP_200_OK,
@@ -254,7 +256,7 @@ def get_user_profile(user_id=Depends(Auth.is_logged_in)):
     * Throw an error if user profile retrieving fails.
     """
     try:
-        #chequear si el usuario es admin
+        # chequear si el usuario es admin
         if Admin.is_admin(user_id):
             # user is admin
             return {"profile": "Admin"}
@@ -264,9 +266,11 @@ def get_user_profile(user_id=Depends(Auth.is_logged_in)):
                 return {"profile": "Patient"}
             elif Physician.is_physician(user_id):
                 # user is physician
-                physician = db.collection("physicians").document(user_id).get().to_dict()
+                physician = (
+                    db.collection("physicians").document(user_id).get().to_dict()
+                )
                 return {"profile": "Physician", "approved": physician["approved"]}
-            
+
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

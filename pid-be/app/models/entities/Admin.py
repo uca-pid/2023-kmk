@@ -7,14 +7,12 @@ class Admin:
     name: str
     last_name: str
     email: str
-    password: str
     id: str
 
-    def __init__(self, name: str, last_name: str, email: str, password: str, id: str):
+    def __init__(self, name: str, last_name: str, email: str, id: str):
         self.name = name
         self.last_name = last_name
         self.email = email
-        self.password = password
         self.id = id
 
     @staticmethod

@@ -11,7 +11,6 @@ class Physician:
     matricula: int
     specialty: str
     email: str
-    password: str
     id: str
     approved: str
 
@@ -23,7 +22,6 @@ class Physician:
         matricula: int,
         specialty: str,
         email: str,
-        password: str,
         id: str,
         approved: str,
     ):
@@ -33,7 +31,6 @@ class Physician:
         self.matricula = matricula
         self.specialty = specialty
         self.email = email
-        self.password = password
         self.id = id
         self.approved = approved
 
@@ -49,7 +46,10 @@ class Physician:
     @staticmethod
     def get_by_specialty(specialty_name):
         physicians = (
-            db.collection("physicians").where("specialty", "==", specialty_name).get()
+            db.collection("physicians")
+            .where("specialty", "==", specialty_name)
+            .where("approved", "==", "approved")
+            .get()
         )
         return [physician.to_dict() for physician in physicians]
 
