@@ -9,6 +9,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import es from "date-fns/locale/es";
 import Modal from "react-modal";
 import axios from "axios";
+import { Footer, Header, TabBar } from "../components/header";
 
 registerLocale("es", es);
 
@@ -21,12 +22,15 @@ const Dashboard = () => {
     const [selectedDoctor, setSelectedDoctor] = useState("");
     const [physiciansAgenda, setPhysiciansAgenda] = useState({});
     const [date, setDate] = useState(new Date());
+    const [dateToEdit, setDateToEdit] = useState(new Date());
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingAppointment, setEditingAppointment] = useState({
         id: null,
         specialty: "",
-        doctor: "",
+        doctor: doctors[0],
         date: new Date(),
+        patient: "",
+        agenda: {},
     });
 
     const fetchAppointments = async () => {
@@ -43,33 +47,33 @@ const Dashboard = () => {
     };
 
     const userCheck = async () => {
-        console.log("Checking user profile");
+        // console.log("Checking user profile");
 
         try {
             const response = await axios.get(
                 `http://localhost:8080/users/profile/`
             );
 
-            console.log(response.data.profile);
+            // console.log(response.data.profile);
             switch (response.data.profile) {
                 case "Admin":
-                    console.log("Checking if admin");
+                    // console.log("Checking if admin");
                     router.push("/dashboard-admin");
                     break;
                 case "Physician":
-                    console.log("Checking if physician");
+                    // console.log("Checking if physician");
                     router.push("/dashboard-physician");
                     break;
                 case "Patient":
-                    console.log("Checking if patient");
+                    // console.log("Checking if patient");
                     router.push("/dashboard-patient");
                     break;
                 default:
-                    console.log("Error");
+                    // console.error("Error");
                     break;
             }
         } catch (error) {
-            console.log(error.response.data.detail);
+            console.error(error.response.data.detail);
             switch (error.response.data.detail) {
                 case "User must be logged in":
                     router.push("/");
@@ -104,14 +108,22 @@ const Dashboard = () => {
     };
 
     const handleEditAppointment = (appointment) => {
-        console.log(isEditModalOpen);
+        console.log(appointment);
+        console.log(editingAppointment);
+
+        console.log(
+            doctors.filter((doctor) => doctor.id == appointment.physician.id)
+        );
         setIsEditModalOpen(true);
         setEditingAppointment({
             id: appointment.id,
-            specialty: appointment.specialty,
-            doctor: appointment.doctor,
-            date: new Date(appointment.date),
+            specialty: appointment.physician.specialty,
+            doctor: appointment.physician,
+            date: appointment.date,
+            patient: appointment.patient,
+            agenda: appointment.physician.agenda,
         });
+        console.log(editingAppointment);
     };
 
     const handleCloseEditModal = () => {
@@ -132,6 +144,7 @@ const Dashboard = () => {
         // Una vez guardados los cambios, cierra el modal
         // y actualiza la lista de citas o realiza cualquier otra acción necesaria
         setIsEditModalOpen(false);
+        console.log(editingAppointment);
         alert("Turno modificado exitosamente");
     };
 
@@ -160,9 +173,6 @@ const Dashboard = () => {
         fetchAppointments();
     };
 
-    const handleLogoClick = () => {
-        router.push("/dashboard-patient");
-    };
     const customStyles = {
         content: {
             top: "50%",
@@ -193,6 +203,7 @@ const Dashboard = () => {
             {/* Modal de edición */}
             {isEditModalOpen && (
                 <Modal
+                    ariaHideApp={false}
                     isOpen={isEditModalOpen}
                     onRequestClose={handleCloseEditModal}
                     style={customStyles}
@@ -208,17 +219,53 @@ const Dashboard = () => {
 
                         <DatePicker
                             locale="es"
-                            //dateFormat="dd-MM-yyyy HH:mm"
-                            selected={date}
+                            selected={dateToEdit}
                             onChange={(date) => {
-                                setDate(date);
-                                console.log(date);
+                                setDateToEdit(date);
                             }}
                             timeCaption="Hora"
                             timeIntervals={30}
                             showPopperArrow={false}
                             showTimeSelect
                             inline
+                            filterDate={(date) => {
+                                if (
+                                    editingAppointment.doctor.agenda
+                                        .working_days
+                                ) {
+                                    return editingAppointment.doctor.agenda.working_days.includes(
+                                        date.getDay()
+                                    );
+                                }
+                                return false;
+                            }}
+                            minDate={new Date()}
+                            filterTime={(time) => {
+                                if (
+                                    editingAppointment.doctor.agenda
+                                        .appointments &&
+                                    !editingAppointment.doctor.agenda.appointments.includes(
+                                        Math.round(time.getTime() / 1000)
+                                    ) &&
+                                    editingAppointment.doctor.agenda
+                                        .working_hours
+                                ) {
+                                    let workingHour =
+                                        editingAppointment.doctor.agenda.working_hours.filter(
+                                            (workingHour) =>
+                                                workingHour.day_of_week ===
+                                                date.getDay()
+                                        )[0];
+                                    let parsedTime =
+                                        time.getHours() +
+                                        time.getMinutes() / 60;
+                                    return (
+                                        workingHour.start_time <= parsedTime &&
+                                        workingHour.finish_time > parsedTime
+                                    );
+                                }
+                                return false;
+                            }}
                         />
                     </div>
 
@@ -237,38 +284,11 @@ const Dashboard = () => {
                     </button>
                 </Modal>
             )}
-            <header className={styles.header}>
-                <Image
-                    src="/logo.png"
-                    alt="Logo de la empresa"
-                    className={styles.logo}
-                    width={200}
-                    height={200}
-                    onClick={handleLogoClick}
-                />
-                <Image
-                    src="/logout-icon.png"
-                    alt="CerrarSesion"
-                    className={styles["logout-icon"]}
-                    width={200}
-                    height={200}
-                    onClick={() => {
-                        localStorage.removeItem("token");
-                        axios.defaults.headers.common = {
-                            Authorization: `bearer`,
-                        };
-                        router.push("/");
-                    }}
-                />
 
-                <div className={styles["tab-bar"]}>
-                    <div className={styles.tab} onClick={handleLogoClick}>
-                        Turnos
-                    </div>
-                    <div className={styles.tab_disabled}>Mi Ficha</div>
-                </div>
-            </header>
+            <Header />
+            <TabBar />
 
+            {/* </header> */}
             <div className={styles["tab-content"]}>
                 <div className={styles.form}>
                     <div className={styles["title"]}>Mis Proximos Turnos</div>
@@ -443,10 +463,7 @@ const Dashboard = () => {
                     </button>
                 </div>
             </div>
-
-            <footer className={styles["page-footer"]}>
-                <p>Derechos de autor © 2023 KMK</p>
-            </footer>
+            <Footer />
         </div>
     );
 };

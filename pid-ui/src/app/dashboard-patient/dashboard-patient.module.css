@@ -18,24 +18,6 @@
     margin-bottom: 1rem;
 }
 
-/* Estilos para el logo */
-.logo {
-    width: 250px; /* Tamaño del logo */
-    height: auto;
-    cursor: pointer;
-}
-
-.logout-icon {
-    width: 35px;
-    height: auto;
-    cursor: pointer;
-    position: absolute;
-    right: 2rem;
-}
-.logout-icon:hover {
-    filter: brightness(0.8);
-}
-
 /* Estilos para el título de la página de inicio de sesión */
 .title {
     font-size: 2rem;
@@ -51,47 +33,6 @@
 
 .subtitle:disabled {
     color: #5d5d5d;
-}
-
-/* Estilos para la barra superior de navegación por pestañas */
-.tab-bar {
-    display: flex;
-    background-color: rgb(238, 238, 238);
-    text-align: center;
-    position: fixed;
-    top: 100px; /* Alinea la barra debajo del encabezado */
-    left: 0;
-    right: 0;
-    z-index: 999;
-    justify-content: center;
-    align-items: center;
-    height: 50px; /* Altura fija para la barra */
-    width: 100%; /* Ancho del 100% para ocupar toda la pantalla */
-    padding: 2rem;
-    box-shadow: inset 0 -10px 10px -10px rgba(0, 0, 0, 0.1);
-}
-
-/* Estilos para las pestañas */
-.tab {
-    flex: 1;
-    text-align: center;
-    cursor: pointer;
-    padding: 10px 20px; /* Añade espaciado a las pestañas */
-    color: #333;
-    border-radius: 6px;
-    background-color: #cacaca;
-    margin: 10px 10px 10px 10px;
-}
-
-.tab_disabled {
-    flex: 1;
-    text-align: center;
-    cursor: not-allowed;
-    padding: 10px 20px; /* Añade espaciado a las pestañas */
-    color: #5d5d5d;
-    border-radius: 6px;
-    background-color: #d7d7d7;
-    margin: 10px 10px 10px 10px;
 }
 
 /* Estilos para el contenido de la pestaña activa */
