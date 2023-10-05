@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import styles from "./landing.module.css";
 import { useRouter } from "next/navigation";
@@ -33,6 +32,7 @@ const Landing = () => {
                 userData
             );
             localStorage.setItem("token", response.data.token);
+            sessionStorage.setItem("user", JSON.stringify(response.data.user));
             router.push("/dashboard-redirect");
         } catch (error) {
             setError("Error al iniciar sesión: " + error.response.data.detail);

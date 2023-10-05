@@ -49,7 +49,7 @@ const Redirect = () => {
                         break;
                 }
             } catch (error) {
-                console.error(error.response.data.detail);
+                // console.error(error.response.data.detail);
                 switch (error.response.data.detail) {
                     case "User must be logged in":
                         router.replace("/");

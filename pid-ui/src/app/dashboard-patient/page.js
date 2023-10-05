@@ -69,11 +69,11 @@ const Dashboard = () => {
                     router.push("/dashboard-patient");
                     break;
                 default:
-                    // console.error("Error");
+                    console.error("Error");
                     break;
             }
         } catch (error) {
-            console.error(error.response.data.detail);
+            // console.log(error.response.data.detail);
             switch (error.response.data.detail) {
                 case "User must be logged in":
                     router.push("/");
@@ -87,6 +87,7 @@ const Dashboard = () => {
 
     const fetchSpecialties = async () => {
         const response = await axios.get(`http://localhost:8080/specialties`);
+        console.log(response.data.specialties);
         response.data.specialties == undefined
             ? setSpecialties([])
             : setSpecialties(response.data.specialties);
