@@ -8,8 +8,7 @@ from fastapi.responses import JSONResponse
 
 from app.models.requests.UserRequests import (
     UserLoginRequest,
-    PhysicianRegisterRequest,
-    PatientRegisterRequest,
+    UserRegisterRequest,
     AdminRegisterRequest,
 )
 from app.models.responses.UserResponses import (
@@ -89,8 +88,8 @@ async def login_user(
 
 
 @router.post(
-    "/register-physician",
-    status_code=status.HTTP_200_OK,
+    "/register",
+    status_code=status.HTTP_201_CREATED,
     response_model=SuccessfullRegisterResponse,
     responses={
         400: {"model": RegisterErrorResponse},
@@ -98,7 +97,9 @@ async def login_user(
         500: {"model": RegisterErrorResponse},
     },
 )
-async def register_physician(physicianRegisterRequest: PhysicianRegisterRequest):
+async def register(
+    register_request: UserRegisterRequest, token=Depends(Auth.has_bearer_token)
+):
     """
     Register a user.
     This will allow users to register on the platform.
@@ -108,77 +109,30 @@ async def register_physician(physicianRegisterRequest: PhysicianRegisterRequest)
     """
 
     url = os.environ.get("REGISTER_URL")
-    registerResponse = requests.post(
+    register_response = requests.post(
         url,
         json={
-            "email": physicianRegisterRequest.email,
-            "password": physicianRegisterRequest.password,
+            "email": register_request.email,
+            "password": register_request.password,
             "returnSecureToken": True,
         },
         params={"key": firebase_client_config["apiKey"]},
     )
 
-    if registerResponse.status_code == 400:
+    if register_response.status_code == 400:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"detail": "Invalid email and/or password"},
+            content={"detail": "The user already exists"},
         )
-    elif registerResponse.status_code == 200:
-        # Obtenemos el uid de autenticación de Firebase
-        auth_uid = registerResponse.json()["localId"]
-        # Usamos el mismo uid como identificador en la base de datos
-        physician = Physician(
-            **physicianRegisterRequest.dict(), id=auth_uid, approved="pending"
-        )
-        physician.create()
-        return {"message": "Successfull registration"}
-    return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"detail": "Internal Server Error"},
-    )
-
-
-@router.post(
-    "/register-patient",
-    status_code=status.HTTP_200_OK,
-    response_model=SuccessfullRegisterResponse,
-    responses={
-        400: {"model": RegisterErrorResponse},
-        401: {"model": RegisterErrorResponse},
-        500: {"model": RegisterErrorResponse},
-    },
-)
-async def register_patient(patientRegisterRequest: PatientRegisterRequest):
-    """
-    Register a user.
-    This will allow users to register on the platform.
-    This path operation will:
-    * Register users, performing validations on data received and on its validity.
-    * Throw an error if registration fails.
-    """
-
-    url = os.environ.get("REGISTER_URL")
-    registerResponse = requests.post(
-        url,
-        json={
-            "email": patientRegisterRequest.email,
-            "password": patientRegisterRequest.password,
-            "returnSecureToken": True,
-        },
-        params={"key": firebase_client_config["apiKey"]},
-    )
-
-    if registerResponse.status_code == 400:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"detail": "Invalid email and/or password"},
-        )
-    elif registerResponse.status_code == 200:
-        # Obtenemos el uid de autenticación de Firebase
-        auth_uid = registerResponse.json()["localId"]
-        # Usamos el mismo uid como identificador en la base de datos
-        patient = Patient(**patientRegisterRequest.dict(), id=auth_uid)
-        patient.create()
+    elif register_response.status_code == 200:
+        auth_uid = register_response.json()["localId"]
+        del register_request.password
+        if register_request.role == "patient":
+            patient = Patient(**register_request.dict(), id=auth_uid)
+            patient.create()
+        else:
+            physician = Physician(**register_request.dict(), id=auth_uid)
+            physician.create()
         return {"message": "Successfull registration"}
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

@@ -23,7 +23,7 @@ class Physician:
         specialty: str,
         email: str,
         id: str,
-        approved: str,
+        approved: str = "pending",
     ):
         self.role = role
         self.name = name

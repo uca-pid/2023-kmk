@@ -34,4 +34,3 @@ class Patient:
                 "email": self.email,
             }
         )
-        return self.id
