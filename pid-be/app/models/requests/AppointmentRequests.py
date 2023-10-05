@@ -23,4 +23,6 @@ class AppointmentCreationRequest(BaseModel):
     def validate_physician_id(cls, physician_id_to_validate):
         if not Physician.exists_physician_with(physician_id_to_validate):
             raise ValueError("Physician id doesnt belong to an existant physician")
+        if not Physician.get_by_id(physician_id_to_validate)["approved"] == "approved":
+            raise ValueError("Can only set an appointment with a valid physician")
         return physician_id_to_validate

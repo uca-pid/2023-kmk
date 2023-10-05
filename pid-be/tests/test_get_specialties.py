@@ -81,7 +81,7 @@ def test_get_specialties_endpoint_returns_a_list():
     assert type(response_from_get_specialties_endpoint.json()["specialties"]) == list
 
 
-def test_get_specialties_endpoint_returns_the_list_of_all_specialties():
+def test_get_specialties_endpoint_returns_the_list_of_all_specialties_ordered_alphabetically():
     response_from_login_endpoint = requests.post(
         "http://localhost:8080/users/login",
         json={
@@ -95,10 +95,8 @@ def test_get_specialties_endpoint_returns_the_list_of_all_specialties():
             "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
         },
     )
-
-    assert set(response_from_get_specialties_endpoint.json()["specialties"]) == set(
-        specialties
-    )
+    specialties.sort()
+    assert response_from_get_specialties_endpoint.json()["specialties"] == specialties
 
 
 def test_get_specialties_with_no_authorization_header_returns_200_code():

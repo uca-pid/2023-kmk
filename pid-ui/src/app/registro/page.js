@@ -18,7 +18,7 @@ const Registro = () => {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
-    const [role, setRole] = useState("paciente");
+    const [role, setRole] = useState("patient");
     const router = useRouter();
 
     const validate = (value) => {
@@ -68,7 +68,7 @@ const Registro = () => {
             role,
         };
 
-        if (role === "medico")
+        if (role === "physician")
             userData = {
                 ...userData,
                 matricula: numeroMatricula,
@@ -77,11 +77,7 @@ const Registro = () => {
 
         try {
             const response = await axios.post(
-                `http://localhost:8080/users/${
-                    role === "paciente"
-                        ? "register-patient"
-                        : "register-physician"
-                }`,
+                `http://localhost:8080/users/register`,
                 userData
             );
             console.log(response.data);
@@ -124,8 +120,8 @@ const Registro = () => {
                         onChange={(e) => setRole(e.target.value)}
                         required
                     >
-                        <option value="paciente">Paciente</option>
-                        <option value="medico">Médico</option>
+                        <option value="patient">Paciente</option>
+                        <option value="physician">Médico</option>
                     </select>
                 </div>
                 <div className={styles["form-group"]}>
@@ -148,7 +144,7 @@ const Registro = () => {
                         required
                     />
                 </div>
-                {role === "medico" && (
+                {role === "physician" && (
                     <>
                         <div className={styles["form-group"]}>
                             <label htmlFor="numeroMatricula">

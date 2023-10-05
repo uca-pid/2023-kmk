@@ -7,14 +7,12 @@ class Admin:
     name: str
     last_name: str
     email: str
-    password: str
     id: str
 
-    def __init__(self, name: str, last_name: str, email: str, password: str, id: str):
+    def __init__(self, name: str, last_name: str, email: str, id: str):
         self.name = name
         self.last_name = last_name
         self.email = email
-        self.password = password
         self.id = id
 
     @staticmethod
@@ -23,9 +21,7 @@ class Admin:
 
     @staticmethod
     def is_admin(id):
-        if db.collection("superusers").document(id).get().to_dict():
-            return True
-        return False
+        return db.collection("superusers").document(id).get().exists
 
     def create(self):
         db.collection("superusers").document(self.id).set(
