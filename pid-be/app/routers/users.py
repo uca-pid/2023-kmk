@@ -128,10 +128,10 @@ async def register(
         auth_uid = register_response.json()["localId"]
         del register_request.password
         if register_request.role == "patient":
-            patient = Patient(**register_request.dict(), id=auth_uid)
+            patient = Patient(**register_request.dict(exclude_none=True), id=auth_uid)
             patient.create()
         else:
-            physician = Physician(**register_request.dict(), id=auth_uid)
+            physician = Physician(**register_request.dict(exclude_none=True), id=auth_uid)
             physician.create()
         return {"message": "Successfull registration"}
     return JSONResponse(
