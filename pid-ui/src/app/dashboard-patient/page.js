@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
 import styles from "./dashboard-patient.module.css";
 import { useRouter } from "next/navigation";
 import DatePicker, { registerLocale } from "react-datepicker";
@@ -249,7 +248,8 @@ const Dashboard = () => {
                                         Math.round(time.getTime() / 1000)
                                     ) &&
                                     editingAppointment.doctor.agenda
-                                        .working_hours
+                                        .working_hours &&
+                                    time >= new Date()
                                 ) {
                                     let workingHour =
                                         editingAppointment.doctor.agenda.working_hours.filter(
@@ -436,7 +436,8 @@ const Dashboard = () => {
                                 !physiciansAgenda.appointments.includes(
                                     Math.round(time.getTime() / 1000)
                                 ) &&
-                                physiciansAgenda.working_hours
+                                physiciansAgenda.working_hours &&
+                                time >= new Date()
                             ) {
                                 let workingHour =
                                     physiciansAgenda.working_hours.filter(
