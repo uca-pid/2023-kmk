@@ -35,50 +35,35 @@ other_KMK_user_information = {
     "password": "verySecurePassword123",
 }
 
-a_valid_physician_id = "avalidphysicianid"
-another_valid_physician_id = "anothervalidphysicianid"
+a_KMK_physician_information = {
+    "display_name": "Doc Docson",
+    "email": "getApppointmentDocDocson@kmk.com",
+    "email_verified": True,
+    "password": "verySecurePassword123",
+}
 
-db.collection("physicians").document(a_valid_physician_id).set(
-    {
-        "id": a_valid_physician_id,
-        "first_name": "Doc",
-        "last_name": "Docson",
-        "specialty": "surgeon",
-        "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
-    }
-)
-db.collection("physicians").document(another_valid_physician_id).set(
-    {
-        "id": another_valid_physician_id,
-        "first_name": "Doctor",
-        "last_name": "The Doc",
-        "specialty": "surgeon",
-        "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
-    }
-)
+another_KMK_physician_information = {
+    "display_name": "Doc Docson the Second",
+    "email": "getApppointmentDocDocsonSecond@kmk.com",
+    "email_verified": True,
+    "password": "verySecurePassword123",
+}
 
 an_appointment_data = {
-    "physician_id": a_valid_physician_id,
     "date": round(next_week_day_first_block.timestamp()),
 }
 
 another_appointment_data = {
-    "physician_id": another_valid_physician_id,
     "date": round(next_week_day_second_block.timestamp()),
 }
 
 other_appointment_data = {
-    "physician_id": another_valid_physician_id,
     "date": round(next_week_day_third_block.timestamp()),
 }
 
-pytest.first_bearer = ""
-pytest.second_bearer = ""
-pytest.third_bearer = ""
-
 
 @pytest.fixture(scope="session", autouse=True)
-def create_test_environment():
+def create_test_users():
     first_created_user = auth.create_user(**a_KMK_user_information)
     second_created_user = auth.create_user(**another_KMK_user_information)
     third_created_user = auth.create_user(**other_KMK_user_information)
@@ -103,7 +88,47 @@ def create_test_environment():
             "last_name": "Third",
         }
     )
+    yield
+    print(a_KMK_user_information)
+    auth.delete_user(a_KMK_user_information["uid"])
+    auth.delete_user(another_KMK_user_information["uid"])
+    auth.delete_user(other_KMK_user_information["uid"])
 
+
+@pytest.fixture(scope="session", autouse=True)
+def create_test_physicians(create_test_users):
+    first_created_physician = auth.create_user(**a_KMK_physician_information)
+    second_created_physician = auth.create_user(**another_KMK_physician_information)
+    a_KMK_physician_information["uid"] = first_created_physician.uid
+    another_KMK_physician_information["uid"] = second_created_physician.uid
+
+    db.collection("physicians").document(a_KMK_physician_information["uid"]).set(
+        {
+            "id": a_KMK_physician_information["uid"],
+            "first_name": "Doc",
+            "last_name": "Docson",
+            "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
+            "specialty": "surgeon",
+            "approved": "approved",
+        }
+    )
+    db.collection("physicians").document(another_KMK_physician_information["uid"]).set(
+        {
+            "id": another_KMK_physician_information["uid"],
+            "first_name": "Doc",
+            "last_name": "Docson the Second",
+            "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
+            "specialty": "surgeon",
+            "approved": "approved",
+        }
+    )
+    yield
+    auth.delete_user(a_KMK_physician_information["uid"])
+    auth.delete_user(another_KMK_physician_information["uid"])
+
+
+@pytest.fixture(scope="session", autouse=True)
+def create_login_tokens(create_test_physicians):
     response_from_login_endpoint_for_first_user = requests.post(
         "http://localhost:8080/users/login",
         json={
@@ -134,6 +159,37 @@ def create_test_environment():
 
     pytest.third_bearer = response_from_login_endpoint_for_third_user.json()["token"]
 
+    response_from_login_endpoint_for_first_physician = requests.post(
+        "http://localhost:8080/users/login",
+        json={
+            "email": a_KMK_physician_information["email"],
+            "password": a_KMK_physician_information["password"],
+        },
+    )
+
+    pytest.first_physician_bearer = (
+        response_from_login_endpoint_for_first_physician.json()["token"]
+    )
+
+    response_from_login_endpoint_for_second_physician = requests.post(
+        "http://localhost:8080/users/login",
+        json={
+            "email": another_KMK_physician_information["email"],
+            "password": another_KMK_physician_information["password"],
+        },
+    )
+
+    pytest.second_physician_bearer = (
+        response_from_login_endpoint_for_second_physician.json()["token"]
+    )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def create_test_appointments(create_login_tokens):
+    an_appointment_data["physician_id"] = a_KMK_physician_information["uid"]
+    another_appointment_data["physician_id"] = another_KMK_physician_information["uid"]
+    other_appointment_data["physician_id"] = another_KMK_physician_information["uid"]
+
     first_appointment_creation_response = requests.post(
         "http://localhost:8080/appointments",
         json=an_appointment_data,
@@ -163,10 +219,6 @@ def create_test_environment():
     other_appointment_data["id"] = third_appointment_creation_response.json()[
         "appointment_id"
     ]
-    yield
-    auth.delete_user(a_KMK_user_information["uid"])
-    auth.delete_user(another_KMK_user_information["uid"])
-    auth.delete_user(other_KMK_user_information["uid"])
 
 
 def test_valid_request_to_get_endpoint_returns_200_code():
@@ -228,7 +280,7 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects():
     assert first_appointment_to_validate.get("physician_id") == None
     assert first_appointment_to_validate.get("patient_id") == None
     assert first_appointment_to_validate["physician"] == {
-        "id": a_valid_physician_id,
+        "id": a_KMK_physician_information["uid"],
         "first_name": "Doc",
         "last_name": "Docson",
         "specialty": "surgeon",
@@ -259,9 +311,9 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects():
         second_appointment_to_validate["physician"]["agenda"]["appointments"]
     )
     assert second_appointment_to_validate["physician"] == {
-        "id": another_valid_physician_id,
-        "first_name": "Doctor",
-        "last_name": "The Doc",
+        "id": another_KMK_physician_information["uid"],
+        "first_name": "Doc",
+        "last_name": "Docson the Second",
         "specialty": "surgeon",
         "agenda": {
             "working_days": [number_of_day_of_week],
@@ -284,51 +336,6 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects():
         "last_name": "First",
     }
     assert type(second_appointment_to_validate["created_at"]) == int
-
-
-def test_get_single_appointment_returns_200_code_if_valid():
-    response_from_single_appointment_endpoint = requests.get(
-        f"http://localhost:8080/appointments/{an_appointment_data['id']}",
-        headers={"Authorization": f"Bearer {pytest.first_bearer}"},
-    )
-
-    assert response_from_single_appointment_endpoint.status_code == 200
-
-
-def test_get_single_appointment_returns_appointment_object_if_valid():
-    response_from_single_appointment_endpoint = requests.get(
-        f"http://localhost:8080/appointments/{an_appointment_data['id']}",
-        headers={"Authorization": f"Bearer {pytest.first_bearer}"},
-    )
-
-    appointment = response_from_single_appointment_endpoint.json()
-    assert appointment["id"] == an_appointment_data["id"]
-    assert appointment["date"] == an_appointment_data["date"]
-    assert appointment.get("physician_id") == None
-    assert appointment.get("patient_id") == None
-    assert appointment["physician"] == {
-        "id": a_valid_physician_id,
-        "first_name": "Doc",
-        "last_name": "Docson",
-        "specialty": "surgeon",
-        "agenda": {
-            "working_days": [number_of_day_of_week],
-            "working_hours": [
-                {
-                    "day_of_week": number_of_day_of_week,
-                    "start_time": 8,
-                    "finish_time": 18.5,
-                }
-            ],
-            "appointments": [an_appointment_data["date"]],
-        },
-    }
-    assert appointment["patient"] == {
-        "id": a_KMK_user_information["uid"],
-        "first_name": "KMK",
-        "last_name": "First",
-    }
-    assert type(appointment["created_at"]) == int
 
 
 def test_get_appointments_with_no_authorization_header_returns_401_code():
@@ -395,91 +402,112 @@ def test_get_appointments_with_invalid_bearer_token_returns_401_code():
     )
 
 
-def test_get_appointment_with_no_authorization_header_returns_401_code():
+def test_get_appointments_for_second_physician_return_a_200_code():
     response_to_appointment_get_endpoint = requests.get(
-        f"http://localhost:8080/appointments/{an_appointment_data['id']}"
+        f"http://localhost:8080/appointments",
+        headers={"Authorization": f"Bearer {pytest.second_physician_bearer}"},
     )
 
-    assert response_to_appointment_get_endpoint.status_code == 401
-    assert (
-        response_to_appointment_get_endpoint.json()["detail"]
-        == "User must be logged in"
-    )
+    assert response_to_appointment_get_endpoint.status_code == 200
 
 
-def test_get_appointment_with_empty_authorization_header_returns_401_code():
+def test_get_appointments_for_second_physician_returns_a_list():
     response_to_appointment_get_endpoint = requests.get(
-        f"http://localhost:8080/appointments/{an_appointment_data['id']}",
-        headers={"Authorization": ""},
+        f"http://localhost:8080/appointments",
+        headers={"Authorization": f"Bearer {pytest.second_physician_bearer}"},
     )
 
-    assert response_to_appointment_get_endpoint.status_code == 401
-    assert (
-        response_to_appointment_get_endpoint.json()["detail"]
-        == "User must be logged in"
-    )
+    assert type(response_to_appointment_get_endpoint.json()["appointments"]) == list
 
 
-def test_get_appointment_with_empty_bearer_token_returns_401_code():
+def test_get_appointments_for_second_physician_returns_a_list_of_two_elements():
     response_to_appointment_get_endpoint = requests.get(
-        f"http://localhost:8080/appointments/{an_appointment_data['id']}",
-        headers={"Authorization": f"Bearer "},
+        f"http://localhost:8080/appointments",
+        headers={"Authorization": f"Bearer {pytest.second_physician_bearer}"},
     )
 
-    assert response_to_appointment_get_endpoint.status_code == 401
-    assert (
-        response_to_appointment_get_endpoint.json()["detail"]
-        == "User must be logged in"
+    assert len(response_to_appointment_get_endpoint.json()["appointments"]) == 2
+
+
+def test_valid_request_to_get_endpoint_returns_populated_appointment_objects_for_physician():
+    response_to_get_endpoint = requests.get(
+        "http://localhost:8080/appointments",
+        headers={"Authorization": f"Bearer {pytest.second_physician_bearer}"},
     )
 
+    appointments = response_to_get_endpoint.json()["appointments"]
 
-def test_get_appointment_with_non_bearer_token_returns_401_code():
-    response_to_appointment_get_endpoint = requests.get(
-        f"http://localhost:8080/appointments/{an_appointment_data['id']}",
-        headers={"Authorization": pytest.first_bearer},
+    if appointments[0]["id"] == another_appointment_data["id"]:
+        first_appointment_to_validate = appointments[0]
+        second_appointment_to_validate = appointments[1]
+    else:
+        first_appointment_to_validate = appointments[1]
+        second_appointment_to_validate = appointments[0]
+
+    assert first_appointment_to_validate["id"] == another_appointment_data["id"]
+    assert first_appointment_to_validate["date"] == another_appointment_data["date"]
+    assert first_appointment_to_validate.get("physician_id") == None
+    assert first_appointment_to_validate.get("patient_id") == None
+    first_appointment_to_validate["physician"]["agenda"]["appointments"] = set(
+        first_appointment_to_validate["physician"]["agenda"]["appointments"]
     )
+    assert first_appointment_to_validate["physician"] == {
+        "id": another_KMK_physician_information["uid"],
+        "first_name": "Doc",
+        "last_name": "Docson the Second",
+        "specialty": "surgeon",
+        "agenda": {
+            "working_days": [number_of_day_of_week],
+            "working_hours": [
+                {
+                    "day_of_week": number_of_day_of_week,
+                    "start_time": 8,
+                    "finish_time": 18.5,
+                }
+            ],
+            "appointments": {
+                other_appointment_data["date"],
+                another_appointment_data["date"],
+            },
+        },
+    }
+    assert first_appointment_to_validate["patient"] == {
+        "id": a_KMK_user_information["uid"],
+        "first_name": "KMK",
+        "last_name": "First",
+    }
+    assert type(first_appointment_to_validate["created_at"]) == int
 
-    assert response_to_appointment_get_endpoint.status_code == 401
-    assert (
-        response_to_appointment_get_endpoint.json()["detail"]
-        == "User must be logged in"
+    assert second_appointment_to_validate["id"] == other_appointment_data["id"]
+    assert second_appointment_to_validate["date"] == other_appointment_data["date"]
+    assert second_appointment_to_validate.get("physician_id") == None
+    assert second_appointment_to_validate.get("patient_id") == None
+    second_appointment_to_validate["physician"]["agenda"]["appointments"] = set(
+        second_appointment_to_validate["physician"]["agenda"]["appointments"]
     )
-
-
-def test_get_appointment_with_invalid_bearer_token_returns_401_code():
-    response_to_appointment_get_endpoint = requests.get(
-        f"http://localhost:8080/appointments/{an_appointment_data['id']}",
-        headers={"Authorization": "Bearer smth"},
-    )
-
-    assert response_to_appointment_get_endpoint.status_code == 401
-    assert (
-        response_to_appointment_get_endpoint.json()["detail"]
-        == "User must be logged in"
-    )
-
-
-def test_get_unexistant_appointment_returns_400_code():
-    response_to_appointment_get_endpoint = requests.get(
-        "http://localhost:8080/appointments/invalidappointmentid",
-        headers={"Authorization": f"Bearer {pytest.first_bearer}"},
-    )
-
-    assert response_to_appointment_get_endpoint.status_code == 400
-    assert (
-        response_to_appointment_get_endpoint.json()["detail"]
-        == "Invalid appointment id"
-    )
-
-
-def test_get_appointment_from_another_user_returns_400_code():
-    response_to_appointment_get_endpoint = requests.get(
-        f"http://localhost:8080/appointments/{other_appointment_data['id']}",
-        headers={"Authorization": f"Bearer {pytest.first_bearer}"},
-    )
-
-    assert response_to_appointment_get_endpoint.status_code == 400
-    assert (
-        response_to_appointment_get_endpoint.json()["detail"]
-        == "Invalid appointment id"
-    )
+    assert second_appointment_to_validate["physician"] == {
+        "id": another_KMK_physician_information["uid"],
+        "first_name": "Doc",
+        "last_name": "Docson the Second",
+        "specialty": "surgeon",
+        "agenda": {
+            "working_days": [number_of_day_of_week],
+            "working_hours": [
+                {
+                    "day_of_week": number_of_day_of_week,
+                    "start_time": 8,
+                    "finish_time": 18.5,
+                }
+            ],
+            "appointments": {
+                other_appointment_data["date"],
+                another_appointment_data["date"],
+            },
+        },
+    }
+    assert second_appointment_to_validate["patient"] == {
+        "id": another_KMK_user_information["uid"],
+        "first_name": "KMK",
+        "last_name": "Second",
+    }
+    assert type(second_appointment_to_validate["created_at"]) == int

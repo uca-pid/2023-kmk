@@ -11,7 +11,6 @@ class Physician:
     matricula: int
     specialty: str
     email: str
-    password: str
     id: str
     approved: str
 
@@ -23,9 +22,8 @@ class Physician:
         matricula: int,
         specialty: str,
         email: str,
-        password: str,
         id: str,
-        approved: str,
+        approved: str = "pending",
     ):
         self.role = role
         self.name = name
@@ -33,7 +31,6 @@ class Physician:
         self.matricula = matricula
         self.specialty = specialty
         self.email = email
-        self.password = password
         self.id = id
         self.approved = approved
 
@@ -49,7 +46,10 @@ class Physician:
     @staticmethod
     def get_by_specialty(specialty_name):
         physicians = (
-            db.collection("physicians").where("specialty", "==", specialty_name).get()
+            db.collection("physicians")
+            .where("specialty", "==", specialty_name)
+            .where("approved", "==", "approved")
+            .get()
         )
         return [physician.to_dict() for physician in physicians]
 
@@ -92,25 +92,11 @@ class Physician:
 
     @staticmethod
     def approve_physician(id):
-        # db.collection("physicians").document(id).update({"approved": "approved"})
-        # Obtener la referencia al documento del médico en Firestore
-        physician_ref = db.collection("physicians").document(id)
-        # Actualizar el campo "approved" a "approved"
-        physician_ref.update({"approved": "approved"})
-        # physician_ref.set({"approved": "approved"}, merge=True)
-
-        return id
+        db.collection("physicians").document(id).update({"approved": "approved"})
 
     @staticmethod
     def deny_physician(id):
-        # db.collection("physicians").document(id).update({"approved": "approved"})
-        # Obtener la referencia al documento del médico en Firestore
-        physician_ref = db.collection("physicians").document(id)
-        # Actualizar el campo "approved" a "approved"
-        physician_ref.update({"approved": "denied"})
-        # physician_ref.set({"approved": "approved"}, merge=True)
-
-        return id
+        db.collection("physicians").document(id).update({"approved": "denied"})
 
     @staticmethod
     def get_pending_physicians():
@@ -121,9 +107,7 @@ class Physician:
 
     @staticmethod
     def is_physician(id):
-        if db.collection("physicians").document(id).get().to_dict():
-            return True
-        return False
+        return db.collection("physicians").document(id).get().exists
 
     def create(self):
         db.collection("physicians").document(self.id).set(
