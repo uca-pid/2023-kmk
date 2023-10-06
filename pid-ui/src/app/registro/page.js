@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import styles from "./registro.module.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import validator from "validator";
+import { Header, Footer } from "../components/header";
 
 const Registro = () => {
     const [nombre, setNombre] = useState("");
@@ -105,15 +105,8 @@ const Registro = () => {
 
     return (
         <div className={styles["registro"]}>
-            <header className={styles["header"]} onClick={handleLogoClick}>
-                <Image
-                    src="/logo.png"
-                    alt="Logo de la empresa"
-                    className={styles["logo"]}
-                    width={200}
-                    height={200}
-                />
-            </header>
+            <Header />
+
             <form className={styles["form"]} onSubmit={handleSubmit}>
                 <div className={styles["title"]}>Registro</div>
                 <div className={styles["subtitle"]}>
@@ -172,6 +165,7 @@ const Registro = () => {
                             <select
                                 id="specialty"
                                 value={especialidad}
+                                required
                                 onChange={(e) => {
                                     setEspecialidad(e.target.value);
                                 }}
@@ -250,9 +244,7 @@ const Registro = () => {
                     <a>Inicia Sesión</a>
                 </Link>
             </div>
-            <footer className={styles["page-footer"]}>
-                <p>Derechos de autor © 2023 KMK</p>
-            </footer>
+            <Footer />
         </div>
     );
 };
