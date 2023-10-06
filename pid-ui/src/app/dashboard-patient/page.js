@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import styles from "./dashboard-patient.module.css";
 import { useRouter } from "next/navigation";
 import DatePicker, { registerLocale } from "react-datepicker";
@@ -35,7 +36,7 @@ const Dashboard = () => {
     const fetchAppointments = async () => {
         try {
             const response = await axios.get(
-                `http://localhost:8080/appointments`
+                `http://localhost:8080/appointments/`
             );
             response.data.appointments == undefined
                 ? setAppointments([])
@@ -162,15 +163,19 @@ const Dashboard = () => {
     };
 
     const handleSubmit = async (e) => {
-        const response = await axios.post(
-            `http://localhost:8080/appointments`,
-            {
-                physician_id: selectedDoctor,
-                date: Math.round(date.getTime() / 1000),
-            }
-        );
-        alert("Turno solicitado exitosamente");
-        fetchAppointments();
+        try {
+            const response = await axios.post(
+                `http://localhost:8080/appointments/`,
+                {
+                    physician_id: selectedDoctor,
+                    date: Math.round(date.getTime() / 1000),
+                }
+            );
+            alert("Turno solicitado exitosamente");
+            fetchAppointments();
+        } catch (error) {
+            console.log(error);
+        }
     };
 
     const customStyles = {
@@ -360,7 +365,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Formulario de selección de especialidad y doctor */}
-                <div className={styles.form}>
+                <form className={styles.form}>
                     <div className={styles["title"]}>
                         Solicitar un nuevo turno
                     </div>
@@ -370,6 +375,7 @@ const Dashboard = () => {
                     <select
                         id="specialty"
                         value={selectedSpecialty}
+                        required
                         onChange={(e) => {
                             setSelectedSpecialty(e.target.value);
                             console.log(selectedSpecialty);
@@ -389,6 +395,7 @@ const Dashboard = () => {
                     <select
                         id="doctor"
                         value={selectedDoctor}
+                        required
                         onChange={(e) => {
                             setSelectedDoctor(e.target.value);
                             saveAgenda(e.target.value);
@@ -460,10 +467,11 @@ const Dashboard = () => {
                         type="submit"
                         className={styles["submit-button"]}
                         onClick={handleSubmit}
+                        disabled={!selectedDoctor}
                     >
                         Solicitar turno
                     </button>
-                </div>
+                </form>
             </div>
             <Footer />
         </div>
