@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
 import styles from "./dashboard-physician.module.css";
 import { useRouter } from "next/navigation";
 import DatePicker, { registerLocale } from "react-datepicker";
@@ -9,6 +8,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import es from "date-fns/locale/es";
 import Modal from "react-modal";
 import axios from "axios";
+import { Header, Footer, TabBar } from "../components/header";
+import userCheck from "../components/userCheck";
 
 registerLocale("es", es);
 
@@ -23,45 +24,6 @@ const Dashboard = () => {
         doctor: "",
         date: new Date(),
     });
-
-    const userCheck = async () => {
-        console.log("Checking user profile");
-
-        try {
-            const response = await axios.get(
-                `http://localhost:8080/users/profile/`
-            );
-
-            console.log(response.data.profile);
-            switch (response.data.profile) {
-                case "Admin":
-                    console.log("Checking if admin");
-                    router.push("/dashboard-admin");
-                    break;
-                case "Physician":
-                    console.log("Checking if physician");
-                    router.push("/dashboard-physician");
-                    break;
-                case "Patient":
-                    console.log("Checking if patient");
-                    router.push("/dashboard-patient");
-                    break;
-                default:
-                    console.log("Error");
-                    break;
-            }
-        } catch (error) {
-            console.log(error.response.data.detail);
-            switch (error.response.data.detail) {
-                case "User must be logged in":
-                    router.push("/");
-                    break;
-                case "User has already logged in":
-                    router.push("/dashboard-redirect");
-                    break;
-            }
-        }
-    };
 
     const fetchAppointments = async () => {
         try {
@@ -115,9 +77,6 @@ const Dashboard = () => {
         }
     };
 
-    const handleLogoClick = () => {
-        router.push("/dashboard");
-    };
     const customStyles = {
         content: {
             top: "50%",
@@ -134,7 +93,7 @@ const Dashboard = () => {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
 
-        userCheck();
+        userCheck(router);
         fetchAppointments();
         const intervalId = setInterval(() => {
             fetchAppointments();
@@ -150,7 +109,7 @@ const Dashboard = () => {
                     isOpen={isEditModalOpen}
                     onRequestClose={handleCloseEditModal}
                     style={customStyles}
-                    contentLabel='Example Modal'
+                    contentLabel="Example Modal"
                 >
                     {/* Campos de edición de especialidad, médico y fecha */}
 
@@ -158,17 +117,17 @@ const Dashboard = () => {
                         <div className={styles["title"]}>Editar Cita</div>
 
                         {/* Selector de fechas */}
-                        <label htmlFor='fecha'>Fechas disponibles:</label>
+                        <label htmlFor="fecha">Fechas disponibles:</label>
 
                         <DatePicker
-                            locale='es'
+                            locale="es"
                             //dateFormat="dd-MM-yyyy HH:mm"
                             selected={date}
                             onChange={(date) => {
                                 setDate(date);
                                 console.log(date);
                             }}
-                            timeCaption='Hora'
+                            timeCaption="Hora"
                             timeIntervals={30}
                             showPopperArrow={false}
                             showTimeSelect
@@ -191,35 +150,9 @@ const Dashboard = () => {
                     </button>
                 </Modal>
             )}
-            <header className={styles.header}>
-                <Image
-                    src='/logo.png'
-                    alt='Logo de la empresa'
-                    className={styles.logo}
-                    width={200}
-                    height={200}
-                    onClick={handleLogoClick}
-                />
-                <Image
-                    src='/logout-icon.png'
-                    alt='CerrarSesion'
-                    className={styles["logout-icon"]}
-                    width={200}
-                    height={200}
-                    onClick={() => {
-                        localStorage.removeItem("token");
-                        axios.delete;
-                        router.push("/");
-                    }}
-                />
 
-                <div className={styles["tab-bar"]}>
-                    <div className={styles.tab} onClick={handleLogoClick}>
-                        Turnos
-                    </div>
-                    <div className={styles.tab_disabled}>Mi Ficha</div>
-                </div>
-            </header>
+            <Header />
+            <TabBar />
 
             <div className={styles["tab-content"]}>
                 <div className={styles.form}>
@@ -291,9 +224,7 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            <footer className={styles["page-footer"]}>
-                <p>Derechos de autor © 2023 KMK</p>
-            </footer>
+            <Footer />
         </div>
     );
 };

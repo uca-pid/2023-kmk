@@ -6,7 +6,7 @@ import styles from "./registro.module.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import validator from "validator";
-import { Header, Footer } from "../components/header";
+import { HeaderSlim, Footer } from "../components/header";
 
 const Registro = () => {
     const [nombre, setNombre] = useState("");
@@ -105,7 +105,7 @@ const Registro = () => {
 
     return (
         <div className={styles["registro"]}>
-            <Header />
+            <HeaderSlim />
 
             <form className={styles["form"]} onSubmit={handleSubmit}>
                 <div className={styles["title"]}>Registro</div>
@@ -239,9 +239,8 @@ const Registro = () => {
                 </button>
             </form>
             <div className={styles["sign-in-link"]}>
-                ¿Ya tienes una cuenta?{" "}
                 <Link legacyBehavior href="/">
-                    <a>Inicia Sesión</a>
+                    <a>¿Ya tienes una cuenta? Inicia Sesión</a>
                 </Link>
             </div>
             <Footer />
