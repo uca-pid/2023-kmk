@@ -3,11 +3,12 @@ import Image from "next/image";
 import styles from "../styles/Header.module.css";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import userCheck from "../components/userCheck";
 
 const Header = () => {
     const router = useRouter();
     const handleLogoClick = () => {
-        router.push("/dashboard-redirect");
+        userCheck(router);
     };
 
     return (
@@ -52,10 +53,26 @@ const Header = () => {
     );
 };
 
+const HeaderSlim = () => {
+    const router = useRouter();
+
+    return (
+        <div className={styles.header}>
+            <Image
+                src="/logo.png"
+                alt="Logo de la empresa"
+                className={styles.logo}
+                width={200}
+                height={200}
+            />
+        </div>
+    );
+};
+
 const TabBar = () => {
     const router = useRouter();
     const handleLogoClick = () => {
-        router.push("/dashboard-redirect");
+        userCheck(router);
     };
 
     return (
@@ -76,4 +93,4 @@ const Footer = () => {
     );
 };
 
-export { Header, TabBar, Footer };
+export { Header, HeaderSlim, TabBar, Footer };

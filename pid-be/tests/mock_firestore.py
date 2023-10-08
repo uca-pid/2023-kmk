@@ -39,6 +39,7 @@ if __name__ == "__main__":
     }
 
     a_physician_information = {
+        "approved": "Approved",
         "id": "avalidid",
         "first_name": "Doc",
         "last_name": "Docson",
@@ -47,6 +48,7 @@ if __name__ == "__main__":
     }
 
     another_physician_information = {
+        "approved": "Approved",
         "id": "anothervalidid",
         "first_name": "Doc",
         "last_name": "Docson the Second",
@@ -55,6 +57,7 @@ if __name__ == "__main__":
     }
 
     other_physician_information = {
+        "approved": "Approved",
         "id": "othervalidid",
         "first_name": "Doc",
         "last_name": "Docson the Third",

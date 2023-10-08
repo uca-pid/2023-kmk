@@ -10,6 +10,7 @@ import es from "date-fns/locale/es";
 import Modal from "react-modal";
 import axios from "axios";
 import { Footer, Header, TabBar } from "../components/header";
+import userCheck from "../components/userCheck";
 
 registerLocale("es", es);
 
@@ -42,69 +43,38 @@ const Dashboard = () => {
                 ? setAppointments([])
                 : setAppointments(response.data.appointments);
         } catch (error) {
-            console.log(error);
-        }
-    };
-
-    const userCheck = async () => {
-        // console.log("Checking user profile");
-
-        try {
-            const response = await axios.get(
-                `http://localhost:8080/users/profile/`
-            );
-
-            // console.log(response.data.profile);
-            switch (response.data.profile) {
-                case "Admin":
-                    // console.log("Checking if admin");
-                    router.push("/dashboard-admin");
-                    break;
-                case "Physician":
-                    // console.log("Checking if physician");
-                    router.push("/dashboard-physician");
-                    break;
-                case "Patient":
-                    // console.log("Checking if patient");
-                    router.push("/dashboard-patient");
-                    break;
-                default:
-                    console.error("Error");
-                    break;
-            }
-        } catch (error) {
-            // console.log(error.response.data.detail);
-            switch (error.response.data.detail) {
-                case "User must be logged in":
-                    router.push("/");
-                    break;
-                case "User has already logged in":
-                    router.push("/dashboard-redirect");
-                    break;
-            }
+            console.error(error);
         }
     };
 
     const fetchSpecialties = async () => {
-        const response = await axios.get(`http://localhost:8080/specialties`);
-        console.log(response.data.specialties);
-        response.data.specialties == undefined
-            ? setSpecialties([])
-            : setSpecialties(response.data.specialties);
+        try {
+            const response = await axios.get(
+                `http://localhost:8080/specialties`
+            );
+            response.data.specialties == undefined
+                ? setSpecialties([])
+                : setSpecialties(response.data.specialties);
+        } catch (error) {
+            console.error(error);
+        }
     };
 
     const fetchPhysicians = async (specialty) => {
-        if (specialty) {
-            const response = await axios.get(
-                `http://localhost:8080/physicians/specialty/${specialty}`
-            );
-            console.log(response.data.physicians);
-            response.data.physicians == undefined
-                ? setDoctors([])
-                : setDoctors(response.data.physicians);
-        } else {
-            setDoctors([]);
-            setPhysiciansAgenda({});
+        try {
+            if (specialty) {
+                const response = await axios.get(
+                    `http://localhost:8080/physicians/specialty/${specialty}`
+                );
+                response.data.physicians == undefined
+                    ? setDoctors([])
+                    : setDoctors(response.data.physicians);
+            } else {
+                setDoctors([]);
+                setPhysiciansAgenda({});
+            }
+        } catch (error) {
+            console.error(error);
         }
     };
 
@@ -150,7 +120,6 @@ const Dashboard = () => {
     };
 
     const handleDeleteAppointment = async (appointmentId) => {
-        console.log(appointmentId);
         try {
             await axios.delete(
                 `http://localhost:8080/appointments/${appointmentId}`
@@ -158,11 +127,12 @@ const Dashboard = () => {
             alert("Turno eliminado exitosamente");
             fetchAppointments();
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     };
 
     const handleSubmit = async (e) => {
+        e.preventDefault();
         try {
             const response = await axios.post(
                 `http://localhost:8080/appointments/`,
@@ -174,7 +144,7 @@ const Dashboard = () => {
             alert("Turno solicitado exitosamente");
             fetchAppointments();
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     };
 
@@ -194,7 +164,7 @@ const Dashboard = () => {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
 
-        userCheck();
+        userCheck(router);
         fetchSpecialties();
         fetchAppointments();
         const intervalId = setInterval(() => {
@@ -365,7 +335,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Formulario de selección de especialidad y doctor */}
-                <form className={styles.form}>
+                <form className={styles.form} onSubmit={handleSubmit}>
                     <div className={styles["title"]}>
                         Solicitar un nuevo turno
                     </div>
@@ -378,7 +348,6 @@ const Dashboard = () => {
                         required
                         onChange={(e) => {
                             setSelectedSpecialty(e.target.value);
-                            console.log(selectedSpecialty);
                             fetchPhysicians(e.target.value);
                         }}
                     >
@@ -465,8 +434,9 @@ const Dashboard = () => {
 
                     <button
                         type="submit"
-                        className={styles["submit-button"]}
-                        onClick={handleSubmit}
+                        className={`${styles["submit-button"]} ${
+                            !selectedDoctor ? styles["disabled-button"] : ""
+                        }`}
                         disabled={!selectedDoctor}
                     >
                         Solicitar turno
