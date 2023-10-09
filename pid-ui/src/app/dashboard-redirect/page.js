@@ -15,38 +15,24 @@ const Redirect = () => {
         };
 
         const userCheck = async () => {
-            // console.log("Checking user profile");
-
             try {
                 const response = await axios.get(
-                    `http://localhost:8080/users/profile/`
+                    `http://localhost:8080/users/role/`
                 );
 
-                // console.log(response.data);
-                switch (response.data.profile) {
-                    case "Admin":
-                        // console.log("Checking if admin");
+                if (response.status == 200) {
+                    if (response.data.roles.includes("admin")) {
                         router.replace("/dashboard-admin");
-                        break;
-                    case "Physician":
-                        if (
-                            response.data.approved == "denied" ||
-                            response.data.approved == "pending"
-                        ) {
-                            alert("Medico no validado");
-                            router.replace("/");
-                            break;
-                        }
-                        // console.log("Checking if physician");
+                    } else if (response.data.roles.includes("physician")) {
                         router.replace("/dashboard-physician");
-                        break;
-                    case "Patient":
-                        // console.log("Checking if patient");
+                    } else if (response.data.roles.includes("patient")) {
                         router.replace("/dashboard-patient");
-                        break;
-                    default:
-                        console.log("Error");
-                        break;
+                    } else {
+                        router.replace("/");
+                    }
+                } else {
+                    console.log("Error");
+                    router.replace("/");
                 }
             } catch (error) {
                 // console.error(error.response.data.detail);
@@ -67,15 +53,15 @@ const Redirect = () => {
         <div className={styles.admin}>
             <header className={styles.header}>
                 <Image
-                    src="/logo.png"
-                    alt="Logo de la empresa"
+                    src='/logo.png'
+                    alt='Logo de la empresa'
                     className={styles.logo}
                     width={200}
                     height={200}
                 />
                 <Image
-                    src="/logout-icon.png"
-                    alt="CerrarSesion"
+                    src='/logout-icon.png'
+                    alt='CerrarSesion'
                     className={styles["logout-icon"]}
                     width={200}
                     height={200}

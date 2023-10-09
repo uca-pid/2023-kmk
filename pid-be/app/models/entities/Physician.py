@@ -1,3 +1,4 @@
+from fastapi import HTTPException, status
 from datetime import datetime
 from firebase_admin import firestore
 
@@ -8,7 +9,7 @@ class Physician:
     role: str
     name: str
     last_name: str
-    matricula: int
+    tuition: int
     specialty: str
     email: str
     id: str
@@ -19,7 +20,7 @@ class Physician:
         role: str,
         name: str,
         last_name: str,
-        matricula: int,
+        tuition: int,
         specialty: str,
         email: str,
         id: str,
@@ -28,16 +29,11 @@ class Physician:
         self.role = role
         self.name = name
         self.last_name = last_name
-        self.matricula = matricula
+        self.tuition = tuition
         self.specialty = specialty
         self.email = email
         self.id = id
         self.approved = approved
-
-    @staticmethod
-    def exists_physician_with(id):
-        physician_document = db.collection("physicians").document(id).get()
-        return physician_document.exists
 
     @staticmethod
     def get_by_id(id):
@@ -109,13 +105,24 @@ class Physician:
     def is_physician(id):
         return db.collection("physicians").document(id).get().exists
 
+    @staticmethod
+    def free_agenda(id, date):
+        db.collection("physicians").document(id).update(
+            {f"appointments.{date}": firestore.DELETE_FIELD}
+        )
+
     def create(self):
+        if db.collection("physicians").document(self.id).get().exists:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="The user already exists",
+            )
         db.collection("physicians").document(self.id).set(
             {
                 "id": self.id,
                 "first_name": self.name,
                 "last_name": self.last_name,
-                "matricula": self.matricula,
+                "tuition": self.tuition,
                 "specialty": self.specialty,
                 "email": self.email,
                 "approved": self.approved,

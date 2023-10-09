@@ -89,7 +89,6 @@ def create_test_users():
         }
     )
     yield
-    print(a_KMK_user_information)
     auth.delete_user(a_KMK_user_information["uid"])
     auth.delete_user(another_KMK_user_information["uid"])
     auth.delete_user(other_KMK_user_information["uid"])

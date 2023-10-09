@@ -11,6 +11,4 @@ class Specialty:
 
     @staticmethod
     def exists_with_name(name):
-        print(name)
-        print("SPECIALTY", db.collection("specialties").where("name", "==", name).get())
         return len(db.collection("specialties").where("name", "==", name).get()) > 0

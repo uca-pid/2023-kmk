@@ -30,19 +30,19 @@ class Auth:
             )
         try:
             verified_token = auth.verify_id_token(token.credentials)
-            member = db.collection("physicians").document(verified_token["uid"]).get()
-            if member.exists:
-                if member.to_dict()["approved"] == "denied":
-                    raise HTTPException(
-                        status_code=status.HTTP_401_UNAUTHORIZED,
-                        detail="Physician must be approved by admin",
-                    )
-            return verified_token["uid"]
-        except:
+        except Exception:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="User must be logged in",
             )
+        member = db.collection("physicians").document(verified_token["uid"]).get()
+        if member.exists:
+            if member.to_dict()["approved"] != "approved":
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Physician must be approved by admin",
+                )
+        return verified_token["uid"]
 
     @staticmethod
     def is_admin(
@@ -53,6 +53,6 @@ class Auth:
             return user_id
         else:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
+                status_code=status.HTTP_403_FORBIDDEN,
                 detail="User must be an admin",
             )

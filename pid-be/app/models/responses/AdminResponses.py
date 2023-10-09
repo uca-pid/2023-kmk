@@ -1,16 +1,9 @@
 from pydantic import BaseModel
 
 
-class AdminsResponse(BaseModel):
-    id: str
-    first_name: str
-    last_name: str
-    email: str
+class SuccessfullAdminRegistrationResponse(BaseModel):
+    message: str
 
 
-class GetAdminsResponse(BaseModel):
-    admins: list[AdminsResponse]
-
-
-class GetAdminsError(BaseModel):
+class AdminRegistrationError(BaseModel):
     detail: str

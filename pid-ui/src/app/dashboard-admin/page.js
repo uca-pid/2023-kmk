@@ -28,30 +28,24 @@ const Admin = () => {
         };
 
         const userCheck = async () => {
-            console.log("Checking user profile");
-
             try {
                 const response = await axios.get(
-                    `http://localhost:8080/users/profile/`
+                    `http://localhost:8080/users/role/`
                 );
 
-                console.log(response.data.profile);
-                switch (response.data.profile) {
-                    case "Admin":
-                        console.log("Checking if admin");
-                        router.push("/dashboard-admin");
-                        break;
-                    case "Physician":
-                        console.log("Checking if physician");
-                        router.push("/dashboard-physician");
-                        break;
-                    case "Patient":
-                        console.log("Checking if patient");
-                        router.push("/dashboard-patient");
-                        break;
-                    default:
-                        console.log("Error");
-                        break;
+                if (response.status == 200) {
+                    if (response.data.roles.includes("admin")) {
+                        router.replace("/dashboard-admin");
+                    } else if (response.data.roles.includes("physician")) {
+                        router.replace("/dashboard-physician");
+                    } else if (response.data.roles.includes("patient")) {
+                        router.replace("/dashboard-patient");
+                    } else {
+                        router.replace("/");
+                    }
+                } else {
+                    console.log("Error");
+                    router.replace("/");
                 }
             } catch (error) {
                 console.log(error.response.data.detail);
@@ -107,16 +101,16 @@ const Admin = () => {
         <div className={styles.admin}>
             <header className={styles.header}>
                 <Image
-                    src="/logo.png"
-                    alt="Logo de la empresa"
+                    src='/logo.png'
+                    alt='Logo de la empresa'
                     className={styles.logo}
                     width={200}
                     height={200}
                     onClick={handleLogoClick}
                 />
                 <Image
-                    src="/logout-icon.png"
-                    alt="CerrarSesion"
+                    src='/logout-icon.png'
+                    alt='CerrarSesion'
                     className={styles["logout-icon"]}
                     width={200}
                     height={200}
@@ -152,7 +146,7 @@ const Admin = () => {
                                         <p>
                                             Correo electrónico: {doctor.email}
                                         </p>
-                                        <p>Matricula: {doctor.matricula}</p>
+                                        <p>Matricula: {doctor.tuition}</p>
                                         <div
                                             className={
                                                 styles[

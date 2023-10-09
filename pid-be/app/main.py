@@ -13,7 +13,7 @@ from fastapi.openapi.utils import get_openapi
 
 load_dotenv()
 
-from app.routers import users, appointments, specialties, physicians, admins
+from app.routers import users, appointments, specialties, physicians, admin
 
 
 CTX_PORT: int = int(os.environ.get("PORT")) if os.environ.get("PORT") else 8080
@@ -29,7 +29,7 @@ routers = [
     appointments.router,
     specialties.router,
     physicians.router,
-    admins.router,
+    admin.router,
 ]
 
 for router in routers:
@@ -44,25 +44,6 @@ async def root() -> RedirectResponse:
     It returns the OPENAPI docs for the KMK API
     """
     return RedirectResponse(url="/redoc", status_code=status.HTTP_303_SEE_OTHER)
-
-
-# @app.post("/api/register")
-# async def register_user(request: Request):
-#     data = await request.json()
-#     print(data)  # Esto imprimirá los datos en la consola del servidor
-#     # Utiliza Firebase Authentication para crear una cuenta de usuario
-#     try:
-#         user = auth.create_user(
-#             email=data["email"],
-#             password=data["password"],
-#             display_name=data["role"],
-#             email_verified=False,  # Cambia a True si deseas que el email esté verificado
-#         )
-#         print(f"Usuario registrado: {user.uid}")
-#         return {"message": "Registro exitoso"}
-#     except Exception as e:
-#         print(f"Error en el registro: {str(e)}")
-#         return {"message": "Error en el registro"}
 
 
 def start():

@@ -47,30 +47,24 @@ const Dashboard = () => {
     };
 
     const userCheck = async () => {
-        // console.log("Checking user profile");
-
         try {
             const response = await axios.get(
-                `http://localhost:8080/users/profile/`
+                `http://localhost:8080/users/role/`
             );
 
-            // console.log(response.data.profile);
-            switch (response.data.profile) {
-                case "Admin":
-                    // console.log("Checking if admin");
-                    router.push("/dashboard-admin");
-                    break;
-                case "Physician":
-                    // console.log("Checking if physician");
-                    router.push("/dashboard-physician");
-                    break;
-                case "Patient":
-                    // console.log("Checking if patient");
-                    router.push("/dashboard-patient");
-                    break;
-                default:
-                    console.error("Error");
-                    break;
+            if (response.status == 200) {
+                if (response.data.roles.includes("admin")) {
+                    router.replace("/dashboard-admin");
+                } else if (response.data.roles.includes("physician")) {
+                    router.replace("/dashboard-physician");
+                } else if (response.data.roles.includes("patient")) {
+                    router.replace("/dashboard-patient");
+                } else {
+                    router.replace("/");
+                }
+            } else {
+                console.log("Error");
+                router.replace("/");
             }
         } catch (error) {
             // console.log(error.response.data.detail);
@@ -212,7 +206,7 @@ const Dashboard = () => {
                     isOpen={isEditModalOpen}
                     onRequestClose={handleCloseEditModal}
                     style={customStyles}
-                    contentLabel="Example Modal"
+                    contentLabel='Example Modal'
                 >
                     {/* Campos de edición de especialidad, médico y fecha */}
 
@@ -220,15 +214,15 @@ const Dashboard = () => {
                         <div className={styles["title"]}>Editar Cita</div>
 
                         {/* Selector de fechas */}
-                        <label htmlFor="fecha">Fechas disponibles:</label>
+                        <label htmlFor='fecha'>Fechas disponibles:</label>
 
                         <DatePicker
-                            locale="es"
+                            locale='es'
                             selected={dateToEdit}
                             onChange={(date) => {
                                 setDateToEdit(date);
                             }}
-                            timeCaption="Hora"
+                            timeCaption='Hora'
                             timeIntervals={30}
                             showPopperArrow={false}
                             showTimeSelect
@@ -371,9 +365,9 @@ const Dashboard = () => {
                     </div>
 
                     {/* Selector de especialidades */}
-                    <label htmlFor="specialty">Especialidad:</label>
+                    <label htmlFor='specialty'>Especialidad:</label>
                     <select
-                        id="specialty"
+                        id='specialty'
                         value={selectedSpecialty}
                         required
                         onChange={(e) => {
@@ -382,7 +376,7 @@ const Dashboard = () => {
                             fetchPhysicians(e.target.value);
                         }}
                     >
-                        <option value="">Selecciona una especialidad</option>
+                        <option value=''>Selecciona una especialidad</option>
                         {specialties.map((specialty) => (
                             <option key={specialty} value={specialty}>
                                 {specialty}
@@ -391,9 +385,9 @@ const Dashboard = () => {
                     </select>
 
                     {/* Selector de médicos */}
-                    <label htmlFor="doctor">Médico:</label>
+                    <label htmlFor='doctor'>Médico:</label>
                     <select
-                        id="doctor"
+                        id='doctor'
                         value={selectedDoctor}
                         required
                         onChange={(e) => {
@@ -402,7 +396,7 @@ const Dashboard = () => {
                         }}
                         disabled={!selectedSpecialty} // Deshabilita si no se ha seleccionado una especialidad
                     >
-                        <option value="">Selecciona un médico</option>
+                        <option value=''>Selecciona un médico</option>
                         {doctors.map((doctor) => (
                             <option
                                 key={doctor.id}
@@ -415,15 +409,15 @@ const Dashboard = () => {
                     </select>
 
                     {/* Selector de fechas */}
-                    <label htmlFor="fecha">Fechas disponibles:</label>
+                    <label htmlFor='fecha'>Fechas disponibles:</label>
 
                     <DatePicker
-                        locale="es"
+                        locale='es'
                         selected={date}
                         onChange={(date) => {
                             setDate(date);
                         }}
-                        timeCaption="Hora"
+                        timeCaption='Hora'
                         timeIntervals={30}
                         showPopperArrow={false}
                         showTimeSelect
@@ -464,7 +458,7 @@ const Dashboard = () => {
                     />
 
                     <button
-                        type="submit"
+                        type='submit'
                         className={styles["submit-button"]}
                         onClick={handleSubmit}
                         disabled={!selectedDoctor}

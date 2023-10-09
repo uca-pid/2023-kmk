@@ -357,7 +357,7 @@ def test_non_patient_creating_appointment_returns_403_code_and_message():
         "role": "physician",
         "name": "Doc",
         "last_name": "Docson the Fourth",
-        "matricula": "11110010",
+        "tuition": "11110010",
         "specialty": "dermatologia",
         "email": "doc@thedoc.com",
         "password": "123456",

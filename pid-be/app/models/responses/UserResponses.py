@@ -1,3 +1,4 @@
+from enum import Enum
 from pydantic import BaseModel
 
 
@@ -16,9 +17,16 @@ class SuccessfullRegisterResponse(BaseModel):
 class RegisterErrorResponse(BaseModel):
     detail: str
 
-class UserProfileResponse(BaseModel):
-    profile: str
-    approved:str = None
+
+class UserRolesEnum(str, Enum):
+    admin = "admin"
+    physician = "physician"
+    patient = "patient"
+
+
+class UserRolesResponse(BaseModel):
+    roles: list[UserRolesEnum]
+
 
 class UserProfileErrorResponse(BaseModel):
     detail: str
