@@ -1,3 +1,5 @@
+from fastapi import status, HTTPException
+
 from firebase_admin import firestore
 
 db = firestore.client()
@@ -26,6 +28,11 @@ class Patient:
         return db.collection("patients").document(id).get().exists
 
     def create(self):
+        if db.collection("patients").document(self.id).get().exists:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="The user already exists",
+            )
         db.collection("patients").document(self.id).set(
             {
                 "id": self.id,

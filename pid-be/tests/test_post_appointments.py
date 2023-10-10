@@ -96,9 +96,7 @@ def create_and_delete_physicians():
 
 @pytest.fixture(autouse=True)
 def create_test_user():
-    requests.post(
-        "http://localhost:8080/users/register-patient", json=a_KMK_user_information
-    )
+    requests.post("http://localhost:8080/users/register", json=a_KMK_user_information)
     pytest.bearer_token = requests.post(
         "http://localhost:8080/users/login",
         json={
@@ -357,13 +355,13 @@ def test_non_patient_creating_appointment_returns_403_code_and_message():
         "role": "physician",
         "name": "Doc",
         "last_name": "Docson the Fourth",
-        "matricula": "11110010",
+        "tuition": "11110010",
         "specialty": "dermatologia",
         "email": "doc@thedoc.com",
         "password": "123456",
     }
 
-    requests.post("http://localhost:8080/users/register-physician", json=physician_info)
+    requests.post("http://localhost:8080/users/register", json=physician_info)
     physicians_token = requests.post(
         "http://localhost:8080/users/login",
         json={"email": physician_info["email"], "password": physician_info["password"]},

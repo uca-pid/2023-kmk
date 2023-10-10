@@ -2,21 +2,22 @@ import requests
 import json
 import os
 from dotenv import load_dotenv
+from typing import Union, Annotated
 
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, status, Depends, Body
 from fastapi.responses import JSONResponse
 
 from app.models.requests.UserRequests import (
     UserLoginRequest,
-    UserRegisterRequest,
-    AdminRegisterRequest,
+    PatientRegisterRequest,
+    PhysicianRegisterRequest,
 )
 from app.models.responses.UserResponses import (
     SuccessfulLoginResponse,
     LoginErrorResponse,
     SuccessfullRegisterResponse,
     RegisterErrorResponse,
-    UserProfileResponse,
+    UserRolesResponse,
     UserProfileErrorResponse,
 )
 
@@ -25,7 +26,7 @@ from app.models.entities.Patient import Patient
 from app.models.entities.Physician import Physician
 from app.models.entities.Admin import Admin
 
-from firebase_admin import firestore
+from firebase_admin import firestore, auth
 
 db = firestore.client()
 
@@ -45,7 +46,7 @@ with open("credentials/client.json") as fp:
     response_model=SuccessfulLoginResponse,
     responses={
         400: {"model": LoginErrorResponse},
-        401: {"model": LoginErrorResponse},
+        403: {"model": LoginErrorResponse},
         500: {"model": LoginErrorResponse},
     },
 )
@@ -93,12 +94,16 @@ async def login_user(
     response_model=SuccessfullRegisterResponse,
     responses={
         400: {"model": RegisterErrorResponse},
-        401: {"model": RegisterErrorResponse},
+        403: {"model": RegisterErrorResponse},
         500: {"model": RegisterErrorResponse},
     },
 )
 async def register(
-    register_request: UserRegisterRequest, token=Depends(Auth.has_bearer_token)
+    register_request: Annotated[
+        Union[PatientRegisterRequest, PhysicianRegisterRequest],
+        Body(discriminator="role"),
+    ],
+    token=Depends(Auth.has_bearer_token),
 ):
     """
     Register a user.
@@ -109,122 +114,70 @@ async def register(
     """
 
     url = os.environ.get("REGISTER_URL")
-    register_response = requests.post(
-        url,
-        json={
-            "email": register_request.email,
-            "password": register_request.password,
-            "returnSecureToken": True,
-        },
-        params={"key": firebase_client_config["apiKey"]},
-    )
+    auth_uid = None
+    try:
+        user = auth.get_user_by_email(register_request.email)
+        auth_uid = user.uid
+    except:
+        print("[+] User already doesnt exist in authentication")
 
-    if register_response.status_code == 400:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"detail": "The user already exists"},
+    if not auth_uid:
+        register_response = requests.post(
+            url,
+            json={
+                "email": register_request.email,
+                "password": register_request.password,
+                "returnSecureToken": True,
+            },
+            params={"key": firebase_client_config["apiKey"]},
         )
-    elif register_response.status_code == 200:
+        if register_response.status_code != 200:
+            return JSONResponse(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content={"detail": "Internal Server Error"},
+            )
         auth_uid = register_response.json()["localId"]
-        del register_request.password
-        if register_request.role == "patient":
-            patient = Patient(**register_request.dict(exclude_none=True), id=auth_uid)
-            patient.create()
-        else:
-            physician = Physician(**register_request.dict(exclude_none=True), id=auth_uid)
-            physician.create()
-        return {"message": "Successfull registration"}
-    return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"detail": "Internal Server Error"},
-    )
 
-
-@router.post(
-    "/register-admin",
-    status_code=status.HTTP_200_OK,
-    response_model=SuccessfullRegisterResponse,
-    responses={
-        400: {"model": RegisterErrorResponse},
-        401: {"model": RegisterErrorResponse},
-        500: {"model": RegisterErrorResponse},
-    },
-)
-async def register_admin(adminRegisterRequest: AdminRegisterRequest):
-    """
-    Register a superuser.
-    This will allow admins to register.
-    This path operation will:
-    * Register admins, performing validations on data received and on its validity.
-    * Throw an error if registration fails.
-    """
-
-    url = os.environ.get("REGISTER_URL")
-    registerResponse = requests.post(
-        url,
-        json={
-            "email": adminRegisterRequest.email,
-            "password": adminRegisterRequest.password,
-            "returnSecureToken": True,
-        },
-        params={"key": firebase_client_config["apiKey"]},
-    )
-
-    if registerResponse.status_code == 400:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"detail": "Invalid email and/or password"},
-        )
-    elif registerResponse.status_code == 200:
-        # Obtenemos el uid de autenticación de Firebase
-        auth_uid = registerResponse.json()["localId"]
-        # Usamos el mismo uid como identificador en la base de datos
-        admin = Admin(**adminRegisterRequest.dict(), id=auth_uid)
-        admin.create()
-        return {"message": "Successfull registration"}
-    return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"detail": "Internal Server Error"},
-    )
+    del register_request.password
+    if register_request.role == "patient":
+        patient = Patient(**register_request.dict(exclude_none=True), id=auth_uid)
+        patient.create()
+    else:
+        physician = Physician(**register_request.dict(exclude_none=True), id=auth_uid)
+        physician.create()
+    return {"message": "Successfull registration"}
 
 
 @router.get(
-    "/profile",
+    "/role",
     status_code=status.HTTP_200_OK,
-    response_model=UserProfileResponse,
+    response_model=UserRolesResponse,
     responses={
         401: {"model": UserProfileErrorResponse},
+        403: {"model": UserProfileErrorResponse},
         500: {"model": UserProfileErrorResponse},
     },
-    # dependencies=[Depends(Auth.is_admin)],
 )
-def get_user_profile(user_id=Depends(Auth.is_logged_in)):
+def get_user_roles(user_id=Depends(Auth.is_logged_in)):
     """
-    Get a user profile.
+    Get a users roles.
 
-    This will return the user profile.
+    This will return the users roles.
 
     This path operation will:
 
-    * Return the user profile.
-    * Throw an error if user profile retrieving fails.
+    * Return the users roles.
+    * Throw an error if users role retrieving process fails.
     """
+    roles = []
     try:
-        # chequear si el usuario es admin
         if Admin.is_admin(user_id):
-            # user is admin
-            return {"profile": "Admin"}
-        else:
-            if Patient.is_patient(user_id):
-                # user is patient
-                return {"profile": "Patient"}
-            elif Physician.is_physician(user_id):
-                # user is physician
-                physician = (
-                    db.collection("physicians").document(user_id).get().to_dict()
-                )
-                return {"profile": "Physician", "approved": physician["approved"]}
-
+            roles.append("admin")
+        if Patient.is_patient(user_id):
+            roles.append("patient")
+        if Physician.is_physician(user_id):
+            roles.append("physician")
+        return {"roles": roles}
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

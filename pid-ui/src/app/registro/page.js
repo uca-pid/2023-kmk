@@ -71,7 +71,7 @@ const Registro = () => {
         if (role === "physician")
             userData = {
                 ...userData,
-                matricula: numeroMatricula,
+                tuition: numeroMatricula,
                 specialty: especialidad,
             };
 

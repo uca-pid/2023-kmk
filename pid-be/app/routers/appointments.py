@@ -9,7 +9,6 @@ from app.models.responses.AppointmentResponses import (
     AppointmentCreationError,
     GetAppointmentError,
     AllAppointmentsResponse,
-    BasicAppointmentResponse,
     SuccessfulAppointmentDeletionResponse,
     DeleteAppointmentError,
 )
@@ -65,6 +64,7 @@ async def create_appointment(
     response_model=AllAppointmentsResponse,
     responses={
         401: {"model": GetAppointmentError},
+        403: {"model": GetAppointmentError},
         500: {"model": GetAppointmentError},
     },
 )
@@ -96,6 +96,7 @@ def get_all_appointments(uid=Depends(Auth.is_logged_in)):
     responses={
         400: {"model": DeleteAppointmentError},
         401: {"model": DeleteAppointmentError},
+        403: {"model": DeleteAppointmentError},
         500: {"model": DeleteAppointmentError},
     },
 )
@@ -114,12 +115,14 @@ def delete_appointment_by_id(id: str, uid=Depends(Auth.is_logged_in)):
     """
     try:
         appointment = Appointment.get_by_id(id)
-        if not appointment or (appointment["physician_id"] != uid and appointment["patient_id"] != uid):
+        if not appointment or (
+            appointment.physician_id != uid and appointment.patient_id != uid
+        ):
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={"detail": "Invalid appointment id"},
             )
-        Appointment.delete_by_id(id)
+        appointment.delete()
         return {"message": "Appointment cancelled successfully"}
     except:
         return JSONResponse(

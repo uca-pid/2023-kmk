@@ -1,18 +1,20 @@
 from pydantic import BaseModel
+from typing import Union
 
 from .PhysicianResponses import PhysicianResponse
-from app.models.entities.Physician import Physician
+
 
 class SuccessfullValidationResponse(BaseModel):
-    detail: str
+    message: str
 
 
 class ValidationErrorResponse(BaseModel):
     detail: str
+
 
 class GetPendingValidationsError(BaseModel):
     detail: str
 
 
 class AllPendingValidationsResponse(BaseModel):
-    physicians_pending_validation: list
+    physicians_pending_validation: list[Union[PhysicianResponse, None]]

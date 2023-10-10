@@ -90,7 +90,7 @@ const Admin = () => {
                                         <p>
                                             Correo electrónico: {doctor.email}
                                         </p>
-                                        <p>Matricula: {doctor.matricula}</p>
+                                        <p>Matricula: {doctor.tuition}</p>
                                         <div
                                             className={
                                                 styles[

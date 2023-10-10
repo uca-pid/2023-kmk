@@ -9,26 +9,31 @@ db = firestore.client()
 
 
 class Appointment:
+    id: str = None
     date: int
     physician_id: str
     patient_id: str
+    created_at: int = None
 
-    def __init__(self, date: int, physician_id: str, patient_id: str):
+    def __init__(
+        self,
+        date: int,
+        physician_id: str,
+        patient_id: str,
+        id: str = None,
+        created_at: int = None,
+    ):
         if not Patient.is_patient(patient_id):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Only patients can create appointments",
             )
 
-        if not Physician.has_availability(id=physician_id, date=date):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Can only set appointment at physicians available hours",
-            )
-
         self.physician_id = physician_id
         self.date = date
         self.patient_id = patient_id
+        self.id = id
+        self.created_at = created_at
 
     @staticmethod
     def get_all_appointments_for_user_with(uid):
@@ -52,12 +57,14 @@ class Appointment:
 
     @staticmethod
     def get_by_id(id):
-        return db.collection("appointments").document(id).get().to_dict()
+        appointment_document = db.collection("appointments").document(id).get()
+        if appointment_document.exists:
+            return Appointment(**appointment_document.to_dict())
+        return None
 
-    @staticmethod
-    def delete_by_id(id):
-        db.collection("appointments").document(id).delete()
-        
+    def delete(self):
+        db.collection("appointments").document(self.id).delete()
+        Physician.free_agenda(self.physician_id, self.date)
 
     def create(self):
         id = db.collection("appointments").document().id
