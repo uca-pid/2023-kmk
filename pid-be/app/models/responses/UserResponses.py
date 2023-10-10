@@ -30,3 +30,13 @@ class UserRolesResponse(BaseModel):
 
 class UserProfileErrorResponse(BaseModel):
     detail: str
+
+
+class UserInfoResponse(BaseModel):
+    email: str
+    first_name: str
+    last_name: str
+
+
+class UserInfoErrorResponse(BaseModel):
+    detail: str

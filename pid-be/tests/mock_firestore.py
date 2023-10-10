@@ -43,6 +43,7 @@ if __name__ == "__main__":
         "id": "avalidid",
         "first_name": "Doc",
         "last_name": "Docson",
+        "email": "DocDocson@kmk.com",
         "specialty": specialties[0],
         "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
     }
@@ -52,6 +53,7 @@ if __name__ == "__main__":
         "id": "anothervalidid",
         "first_name": "Doc",
         "last_name": "Docson the Second",
+        "email": "DocDocsonTheSecond@kmk.com",
         "specialty": specialties[0],
         "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
     }
@@ -61,6 +63,7 @@ if __name__ == "__main__":
         "id": "othervalidid",
         "first_name": "Doc",
         "last_name": "Docson the Third",
+        "email": "DocDocsonTheThird@kmk.com",
         "specialty": specialties[1],
         "agenda": {
             str(number_of_day_of_week): {"start": 8, "finish": 18.5},
