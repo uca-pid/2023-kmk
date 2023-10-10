@@ -9,7 +9,6 @@ from app.models.responses.AppointmentResponses import (
     AppointmentCreationError,
     GetAppointmentError,
     AllAppointmentsResponse,
-    BasicAppointmentResponse,
     SuccessfulAppointmentDeletionResponse,
     DeleteAppointmentError,
 )
@@ -65,6 +64,7 @@ async def create_appointment(
     response_model=AllAppointmentsResponse,
     responses={
         401: {"model": GetAppointmentError},
+        403: {"model": GetAppointmentError},
         500: {"model": GetAppointmentError},
     },
 )
@@ -96,6 +96,7 @@ def get_all_appointments(uid=Depends(Auth.is_logged_in)):
     responses={
         400: {"model": DeleteAppointmentError},
         401: {"model": DeleteAppointmentError},
+        403: {"model": DeleteAppointmentError},
         500: {"model": DeleteAppointmentError},
     },
 )

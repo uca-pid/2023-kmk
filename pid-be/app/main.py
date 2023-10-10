@@ -5,20 +5,22 @@ from .config import initialize_firebase_app
 
 initialize_firebase_app()
 
-from fastapi import FastAPI, status
+from fastapi import FastAPI, status, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.openapi.utils import get_openapi
+from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 
 
 load_dotenv()
 
 from app.routers import users, appointments, specialties, physicians, admin
+from app.models.entities.Auth import Auth
 
 
 CTX_PORT: int = int(os.environ.get("PORT")) if os.environ.get("PORT") else 8080
 
-app = FastAPI()
+app = FastAPI(docs_url=None, redoc_url=None, openapi_url="/api/openapi.json")
 
 app.add_middleware(
     CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"]
@@ -34,6 +36,17 @@ routers = [
 
 for router in routers:
     app.include_router(router)
+
+
+@app.get("/docs", response_class=HTMLResponse)
+async def get_docs(username=Depends(Auth.is_kmk_maintainer)) -> HTMLResponse:
+    print("smth")
+    return get_swagger_ui_html(openapi_url="/api/openapi.json", title="docs")
+
+
+@app.get("/redoc", response_class=HTMLResponse)
+async def get_redoc(username: str = Depends(Auth.is_kmk_maintainer)) -> HTMLResponse:
+    return get_redoc_html(openapi_url="/api/openapi.json", title="redoc")
 
 
 @app.get("/")

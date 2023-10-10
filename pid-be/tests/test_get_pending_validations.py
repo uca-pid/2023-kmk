@@ -25,7 +25,7 @@ a_KMK_physician_information = {
     "last_name": "Test Last Name",
     "tuition": "777777",
     "specialty": specialties[0],
-    "email": "testphysicianforregister@kmk.com",
+    "email": "testphysicianforpendingvalidations@kmk.com",
     "password": "verySecurePassword123",
 }
 
@@ -35,7 +35,7 @@ another_KMK_physician_information = {
     "last_name": "Test Last Name",
     "tuition": "777777",
     "specialty": specialties[0],
-    "email": "testphysicianforregister2@kmk.com",
+    "email": "testphysicianforpendingvalidations2@kmk.com",
     "password": "verySecurePassword123",
 }
 
@@ -45,7 +45,7 @@ other_KMK_physician_information = {
     "last_name": "Test Last Name",
     "tuition": "777777",
     "specialty": specialties[0],
-    "email": "testphysicianforregister3@kmk.com",
+    "email": "testphysicianforpendingvalidations3@kmk.com",
     "password": "verySecurePassword123",
 }
 
@@ -53,12 +53,12 @@ a_KMK_patient_information = {
     "role": "patient",
     "name": "Patient Test User Register",
     "last_name": "Test Last Name",
-    "email": "testpatientforregister@kmk.com",
+    "email": "testpatientforpendingvalidations@kmk.com",
     "password": "verySecurePassword123",
 }
 
 initial_admin_information = {
-    "email": "testinitialadminforregister@kmk.com",
+    "email": "testinitialadminforpendingvalidations@kmk.com",
     "password": "verySecurePassword123",
 }
 
@@ -363,4 +363,24 @@ def test_get_pending_validations_by_non_admin_returns_403_code_and_message():
     assert (
         response_from_admin_registration_endpoint.json()["detail"]
         == "User must be an admin"
+    )
+
+
+def test_get_pending_validations_if_none_exists_returns_an_empty_list():
+    created_test_physician_uid = auth.get_user_by_email(
+        other_KMK_physician_information["email"]
+    ).uid
+    db.collection("physicians").document(created_test_physician_uid).update(
+        {"approved": "approved"}
+    )
+    response_to_get_pending_validations_endpoint = requests.get(
+        "http://localhost:8080/admin/pending-validations",
+        headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
+    )
+
+    assert (
+        response_to_get_pending_validations_endpoint.json()[
+            "physicians_pending_validation"
+        ]
+        == []
     )

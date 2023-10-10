@@ -27,7 +27,7 @@ a_KMK_physician_information = {
     "last_name": "Test Last Name",
     "tuition": "777777",
     "specialty": specialties[0],
-    "email": "testphysicianforregister@kmk.com",
+    "email": "testphysicianforgettingroles@kmk.com",
     "password": "verySecurePassword123",
 }
 
@@ -35,12 +35,12 @@ a_KMK_patient_information = {
     "role": "patient",
     "name": "Patient Test User Register",
     "last_name": "Test Last Name",
-    "email": "testpatientforregister@kmk.com",
+    "email": "testpatientforgettingroles@kmk.com",
     "password": "verySecurePassword123",
 }
 
 initial_admin_information = {
-    "email": "testinitialadminforregister@kmk.com",
+    "email": "testinitialadminforgettingroles@kmk.com",
     "password": "verySecurePassword123",
 }
 

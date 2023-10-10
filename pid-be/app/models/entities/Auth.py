@@ -1,10 +1,21 @@
+import os
+from dotenv import load_dotenv
+from typing import Annotated
 from fastapi import HTTPException, status, Depends
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import (
+    HTTPBearer,
+    HTTPAuthorizationCredentials,
+    HTTPBasicCredentials,
+    HTTPBasic,
+)
 from firebase_admin import auth, firestore
 
 from app.models.entities.Admin import Admin
 
+load_dotenv()
 db = firestore.client()
+
+security = HTTPBasic()
 
 
 class Auth:
@@ -14,7 +25,7 @@ class Auth:
     ):
         if token:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
+                status_code=status.HTTP_403_FORBIDDEN,
                 detail="User has already logged in",
             )
         return False
@@ -39,7 +50,7 @@ class Auth:
         if member.exists:
             if member.to_dict()["approved"] != "approved":
                 raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    status_code=status.HTTP_403_FORBIDDEN,
                     detail="Physician must be approved by admin",
                 )
         return verified_token["uid"]
@@ -56,3 +67,17 @@ class Auth:
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="User must be an admin",
             )
+
+    @staticmethod
+    def is_kmk_maintainer(
+        credentials: Annotated[HTTPBasicCredentials, Depends(security)]
+    ):
+        if credentials.username != os.environ.get(
+            "REDOC_USERNAME"
+        ) or credentials.password != os.environ.get("REDOC_PASSWORD"):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect Credentials",
+                headers={"WWW-Authenticate": "Basic"},
+            )
+        return credentials.username

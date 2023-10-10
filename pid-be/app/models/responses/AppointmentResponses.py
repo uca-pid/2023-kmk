@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Union
 
 from .PhysicianResponses import PhysicianResponse
 from .PatientResponses import PatientResponse
@@ -43,4 +44,4 @@ class BasicAppointmentResponse(BaseModel):
 
 
 class AllAppointmentsResponse(BaseModel):
-    appointments: list[BasicAppointmentResponse]
+    appointments: list[Union[BasicAppointmentResponse, None]]

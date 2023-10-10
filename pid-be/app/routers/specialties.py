@@ -1,7 +1,6 @@
 from fastapi import APIRouter, status, Depends
 from fastapi.responses import JSONResponse
 
-from app.models.entities.Auth import Auth
 from app.models.entities.Specialty import Specialty
 from app.models.responses.SpecialtiesResponses import (
     GetSpecialtiesResponse,
@@ -20,7 +19,6 @@ router = APIRouter(
     status_code=status.HTTP_200_OK,
     response_model=GetSpecialtiesResponse,
     responses={
-        401: {"model": GetSpecialtyError},
         500: {"model": GetSpecialtyError},
     },
 )

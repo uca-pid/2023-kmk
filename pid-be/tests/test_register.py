@@ -262,7 +262,7 @@ def test_register_patient_with_invalid_email_returns_a_422_code():
     assert register_patient_response.status_code == 422
 
 
-def test_register_endpoint_returns_a_401_code_and_message_if_user_is_logged_in():
+def test_register_endpoint_returns_a_403_code_and_message_if_user_is_logged_in():
     requests.post(
         "http://localhost:8080/users/register",
         json=a_KMK_patient_information,
@@ -284,7 +284,7 @@ def test_register_endpoint_returns_a_401_code_and_message_if_user_is_logged_in()
         json=a_KMK_patient_information,
     )
 
-    assert response_to_second_request_to_login_endpoint.status_code == 401
+    assert response_to_second_request_to_login_endpoint.status_code == 403
     assert (
         response_to_second_request_to_login_endpoint.json()["detail"]
         == "User has already logged in"

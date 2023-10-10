@@ -105,3 +105,13 @@ def test_get_specialties_with_no_authorization_header_returns_200_code():
     )
 
     assert response_to_get_specialties_endpoint.status_code == 200
+
+
+def test_get_specialties_with_no_specialties_created_returns_an_empty_list():
+    specilaties_doc = db.collection("specialties").list_documents()
+    for specialty_doc in specilaties_doc:
+        specialty_doc.delete()
+    response_to_get_specialties_endpoint = requests.get(
+        "http://localhost:8080/specialties"
+    )
+    assert response_to_get_specialties_endpoint.json()["specialties"] == []

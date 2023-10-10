@@ -154,6 +154,16 @@ def get_all_pending_validations(uid=Depends(Auth.is_admin)):
 def regsiter_admin(
     admin_resgister_request: AdminRegisterRequest, uid=Depends(Auth.is_admin)
 ):
+    """
+    Register an admin.
+
+    This will allow superusers to register admins.
+
+    This path operation will:
+
+    * Register an admin.
+    * Throw an error if the registration fails.
+    """
     url = os.environ.get("REGISTER_URL")
     auth_uid = None
     try:

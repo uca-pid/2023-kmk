@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Union
 
 from .PhysicianResponses import PhysicianResponse
 
@@ -16,4 +17,4 @@ class GetPendingValidationsError(BaseModel):
 
 
 class AllPendingValidationsResponse(BaseModel):
-    physicians_pending_validation: list[PhysicianResponse]
+    physicians_pending_validation: list[Union[PhysicianResponse, None]]

@@ -46,7 +46,7 @@ with open("credentials/client.json") as fp:
     response_model=SuccessfulLoginResponse,
     responses={
         400: {"model": LoginErrorResponse},
-        401: {"model": LoginErrorResponse},
+        403: {"model": LoginErrorResponse},
         500: {"model": LoginErrorResponse},
     },
 )
@@ -94,7 +94,7 @@ async def login_user(
     response_model=SuccessfullRegisterResponse,
     responses={
         400: {"model": RegisterErrorResponse},
-        401: {"model": RegisterErrorResponse},
+        403: {"model": RegisterErrorResponse},
         500: {"model": RegisterErrorResponse},
     },
 )
@@ -154,6 +154,7 @@ async def register(
     response_model=UserRolesResponse,
     responses={
         401: {"model": UserProfileErrorResponse},
+        403: {"model": UserProfileErrorResponse},
         500: {"model": UserProfileErrorResponse},
     },
 )
