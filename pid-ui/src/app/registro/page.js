@@ -87,11 +87,8 @@ const Registro = () => {
                 router.push("/");
             }
         } catch (error) {
+            console.error(error);
             setError("Error al registrarse: " + error.response.data.detail);
-
-            if (error.response.data.detail == "User has already logged in") {
-                router.push("/dashboard-redirect");
-            }
 
             // Verificar si el elemento .error-message está presente en el DOM
             const errorMessageElement =

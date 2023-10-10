@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
-import styles from "./dashboard-admin.module.css";
+import styles from "../styles/styles.module.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Header, Footer } from "../components/header";
@@ -58,12 +57,12 @@ const Admin = () => {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
 
-        userCheck(router);
+        // userCheck(router);
         fetchPhysicians();
     }, []);
 
     return (
-        <div className={styles.admin}>
+        <div className={styles.dashboard}>
             <Header />
 
             <div className={styles["tab-content"]}>
