@@ -19,6 +19,8 @@ from app.models.responses.UserResponses import (
     RegisterErrorResponse,
     UserRolesResponse,
     UserProfileErrorResponse,
+    UserInfoResponse,
+    UserInfoErrorResponse,
 )
 
 from app.models.entities.Auth import Auth
@@ -178,6 +180,43 @@ def get_user_roles(user_id=Depends(Auth.is_logged_in)):
         if Physician.is_physician(user_id):
             roles.append("physician")
         return {"roles": roles}
+    except:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "Internal server error"},
+        )
+
+
+@router.get(
+    "/user-info/{user_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=UserInfoResponse,
+    responses={
+        401: {"model": UserInfoErrorResponse},
+        403: {"model": UserInfoErrorResponse},
+        500: {"model": UserInfoErrorResponse},
+    },
+)
+def get_user_info(user_id):
+    """
+    Get a user info.
+
+    This will return the user info.
+
+    This path operation will:
+
+    * Return the user info.
+    * Throw an error if user info retrieving process fails.
+    """
+    try:
+        if Patient.get_by_id(user_id):
+            return Patient.get_by_id(user_id)
+        if Physician.get_by_id(user_id):
+            return Physician.get_by_id(user_id)
+        else:
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
