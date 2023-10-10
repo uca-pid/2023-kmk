@@ -188,7 +188,7 @@ def get_user_roles(user_id=Depends(Auth.is_logged_in)):
 
 
 @router.get(
-    "/user-info/{user_id}",
+    "/user-info",
     status_code=status.HTTP_200_OK,
     response_model=UserInfoResponse,
     responses={
@@ -197,7 +197,7 @@ def get_user_roles(user_id=Depends(Auth.is_logged_in)):
         500: {"model": UserInfoErrorResponse},
     },
 )
-def get_user_info(user_id):
+def get_user_info(user_id=Depends(Auth.is_logged_in)):
     """
     Get a user info.
 

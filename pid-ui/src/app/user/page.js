@@ -31,8 +31,10 @@ const UserProfile = () => {
 
     const getUserData = async () => {
         try {
-            const response = await axios.get("/api/user"); // Reemplaza con la ruta correcta para obtener los datos del usuario
-            return response.data;
+            const response = await axios.get(
+                `http://localhost:8080/user-info/`
+            );
+            console.log(response);
         } catch (error) {
             throw error;
         }
