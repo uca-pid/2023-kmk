@@ -32,10 +32,14 @@ class Appointment:
 
     @staticmethod
     def get_all_appointments_for_user_with(uid):
-        appointments = (
-            db.collection("appointments").where("patient_id", "==", uid).get()
-        )
-
+        if Patient.is_patient(uid):
+            appointments = (
+                db.collection("appointments").where("patient_id", "==", uid).get()
+            )
+        else:
+            appointments = (
+                db.collection("appointments").where("physician_id", "==", uid).get()
+            )
         return [appointment.to_dict() for appointment in appointments]
 
     @staticmethod
@@ -53,6 +57,7 @@ class Appointment:
     @staticmethod
     def delete_by_id(id):
         db.collection("appointments").document(id).delete()
+        
 
     def create(self):
         id = db.collection("appointments").document().id

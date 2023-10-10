@@ -48,26 +48,11 @@ class Auth:
     def is_admin(
         token: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_error=False)),
     ):
-        if not token:
+        user_id = Auth.is_logged_in(token)
+        if Admin.is_admin(user_id):
+            return user_id
+        else:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User must provide a valid token",
-            )
-
-        try:
-            verified_token = auth.verify_id_token(token.credentials)
-            user_uid = verified_token["uid"]
-
-            if Admin.is_admin(user_uid):
-                return user_uid
-            else:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="User must be an admin",
-                )
-
-        except:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token or user must be an admin",
+                detail="User must be an admin",
             )

@@ -5,7 +5,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
     title: "MediSync",
-    description: "MediSync - A better way to manage your health",
+    description: "MediSync - Tu salud, en todos lados",
 };
 
 export default function RootLayout({ children }) {

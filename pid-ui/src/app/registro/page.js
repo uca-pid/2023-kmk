@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import styles from "./registro.module.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import validator from "validator";
+import { HeaderSlim, Footer } from "../components/header";
 
 const Registro = () => {
     const [nombre, setNombre] = useState("");
@@ -18,7 +18,7 @@ const Registro = () => {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
-    const [role, setRole] = useState("paciente");
+    const [role, setRole] = useState("patient");
     const router = useRouter();
 
     const validate = (value) => {
@@ -68,7 +68,7 @@ const Registro = () => {
             role,
         };
 
-        if (role === "medico")
+        if (role === "physician")
             userData = {
                 ...userData,
                 matricula: numeroMatricula,
@@ -77,11 +77,7 @@ const Registro = () => {
 
         try {
             const response = await axios.post(
-                `http://localhost:8080/users/${
-                    role === "paciente"
-                        ? "register-patient"
-                        : "register-physician"
-                }`,
+                `http://localhost:8080/users/register`,
                 userData
             );
             console.log(response.data);
@@ -109,15 +105,8 @@ const Registro = () => {
 
     return (
         <div className={styles["registro"]}>
-            <header className={styles["header"]} onClick={handleLogoClick}>
-                <Image
-                    src="/logo.png"
-                    alt="Logo de la empresa"
-                    className={styles["logo"]}
-                    width={200}
-                    height={200}
-                />
-            </header>
+            <HeaderSlim />
+
             <form className={styles["form"]} onSubmit={handleSubmit}>
                 <div className={styles["title"]}>Registro</div>
                 <div className={styles["subtitle"]}>
@@ -131,8 +120,8 @@ const Registro = () => {
                         onChange={(e) => setRole(e.target.value)}
                         required
                     >
-                        <option value="paciente">Paciente</option>
-                        <option value="medico">Médico</option>
+                        <option value="patient">Paciente</option>
+                        <option value="physician">Médico</option>
                     </select>
                 </div>
                 <div className={styles["form-group"]}>
@@ -155,7 +144,7 @@ const Registro = () => {
                         required
                     />
                 </div>
-                {role === "medico" && (
+                {role === "physician" && (
                     <>
                         <div className={styles["form-group"]}>
                             <label htmlFor="numeroMatricula">
@@ -176,6 +165,7 @@ const Registro = () => {
                             <select
                                 id="specialty"
                                 value={especialidad}
+                                required
                                 onChange={(e) => {
                                     setEspecialidad(e.target.value);
                                 }}
@@ -249,14 +239,11 @@ const Registro = () => {
                 </button>
             </form>
             <div className={styles["sign-in-link"]}>
-                ¿Ya tienes una cuenta?{" "}
                 <Link legacyBehavior href="/">
-                    <a>Inicia Sesión</a>
+                    <a>¿Ya tienes una cuenta? Inicia Sesión</a>
                 </Link>
             </div>
-            <footer className={styles["page-footer"]}>
-                <p>Derechos de autor © 2023 KMK</p>
-            </footer>
+            <Footer />
         </div>
     );
 };

@@ -17,6 +17,8 @@ next_week_day_off_by_hours = next_week_day.replace(hour=21)
 another_next_week_day_off_by_hours = next_week_day.replace(hour=3)
 
 valid_physician_id = "validphysicianid"
+pending_physician_id = "pendingphysicianid"
+denied_physician_id = "deniedphysicianid"
 
 appointment_data = {
     "physician_id": valid_physician_id,
@@ -43,67 +45,88 @@ another_out_of_working_hours_appointment_data = {
     "date": round(another_next_week_day_off_by_hours.timestamp()),
 }
 
+
+pending_physician_appointment_data = {
+    "physician_id": pending_physician_id,
+    "date": round(another_next_week_day_off_by_hours.timestamp()),
+}
+
+denied_physician_appointment_data = {
+    "physician_id": denied_physician_id,
+    "date": round(another_next_week_day_off_by_hours.timestamp()),
+}
+
 a_KMK_user_information = {
-    "display_name": "KMK Test User",
     "email": "postApppointmentTestUser@kmk.com",
-    "email_verified": True,
     "password": "verySecurePassword123",
+    "role": "patient",
+    "name": "KMK",
+    "last_name": "Test User",
 }
 
 
 @pytest.fixture(autouse=True)
-def create_and_delete_physician():
+def create_and_delete_physicians():
     db.collection("physicians").document(valid_physician_id).set(
         {
             "first_name": "Doc",
             "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
+            "approved": "approved",
+        }
+    )
+    db.collection("physicians").document(pending_physician_id).set(
+        {
+            "first_name": "Doc",
+            "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
+            "approved": "pending",
+        }
+    )
+    db.collection("physicians").document(denied_physician_id).set(
+        {
+            "first_name": "Doc",
+            "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
+            "approved": "denied",
         }
     )
     yield
     db.collection("physicians").document(valid_physician_id).delete()
+    db.collection("physicians").document(pending_physician_id).delete()
+    db.collection("physicians").document(denied_physician_id).delete()
 
 
 @pytest.fixture(autouse=True)
 def create_test_user():
-    created_user = auth.create_user(**a_KMK_user_information)
-    a_KMK_user_information["uid"] = created_user.uid
-    yield
-    auth.delete_user(a_KMK_user_information["uid"])
-
-
-def test_creation_of_appointment_with_valid_data_returns_201_code():
-    response_from_login_endpoint = requests.post(
+    requests.post(
+        "http://localhost:8080/users/register-patient", json=a_KMK_user_information
+    )
+    pytest.bearer_token = requests.post(
         "http://localhost:8080/users/login",
         json={
             "email": a_KMK_user_information["email"],
             "password": a_KMK_user_information["password"],
         },
-    )
+    ).json()["token"]
+    a_KMK_user_information["uid"] = auth.verify_id_token(pytest.bearer_token)["uid"]
+    yield
+    auth.delete_user(a_KMK_user_information["uid"])
+    db.collection("patients").document(a_KMK_user_information["uid"]).delete()
+
+
+def test_creation_of_appointment_with_valid_data_returns_201_code():
     response_to_appointment_creation_endpoint = requests.post(
         "http://localhost:8080/appointments",
         json=appointment_data,
-        headers={
-            "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
-        },
+        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
     )
 
     assert response_to_appointment_creation_endpoint.status_code == 201
 
 
 def test_creation_of_apointment_with_valid_data_returns_the_id_of_the_created_appointment():
-    response_from_login_endpoint = requests.post(
-        "http://localhost:8080/users/login",
-        json={
-            "email": a_KMK_user_information["email"],
-            "password": a_KMK_user_information["password"],
-        },
-    )
     response_to_appointment_creation_endpoint = requests.post(
         "http://localhost:8080/appointments",
         json=appointment_data,
-        headers={
-            "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
-        },
+        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
     )
 
     assert (
@@ -112,19 +135,10 @@ def test_creation_of_apointment_with_valid_data_returns_the_id_of_the_created_ap
 
 
 def test_returned_id_is_the_id_of_the_created_appointment():
-    response_from_login_endpoint = requests.post(
-        "http://localhost:8080/users/login",
-        json={
-            "email": a_KMK_user_information["email"],
-            "password": a_KMK_user_information["password"],
-        },
-    )
     response_to_appointment_creation_endpoint = requests.post(
         "http://localhost:8080/appointments",
         json=appointment_data,
-        headers={
-            "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
-        },
+        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
     )
 
     appointment_id = response_to_appointment_creation_endpoint.json()["appointment_id"]
@@ -140,57 +154,30 @@ def test_returned_id_is_the_id_of_the_created_appointment():
 
 
 def test_invalid_date_format_in_appointment_creation_endpoint_returns_a_422_Code():
-    response_from_login_endpoint = requests.post(
-        "http://localhost:8080/users/login",
-        json={
-            "email": a_KMK_user_information["email"],
-            "password": a_KMK_user_information["password"],
-        },
-    )
     response_to_appointment_creation_endpoint = requests.post(
         "http://localhost:8080/appointments",
         json={"date": "tomorrow", "physician_id": appointment_data["physician_id"]},
-        headers={
-            "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
-        },
+        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
     )
 
     assert response_to_appointment_creation_endpoint.status_code == 422
 
 
 def test_past_date_in_appointment_creation_endpoint_returns_a_422_code():
-    response_from_login_endpoint = requests.post(
-        "http://localhost:8080/users/login",
-        json={
-            "email": a_KMK_user_information["email"],
-            "password": a_KMK_user_information["password"],
-        },
-    )
     response_to_appointment_creation_endpoint = requests.post(
         "http://localhost:8080/appointments",
         json={"date": 0, "physician_id": appointment_data["physician_id"]},
-        headers={
-            "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
-        },
+        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
     )
 
     assert response_to_appointment_creation_endpoint.status_code == 422
 
 
 def test_invalid_physician_id_format_in_appointment_creation_endpoint_returns_a_422_code():
-    response_from_login_endpoint = requests.post(
-        "http://localhost:8080/users/login",
-        json={
-            "email": a_KMK_user_information["email"],
-            "password": a_KMK_user_information["password"],
-        },
-    )
     response_to_appointment_creation_endpoint = requests.post(
         "http://localhost:8080/appointments",
         json={"date": appointment_data["date"], "physician_id": [1, 3, 5]},
-        headers={
-            "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
-        },
+        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
     )
 
     assert response_to_appointment_creation_endpoint.status_code == 422
@@ -237,17 +224,10 @@ def test_creation_of_appointment_with_empty_bearer_token_returns_401_code():
 
 
 def test_creation_of_appointment_with_non_bearer_token_returns_401_code():
-    response_from_login_endpoint = requests.post(
-        "http://localhost:8080/users/login",
-        json={
-            "email": a_KMK_user_information["email"],
-            "password": a_KMK_user_information["password"],
-        },
-    )
     response_to_appointment_creation_endpoint = requests.post(
         "http://localhost:8080/appointments",
         json=appointment_data,
-        headers={"Authorization": response_from_login_endpoint.json()["token"]},
+        headers={"Authorization": pytest.bearer_token},
     )
 
     assert response_to_appointment_creation_endpoint.status_code == 401
@@ -272,38 +252,20 @@ def test_creation_of_appointment_with_invalid_bearer_token_returns_401_code():
 
 
 def test_creation_of_appointment_with_a_physician_id_that_doesnt_exists_returns_a_422_code():
-    response_from_login_endpoint = requests.post(
-        "http://localhost:8080/users/login",
-        json={
-            "email": a_KMK_user_information["email"],
-            "password": a_KMK_user_information["password"],
-        },
-    )
     response_to_appointment_creation_endpoint = requests.post(
         "http://localhost:8080/appointments",
         json={"date": appointment_data["date"], "physician_id": "invalidPhysicianId"},
-        headers={
-            "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
-        },
+        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
     )
 
     assert response_to_appointment_creation_endpoint.status_code == 422
 
 
 def test_creating_appointment_in_a_non_working_day_of_the_physician_returns_a_400_code():
-    response_from_login_endpoint = requests.post(
-        "http://localhost:8080/users/login",
-        json={
-            "email": a_KMK_user_information["email"],
-            "password": a_KMK_user_information["password"],
-        },
-    )
     response_to_appointment_creation_endpoint = requests.post(
         "http://localhost:8080/appointments",
         json=out_of_working_days_appointment_data,
-        headers={
-            "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
-        },
+        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
     )
 
     assert response_to_appointment_creation_endpoint.status_code == 400
@@ -314,19 +276,10 @@ def test_creating_appointment_in_a_non_working_day_of_the_physician_returns_a_40
 
 
 def test_creating_appointment_in_a_non_working_hour_after_agenda_of_the_physician_returns_a_400_code():
-    response_from_login_endpoint = requests.post(
-        "http://localhost:8080/users/login",
-        json={
-            "email": a_KMK_user_information["email"],
-            "password": a_KMK_user_information["password"],
-        },
-    )
     response_to_appointment_creation_endpoint = requests.post(
         "http://localhost:8080/appointments",
         json=out_of_working_hours_appointment_data,
-        headers={
-            "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
-        },
+        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
     )
 
     assert response_to_appointment_creation_endpoint.status_code == 400
@@ -337,19 +290,10 @@ def test_creating_appointment_in_a_non_working_hour_after_agenda_of_the_physicia
 
 
 def test_creating_appointment_in_a_non_working_hour_before_agenda_of_the_physician_returns_a_400_code():
-    response_from_login_endpoint = requests.post(
-        "http://localhost:8080/users/login",
-        json={
-            "email": a_KMK_user_information["email"],
-            "password": a_KMK_user_information["password"],
-        },
-    )
     response_to_appointment_creation_endpoint = requests.post(
         "http://localhost:8080/appointments",
         json=another_out_of_working_hours_appointment_data,
-        headers={
-            "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
-        },
+        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
     )
 
     assert response_to_appointment_creation_endpoint.status_code == 400
@@ -364,27 +308,16 @@ def test_valid_appointment_creation_saves_slot_in_physicians_agenda():
         db.collection("physicians").document(valid_physician_id).get().to_dict()
     )
     assert physician_doc.get("appointments") == None
-    response_from_login_endpoint = requests.post(
-        "http://localhost:8080/users/login",
-        json={
-            "email": a_KMK_user_information["email"],
-            "password": a_KMK_user_information["password"],
-        },
-    )
     requests.post(
         "http://localhost:8080/appointments",
         json=appointment_data,
-        headers={
-            "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
-        },
+        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
     )
 
     requests.post(
         "http://localhost:8080/appointments",
         json=another_appointment_data,
-        headers={
-            "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
-        },
+        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
     )
 
     physician_doc = (
@@ -398,19 +331,10 @@ def test_valid_appointment_creation_saves_slot_in_physicians_agenda():
 
 
 def test_creating_two_appointments_for_the_same_physician_in_the_same_valid_date_returns_a_400_code():
-    response_from_login_endpoint = requests.post(
-        "http://localhost:8080/users/login",
-        json={
-            "email": a_KMK_user_information["email"],
-            "password": a_KMK_user_information["password"],
-        },
-    )
     response_to_appointment_creation_endpoint = requests.post(
         "http://localhost:8080/appointments",
         json=appointment_data,
-        headers={
-            "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
-        },
+        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
     )
 
     assert response_to_appointment_creation_endpoint.status_code == 201
@@ -418,9 +342,7 @@ def test_creating_two_appointments_for_the_same_physician_in_the_same_valid_date
     response_to_appointment_creation_endpoint = requests.post(
         "http://localhost:8080/appointments",
         json=appointment_data,
-        headers={
-            "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
-        },
+        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
     )
 
     assert response_to_appointment_creation_endpoint.status_code == 400
@@ -458,3 +380,23 @@ def test_non_patient_creating_appointment_returns_403_code_and_message():
         response_to_appointment_creation_endpoint.json()["detail"]
         == "Only patients can create appointments"
     )
+
+
+def test_appointment_creation_with_a_pending_physician_returns_a_422_code_and_a_detail():
+    response_to_appointment_creation_endpoint = requests.post(
+        "http://localhost:8080/appointments",
+        json=pending_physician_appointment_data,
+        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+    )
+
+    assert response_to_appointment_creation_endpoint.status_code == 422
+
+
+def test_appointment_creation_with_a_denied_physician_returns_a_422_code_and_a_detail():
+    response_to_appointment_creation_endpoint = requests.post(
+        "http://localhost:8080/appointments",
+        json=denied_physician_appointment_data,
+        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+    )
+
+    assert response_to_appointment_creation_endpoint.status_code == 422

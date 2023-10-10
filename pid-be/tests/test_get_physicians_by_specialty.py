@@ -37,6 +37,7 @@ a_physician_information = {
     "last_name": "Docson",
     "specialty": specialties[0],
     "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
+    "approved": "approved",
 }
 
 another_physician_information = {
@@ -45,6 +46,7 @@ another_physician_information = {
     "last_name": "Docson the Second",
     "specialty": specialties[0],
     "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
+    "approved": "approved",
 }
 
 other_physician_information = {
@@ -53,6 +55,25 @@ other_physician_information = {
     "last_name": "Docson the Third",
     "specialty": specialties[1],
     "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
+    "approved": "approved",
+}
+
+pending_to_approve_physician_information = {
+    "id": "pendingphysicianid",
+    "first_name": "Doc",
+    "last_name": "Docson the Third",
+    "specialty": specialties[1],
+    "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
+    "approved": "pending",
+}
+
+denied_approve_physician_information = {
+    "id": "deniedphysicianid",
+    "first_name": "Doc",
+    "last_name": "Docson the Third",
+    "specialty": specialties[1],
+    "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
+    "approved": "denied",
 }
 
 
@@ -67,6 +88,12 @@ def load_and_delete_physicians():
     db.collection("physicians").document(other_physician_information["id"]).set(
         other_physician_information
     )
+    db.collection("physicians").document(
+        pending_to_approve_physician_information["id"]
+    ).set(pending_to_approve_physician_information)
+    db.collection("physicians").document(
+        denied_approve_physician_information["id"]
+    ).set(denied_approve_physician_information)
 
     yield
     physicians_doc = db.collection("physicians").list_documents()
