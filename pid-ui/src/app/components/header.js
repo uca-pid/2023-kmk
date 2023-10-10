@@ -7,9 +7,6 @@ import userCheck from "../components/userCheck";
 
 const Header = () => {
     const router = useRouter();
-    const handleLogoClick = () => {
-        userCheck(router);
-    };
 
     return (
         <div className={styles.header}>
@@ -19,7 +16,9 @@ const Header = () => {
                 className={styles.logo}
                 width={200}
                 height={200}
-                onClick={handleLogoClick}
+                onClick={() => {
+                    userCheck(router);
+                }}
             />
             <Image
                 src="/logout-icon.png"
@@ -42,11 +41,7 @@ const Header = () => {
                 width={200}
                 height={200}
                 onClick={() => {
-                    localStorage.removeItem("token");
-                    axios.defaults.headers.common = {
-                        Authorization: `bearer`,
-                    };
-                    router.push("/");
+                    router.push("/user");
                 }}
             />
         </div>
