@@ -1,3 +1,4 @@
+/* Estilos para la página de Dashboard */
 .dashboard {
     position: relative;
     display: flex;
@@ -8,8 +9,7 @@
     text-align: center;
     background-color: #fff;
     padding: 0;
-    margin-top: 10rem;
-    width: 100%;
+    margin-top: 150px;
 }
 
 /* Estilos para los mensajes de error */
@@ -25,13 +25,10 @@
     margin-bottom: 1rem;
     color: #333;
 }
-
-/* Estilos para el subtítulo "Iniciar Sesión" */
 .subtitle {
     font-size: 1.5rem; /* Tamaño del subtítulo */
     color: #333;
 }
-
 .subtitle:disabled {
     color: #5d5d5d;
 }
@@ -48,6 +45,8 @@
     flex: 1;
     align-self: flex-start;
     display: flex;
+    width: 60rem;
+    max-width: 100%;
     margin: 0 auto;
     background-color: #fff;
     border: 1px solid #ccc;
@@ -60,14 +59,12 @@
     flex-direction: column;
 }
 
-/* Estilos para las etiquetas de formulario */
 .form label {
     font-size: 1rem;
     margin-bottom: 0.5rem;
     color: #333;
 }
 
-/* Estilos para los campos de selección (select) */
 .form select {
     width: 100%;
     padding: 0.5rem;
@@ -100,40 +97,6 @@
     margin-bottom: 2rem;
 }
 
-/* Estilos para el botón de envío */
-.submit-button {
-    padding: 0.5rem 1rem;
-    background-color: #007bff;
-    color: #fff;
-    text-decoration: none;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    width: 100%;
-    text-align: center;
-    margin-top: 1rem;
-}
-
-.submit-button:hover {
-    background-color: #0056b3;
-}
-
-/* Estilos para el botón deshabilitado */
-.disabled-button {
-    background-color: #ccc;
-    cursor: not-allowed;
-}
-
-/* Estilos para el pie de página de la página de inicio */
-.page-footer {
-    font-size: 0.8rem;
-    margin-top: 2rem;
-    margin-bottom: 2rem;
-    color: #777;
-    position: relative;
-    bottom: 0;
-}
 /* Estilos para la sección de "Mis Proximos Turnos" */
 .appointments-section {
     margin-top: 2rem;
@@ -162,51 +125,49 @@
     color: #333;
 }
 
-.stantard-button {
-    background-color: #007bff;
+/* Estilos para BOTONES */
+.standard-button {
+    background-color: #909090;
+    color: #fff;
+}
+.standard-button:hover {
+    background-color: #707070;
+}
+
+.submit-button {
     padding: 0.5rem 1rem;
+    background-color: #007bff;
     color: #fff;
     text-decoration: none;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
-    margin-right: 10px;
+    width: 100%;
+    text-align: center;
+    margin-top: 1rem;
 }
-
-.stantard-button:hover {
+.submit-button:hover {
     background-color: #0056b3;
 }
 
-/* Estilos para el botón de eliminación */
 .delete-button {
     background-color: #ff3333; /* Cambia el color para el botón de eliminar */
-    padding: 0.5rem 1rem;
-    color: #444;
-    text-decoration: none;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    margin-right: 10px; /* Espaciado a la derecha para separar los botones */
+    color: #fff;
 }
 .delete-button:hover {
     background-color: #cc0000; /* Cambia el color al pasar el mouse */
 }
 
-/* Estilos para el botón de edición*/
 .edit-button {
-    background-color: #ffc107; /* Cambia el color para el botón de editar */
-    padding: 0.5rem 1rem;
-    color: #444;
-    text-decoration: none;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    margin-right: 10px; /* Espaciado a la derecha para separar los botones */
+    background-color: #007bff; /* Cambia el color para el botón de editar */
+    color: #fff;
+}
+.edit-button:hover {
+    background-color: #0056b3; /* Cambia el color al pasar el mouse */
 }
 
-.edit-button:hover {
-    background-color: #ffab00; /* Cambia el color al pasar el mouse */
+.disabled-button {
+    background-color: #ccc;
+    cursor: not-allowed;
 }

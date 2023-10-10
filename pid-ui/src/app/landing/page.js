@@ -30,21 +30,14 @@ const Landing = () => {
 
         try {
             const response = await axios.post(
-                `http://localhost:8080/users/login`,
+                `http://localhost:8080/users/login/`,
                 userData
             );
             localStorage.setItem("token", response.data.token);
-            sessionStorage.setItem("user", JSON.stringify(response.data.user));
             userCheck(router);
-
-            //router.push("/dashboard-redirect");
         } catch (error) {
+            console.error(error);
             setError("Error al iniciar sesión: " + error.response.data.detail);
-
-            if (error.response.data.detail == "User has already logged in") {
-                userCheck(router);
-                // router.push("/dashboard-redirect");
-            }
 
             // Verificar si el elemento .error-message está presente en el DOM
             const errorMessageElement =

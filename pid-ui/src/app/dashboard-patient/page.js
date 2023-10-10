@@ -247,13 +247,13 @@ const Dashboard = () => {
 
                     {/* Botones de Guardar y Cerrar */}
                     <button
-                        className={styles["stantard-button"]}
+                        className={styles["standard-button"]}
                         onClick={handleSaveAppointment}
                     >
                         Guardar
                     </button>
                     <button
-                        className={styles["stantard-button"]}
+                        className={styles["standard-button"]}
                         onClick={handleCloseEditModal}
                     >
                         Cerrar
