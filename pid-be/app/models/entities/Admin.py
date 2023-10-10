@@ -28,6 +28,14 @@ class Admin:
     def is_admin(id):
         return db.collection("superusers").document(id).get().exists
 
+    @staticmethod
+    def approve_physician(id):
+        db.collection("physicians").document(id).update({"approved": "approved"})
+
+    @staticmethod
+    def deny_physician(id):
+        db.collection("physicians").document(id).update({"approved": "denied"})
+
     def create(self):
         if db.collection("superusers").document(self.id).get().exists:
             raise HTTPException(

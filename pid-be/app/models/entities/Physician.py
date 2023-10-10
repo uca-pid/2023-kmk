@@ -87,14 +87,6 @@ class Physician:
         db.collection("physicians").document(id).update({f"appointments.{date}": True})
 
     @staticmethod
-    def approve_physician(id):
-        db.collection("physicians").document(id).update({"approved": "approved"})
-
-    @staticmethod
-    def deny_physician(id):
-        db.collection("physicians").document(id).update({"approved": "denied"})
-
-    @staticmethod
     def get_pending_physicians():
         physicians = (
             db.collection("physicians").where("approved", "==", "pending").get()

@@ -35,17 +35,16 @@ with open("credentials/client.json") as fp:
 
 @router.post(
     "/approve-physician/{physician_id}",
-    status_code=status.HTTP_201_CREATED,
+    status_code=status.HTTP_200_OK,
     response_model=SuccessfullValidationResponse,
     responses={
+        400: {"model": ValidationErrorResponse},
         401: {"model": ValidationErrorResponse},
+        403: {"model": ValidationErrorResponse},
         500: {"model": ValidationErrorResponse},
     },
-    # dependencies=[Depends(Auth.is_admin)],
 )
-async def approve_physician(
-    physician_id: str,
-):
+async def approve_physician(physician_id: str, uid=Depends(Auth.is_admin)):
     """
     Validate a physician.
 
@@ -54,19 +53,17 @@ async def approve_physician(
     This path operation will:
 
     * Validate a physician.
-    * Change the "approved" field from Physicians from "pending" to "approved".
+    * Change the _approved_ field from Physicians from _pending_ to _approved_.
     * Throw an error if the validation fails.
     """
     try:
-        validated_id = Physician.approve_physician(physician_id)
-        validated_phyisician = Physician.get_by_id(validated_id)
-        return JSONResponse(
-            status_code=status.HTTP_201_CREATED,
-            content={
-                "detail": "Physician validated successfully",
-                "approved_physician": validated_phyisician,
-            },
-        )
+        if not Physician.is_physician(physician_id):
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"detail": "Can only approve physicians"},
+            )
+        Admin.approve_physician(physician_id)
+        return {"message": "Physician validated successfully"}
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -76,38 +73,35 @@ async def approve_physician(
 
 @router.post(
     "/deny-physician/{physician_id}",
-    status_code=status.HTTP_201_CREATED,
+    status_code=status.HTTP_200_OK,
     response_model=SuccessfullValidationResponse,
     responses={
+        400: {"model": ValidationErrorResponse},
         401: {"model": ValidationErrorResponse},
+        403: {"model": ValidationErrorResponse},
         500: {"model": ValidationErrorResponse},
     },
-    # dependencies=[Depends(Auth.is_admin)],
 )
-async def deny_physician(
-    physician_id: str,
-):
+async def deny_physician(physician_id: str, uid=Depends(Auth.is_admin)):
     """
     Validate a physician.
 
-    This will allow superusers to approve physicians.
+    This will allow superusers to deny physicians.
 
     This path operation will:
 
     * Validate a physician.
-    * Change the "approved" field from Physicians from "pending" to "approved".
+    * Change the _approved_ field from Physicians from _pending_ to _denied_.
     * Throw an error if the validation fails.
     """
     try:
-        denied_id = Physician.deny_physician(physician_id)
-        denied_phyisician = Physician.get_by_id(denied_id)
-        return JSONResponse(
-            status_code=status.HTTP_201_CREATED,
-            content={
-                "detail": "Physician denied successfully",
-                "approved_physician": denied_phyisician,
-            },
-        )
+        if not Physician.is_physician(physician_id):
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"detail": "Can only deny physicians"},
+            )
+        Admin.deny_physician(physician_id)
+        return {"message": "Physician denied successfully"}
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -121,11 +115,11 @@ async def deny_physician(
     response_model=AllPendingValidationsResponse,
     responses={
         401: {"model": GetPendingValidationsError},
+        403: {"model": GetPendingValidationsError},
         500: {"model": GetPendingValidationsError},
     },
-    # dependencies=[Depends(Auth.is_admin)],
 )
-def get_all_pending_validations():
+def get_all_pending_validations(uid=Depends(Auth.is_admin)):
     """
     Get all physicians pending approval.
 
