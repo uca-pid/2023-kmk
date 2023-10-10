@@ -10,6 +10,7 @@ import es from "date-fns/locale/es";
 import Modal from "react-modal";
 import axios from "axios";
 import { Footer, Header, TabBar } from "../components/header";
+import userCheck from "../components/userCheck";
 
 registerLocale("es", es);
 
@@ -42,63 +43,38 @@ const Dashboard = () => {
                 ? setAppointments([])
                 : setAppointments(response.data.appointments);
         } catch (error) {
-            console.log(error);
-        }
-    };
-
-    const userCheck = async () => {
-        try {
-            const response = await axios.get(
-                `http://localhost:8080/users/role/`
-            );
-
-            if (response.status == 200) {
-                if (response.data.roles.includes("admin")) {
-                    router.replace("/dashboard-admin");
-                } else if (response.data.roles.includes("physician")) {
-                    router.replace("/dashboard-physician");
-                } else if (response.data.roles.includes("patient")) {
-                    router.replace("/dashboard-patient");
-                } else {
-                    router.replace("/");
-                }
-            } else {
-                console.log("Error");
-                router.replace("/");
-            }
-        } catch (error) {
-            // console.log(error.response.data.detail);
-            switch (error.response.data.detail) {
-                case "User must be logged in":
-                    router.push("/");
-                    break;
-                case "User has already logged in":
-                    router.push("/dashboard-redirect");
-                    break;
-            }
+            console.error(error);
         }
     };
 
     const fetchSpecialties = async () => {
-        const response = await axios.get(`http://localhost:8080/specialties`);
-        console.log(response.data.specialties);
-        response.data.specialties == undefined
-            ? setSpecialties([])
-            : setSpecialties(response.data.specialties);
+        try {
+            const response = await axios.get(
+                `http://localhost:8080/specialties`
+            );
+            response.data.specialties == undefined
+                ? setSpecialties([])
+                : setSpecialties(response.data.specialties);
+        } catch (error) {
+            console.error(error);
+        }
     };
 
     const fetchPhysicians = async (specialty) => {
-        if (specialty) {
-            const response = await axios.get(
-                `http://localhost:8080/physicians/specialty/${specialty}`
-            );
-            console.log(response.data.physicians);
-            response.data.physicians == undefined
-                ? setDoctors([])
-                : setDoctors(response.data.physicians);
-        } else {
-            setDoctors([]);
-            setPhysiciansAgenda({});
+        try {
+            if (specialty) {
+                const response = await axios.get(
+                    `http://localhost:8080/physicians/specialty/${specialty}`
+                );
+                response.data.physicians == undefined
+                    ? setDoctors([])
+                    : setDoctors(response.data.physicians);
+            } else {
+                setDoctors([]);
+                setPhysiciansAgenda({});
+            }
+        } catch (error) {
+            console.error(error);
         }
     };
 
@@ -144,7 +120,6 @@ const Dashboard = () => {
     };
 
     const handleDeleteAppointment = async (appointmentId) => {
-        console.log(appointmentId);
         try {
             await axios.delete(
                 `http://localhost:8080/appointments/${appointmentId}`
@@ -152,11 +127,12 @@ const Dashboard = () => {
             alert("Turno eliminado exitosamente");
             fetchAppointments();
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     };
 
     const handleSubmit = async (e) => {
+        e.preventDefault();
         try {
             const response = await axios.post(
                 `http://localhost:8080/appointments/`,
@@ -168,7 +144,7 @@ const Dashboard = () => {
             alert("Turno solicitado exitosamente");
             fetchAppointments();
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     };
 
@@ -188,7 +164,7 @@ const Dashboard = () => {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
 
-        userCheck();
+        userCheck(router);
         fetchSpecialties();
         fetchAppointments();
         const intervalId = setInterval(() => {
@@ -206,7 +182,7 @@ const Dashboard = () => {
                     isOpen={isEditModalOpen}
                     onRequestClose={handleCloseEditModal}
                     style={customStyles}
-                    contentLabel='Example Modal'
+                    contentLabel="Example Modal"
                 >
                     {/* Campos de edición de especialidad, médico y fecha */}
 
@@ -214,15 +190,15 @@ const Dashboard = () => {
                         <div className={styles["title"]}>Editar Cita</div>
 
                         {/* Selector de fechas */}
-                        <label htmlFor='fecha'>Fechas disponibles:</label>
+                        <label htmlFor="fecha">Fechas disponibles:</label>
 
                         <DatePicker
-                            locale='es'
+                            locale="es"
                             selected={dateToEdit}
                             onChange={(date) => {
                                 setDateToEdit(date);
                             }}
-                            timeCaption='Hora'
+                            timeCaption="Hora"
                             timeIntervals={30}
                             showPopperArrow={false}
                             showTimeSelect
@@ -359,24 +335,23 @@ const Dashboard = () => {
                 </div>
 
                 {/* Formulario de selección de especialidad y doctor */}
-                <form className={styles.form}>
+                <form className={styles.form} onSubmit={handleSubmit}>
                     <div className={styles["title"]}>
                         Solicitar un nuevo turno
                     </div>
 
                     {/* Selector de especialidades */}
-                    <label htmlFor='specialty'>Especialidad:</label>
+                    <label htmlFor="specialty">Especialidad:</label>
                     <select
-                        id='specialty'
+                        id="specialty"
                         value={selectedSpecialty}
                         required
                         onChange={(e) => {
                             setSelectedSpecialty(e.target.value);
-                            console.log(selectedSpecialty);
                             fetchPhysicians(e.target.value);
                         }}
                     >
-                        <option value=''>Selecciona una especialidad</option>
+                        <option value="">Selecciona una especialidad</option>
                         {specialties.map((specialty) => (
                             <option key={specialty} value={specialty}>
                                 {specialty}
@@ -385,9 +360,9 @@ const Dashboard = () => {
                     </select>
 
                     {/* Selector de médicos */}
-                    <label htmlFor='doctor'>Médico:</label>
+                    <label htmlFor="doctor">Médico:</label>
                     <select
-                        id='doctor'
+                        id="doctor"
                         value={selectedDoctor}
                         required
                         onChange={(e) => {
@@ -396,7 +371,7 @@ const Dashboard = () => {
                         }}
                         disabled={!selectedSpecialty} // Deshabilita si no se ha seleccionado una especialidad
                     >
-                        <option value=''>Selecciona un médico</option>
+                        <option value="">Selecciona un médico</option>
                         {doctors.map((doctor) => (
                             <option
                                 key={doctor.id}
@@ -409,15 +384,15 @@ const Dashboard = () => {
                     </select>
 
                     {/* Selector de fechas */}
-                    <label htmlFor='fecha'>Fechas disponibles:</label>
+                    <label htmlFor="fecha">Fechas disponibles:</label>
 
                     <DatePicker
-                        locale='es'
+                        locale="es"
                         selected={date}
                         onChange={(date) => {
                             setDate(date);
                         }}
-                        timeCaption='Hora'
+                        timeCaption="Hora"
                         timeIntervals={30}
                         showPopperArrow={false}
                         showTimeSelect
@@ -458,9 +433,10 @@ const Dashboard = () => {
                     />
 
                     <button
-                        type='submit'
-                        className={styles["submit-button"]}
-                        onClick={handleSubmit}
+                        type="submit"
+                        className={`${styles["submit-button"]} ${
+                            !selectedDoctor ? styles["disabled-button"] : ""
+                        }`}
                         disabled={!selectedDoctor}
                     >
                         Solicitar turno

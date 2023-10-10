@@ -6,7 +6,7 @@ import styles from "./registro.module.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import validator from "validator";
-import { Header, Footer } from "../components/header";
+import { HeaderSlim, Footer } from "../components/header";
 
 const Registro = () => {
     const [nombre, setNombre] = useState("");
@@ -105,7 +105,7 @@ const Registro = () => {
 
     return (
         <div className={styles["registro"]}>
-            <Header />
+            <HeaderSlim />
 
             <form className={styles["form"]} onSubmit={handleSubmit}>
                 <div className={styles["title"]}>Registro</div>
@@ -113,32 +113,32 @@ const Registro = () => {
                     Ingrese sus datos para comenzar
                 </div>
                 <div className={styles["form-group"]}>
-                    <label htmlFor='userType'>Tipo de Usuario</label>
+                    <label htmlFor="userType">Tipo de Usuario</label>
                     <select
-                        id='role'
+                        id="role"
                         value={role}
                         onChange={(e) => setRole(e.target.value)}
                         required
                     >
-                        <option value='patient'>Paciente</option>
-                        <option value='physician'>Médico</option>
+                        <option value="patient">Paciente</option>
+                        <option value="physician">Médico</option>
                     </select>
                 </div>
                 <div className={styles["form-group"]}>
-                    <label htmlFor='nombre'>Nombre</label>
+                    <label htmlFor="nombre">Nombre</label>
                     <input
-                        type='text'
-                        id='nombre'
+                        type="text"
+                        id="nombre"
                         value={nombre}
                         onChange={(e) => setNombre(e.target.value)}
                         required
                     />
                 </div>
                 <div className={styles["form-group"]}>
-                    <label htmlFor='apellido'>Apellido</label>
+                    <label htmlFor="apellido">Apellido</label>
                     <input
-                        type='text'
-                        id='apellido'
+                        type="text"
+                        id="apellido"
                         value={apellido}
                         onChange={(e) => setApellido(e.target.value)}
                         required
@@ -147,12 +147,12 @@ const Registro = () => {
                 {role === "physician" && (
                     <>
                         <div className={styles["form-group"]}>
-                            <label htmlFor='numeroMatricula'>
+                            <label htmlFor="numeroMatricula">
                                 Número de Matrícula
                             </label>
                             <input
-                                type='text'
-                                id='numeroMatricula'
+                                type="text"
+                                id="numeroMatricula"
                                 value={numeroMatricula}
                                 onChange={(e) =>
                                     setNumeroMatricula(e.target.value)
@@ -161,16 +161,16 @@ const Registro = () => {
                             />
                         </div>
                         <div className={styles["form-group"]}>
-                            <label htmlFor='specialty'>Especialidad:</label>
+                            <label htmlFor="specialty">Especialidad:</label>
                             <select
-                                id='specialty'
+                                id="specialty"
                                 value={especialidad}
                                 required
                                 onChange={(e) => {
                                     setEspecialidad(e.target.value);
                                 }}
                             >
-                                <option value=''>
+                                <option value="">
                                     Selecciona una especialidad
                                 </option>
                                 {specialties.map((specialty) => (
@@ -183,20 +183,20 @@ const Registro = () => {
                     </>
                 )}
                 <div className={styles["form-group"]}>
-                    <label htmlFor='email'>Correo Electrónico</label>
+                    <label htmlFor="email">Correo Electrónico</label>
                     <input
-                        type='email'
-                        id='email'
+                        type="email"
+                        id="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
                     />
                 </div>
                 <div className={styles["form-group"]}>
-                    <label htmlFor='password'>Contraseña</label>
+                    <label htmlFor="password">Contraseña</label>
                     <input
-                        type='password'
-                        id='password'
+                        type="password"
+                        id="password"
                         value={password}
                         onChange={(e) => {
                             setPassword(e.target.value);
@@ -206,10 +206,10 @@ const Registro = () => {
                     />
                 </div>
                 <div className={styles["form-group"]}>
-                    <label htmlFor='confirmPassword'>Repetir Contraseña</label>
+                    <label htmlFor="confirmPassword">Repetir Contraseña</label>
                     <input
-                        type='password'
-                        id='confirmPassword'
+                        type="password"
+                        id="confirmPassword"
                         value={confirmPassword}
                         onChange={(e) => {
                             setConfirmPassword(e.target.value);
@@ -227,7 +227,7 @@ const Registro = () => {
                     </div>
                 )}
                 <button
-                    type='submit'
+                    type="submit"
                     className={`${styles["button"]} ${
                         password !== confirmPassword || error
                             ? styles["disabled-button"]
@@ -239,9 +239,8 @@ const Registro = () => {
                 </button>
             </form>
             <div className={styles["sign-in-link"]}>
-                ¿Ya tienes una cuenta?{" "}
-                <Link legacyBehavior href='/'>
-                    <a>Inicia Sesión</a>
+                <Link legacyBehavior href="/">
+                    <a>¿Ya tienes una cuenta? Inicia Sesión</a>
                 </Link>
             </div>
             <Footer />

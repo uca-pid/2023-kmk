@@ -5,6 +5,8 @@ import Image from "next/image";
 import styles from "./dashboard-admin.module.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { Header, Footer } from "../components/header";
+import userCheck from "../components/userCheck";
 
 const Admin = () => {
     const router = useRouter();
@@ -21,48 +23,6 @@ const Admin = () => {
             console.log(error);
         }
     };
-
-    useEffect(() => {
-        axios.defaults.headers.common = {
-            Authorization: `bearer ${localStorage.getItem("token")}`,
-        };
-
-        const userCheck = async () => {
-            try {
-                const response = await axios.get(
-                    `http://localhost:8080/users/role/`
-                );
-
-                if (response.status == 200) {
-                    if (response.data.roles.includes("admin")) {
-                        router.replace("/dashboard-admin");
-                    } else if (response.data.roles.includes("physician")) {
-                        router.replace("/dashboard-physician");
-                    } else if (response.data.roles.includes("patient")) {
-                        router.replace("/dashboard-patient");
-                    } else {
-                        router.replace("/");
-                    }
-                } else {
-                    console.log("Error");
-                    router.replace("/");
-                }
-            } catch (error) {
-                console.log(error.response.data.detail);
-                switch (error.response.data.detail) {
-                    case "User must be logged in":
-                        router.push("/");
-                        break;
-                    case "User has already logged in":
-                        router.push("/dashboard-redirect");
-                        break;
-                }
-            }
-        };
-
-        // userCheck();
-        fetchPhysicians();
-    }, []);
 
     const handleApprovePhysician = async (physician) => {
         try {
@@ -93,34 +53,18 @@ const Admin = () => {
         }
     };
 
-    const handleLogoClick = () => {
-        router.push("/dashboard-admin");
-    };
+    useEffect(() => {
+        axios.defaults.headers.common = {
+            Authorization: `bearer ${localStorage.getItem("token")}`,
+        };
+
+        userCheck(router);
+        fetchPhysicians();
+    }, []);
 
     return (
         <div className={styles.admin}>
-            <header className={styles.header}>
-                <Image
-                    src='/logo.png'
-                    alt='Logo de la empresa'
-                    className={styles.logo}
-                    width={200}
-                    height={200}
-                    onClick={handleLogoClick}
-                />
-                <Image
-                    src='/logout-icon.png'
-                    alt='CerrarSesion'
-                    className={styles["logout-icon"]}
-                    width={200}
-                    height={200}
-                    onClick={() => {
-                        localStorage.removeItem("token");
-                        axios.delete;
-                        router.push("/");
-                    }}
-                />
-            </header>
+            <Header />
 
             <div className={styles["tab-content"]}>
                 <div className={styles.form}>
@@ -190,10 +134,7 @@ const Admin = () => {
                     </div>
                 </div>
             </div>
-
-            <footer className={styles["page-footer"]}>
-                <p>Derechos de autor © 2023 KMK</p>
-            </footer>
+            <Footer />
         </div>
     );
 };
