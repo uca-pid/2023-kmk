@@ -22,16 +22,14 @@ title {
 }
 
 /* Estilos generales para botones */
-
-.button {
+button {
     padding: 0.5rem 1rem;
-    background-color: #007bff;
-    color: #fff;
     text-decoration: none;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
+    margin-right: 10px;
 }
 
 /* Estilos para el encabezado */

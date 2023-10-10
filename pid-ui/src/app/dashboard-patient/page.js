@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
-import styles from "./dashboard-patient.module.css";
+import styles from "../styles/styles.module.css";
 import { useRouter } from "next/navigation";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
