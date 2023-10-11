@@ -18,25 +18,24 @@ const UserProfile = () => {
     const [successMessage, setSuccessMessage] = useState("");
 
     useEffect(() => {
-        // Aquí puedes realizar una solicitud a la API para obtener los datos del usuario
-        // Reemplaza 'getUserData' con la función o endpoint adecuado para obtener los datos del usuario
-        getUserData()
-            .then((data) => {
-                setUser(data);
-            })
-            .catch((error) => {
-                console.error("Error al obtener los datos del usuario:", error);
-            });
+        getUserData();
     }, []);
 
     const getUserData = async () => {
+        console.log("getUserData");
         try {
             const response = await axios.get(
-                `http://localhost:8080/user-info/`
+                `http://localhost:8080/users/user-info/`
             );
-            console.log(response);
+
+            let user = {
+                firstName: response.data.first_name,
+                lastName: response.data.last_name,
+                email: response.data.email,
+            };
+            setUser(user);
         } catch (error) {
-            throw error;
+            console.error(error);
         }
     };
 
