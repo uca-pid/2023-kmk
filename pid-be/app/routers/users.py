@@ -147,7 +147,7 @@ async def register(
         patient_data = {
             key: value
             for key, value in register_request.dict().items()
-            if key not in ["birth_date", "sex", "blood_type"]
+            if key not in ["birth_date", "gender", "blood_type"]
         }
         patient = Patient(**patient_data, id=auth_uid)
         patient.create()

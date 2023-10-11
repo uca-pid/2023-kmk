@@ -10,7 +10,7 @@ class BasicRecordResponse(BaseModel):
     name: str
     last_name: str
     birth_date: str
-    sex: str
+    gender: str
     blood_type: str
     id: str
     observations: list

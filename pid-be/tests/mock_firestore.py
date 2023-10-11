@@ -57,7 +57,7 @@ if __name__ == "__main__":
         "last_name": "Test",
         "email": "aPatientEmail@kmk.com",
         "birth_date": "2000-01-01",
-        "sex": genders[0],
+        "gender": genders[0],
         "blood_type": blood_types[0],
     }
 
@@ -67,7 +67,7 @@ if __name__ == "__main__":
         "last_name": "OtherTest",
         "email": "otherPatientEmail@kmk.com",
         "birth_date": "2012-12-19",
-        "sex": genders[1],
+        "gender": genders[1],
         "blood_type": blood_types[3],
     }
 
@@ -127,13 +127,13 @@ if __name__ == "__main__":
     a_patient_data = {
         key: value
         for key, value in a_patient_information.items()
-        if key not in ["birth_date", "sex", "blood_type"]
+        if key not in ["birth_date", "gender", "blood_type"]
     }
     db.collection("patients").document(a_patient_information["id"]).set(a_patient_data)
     other_patient_data = {
         key: value
         for key, value in other_patient_information.items()
-        if key not in ["birth_date", "sex", "blood_type"]
+        if key not in ["birth_date", "gender", "blood_type"]
     }
     db.collection("patients").document(other_patient_information["id"]).set(
         other_patient_data

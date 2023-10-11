@@ -9,7 +9,7 @@ class Record:
     name: str
     last_name: str
     birth_date: str
-    sex: str
+    gender: str
     blood_type: str
     id: str
     observations: list
@@ -19,14 +19,14 @@ class Record:
         name: str,
         last_name: str,
         birth_date: str,
-        sex: str,
+        gender: str,
         blood_type: str,
         id: str,
     ):
         self.name = name
         self.last_name = last_name
         self.birth_date = birth_date
-        self.sex = sex
+        self.gender = gender
         self.blood_type = blood_type
         self.id = id
         self.observations = []
@@ -56,7 +56,7 @@ class Record:
                 "name": self.name,
                 "last_name": self.last_name,
                 "birth_date": self.birth_date,
-                "sex": self.sex,
+                "gender": self.gender,
                 "blood_type": self.blood_type,
                 "observations": self.observations,
             }
