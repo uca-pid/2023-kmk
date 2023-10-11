@@ -36,7 +36,7 @@ const Header = () => {
             />
             <Image
                 src="/user-icon.png"
-                alt="CerrarSesion"
+                alt="Usuario"
                 className={styles["user-icon"]}
                 width={200}
                 height={200}
