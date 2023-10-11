@@ -27,6 +27,7 @@ from app.models.entities.Auth import Auth
 from app.models.entities.Patient import Patient
 from app.models.entities.Physician import Physician
 from app.models.entities.Admin import Admin
+from app.models.entities.Record import Record
 
 from firebase_admin import firestore, auth
 
@@ -112,6 +113,7 @@ async def register(
     This will allow users to register on the platform.
     This path operation will:
     * Register users, performing validations on data received and on its validity.
+    * If the user is a patient, it's record will be created.
     * Throw an error if registration fails.
     """
 
@@ -142,8 +144,20 @@ async def register(
 
     del register_request.password
     if register_request.role == "patient":
-        patient = Patient(**register_request.dict(exclude_none=True), id=auth_uid)
+        patient_data = {
+            key: value
+            for key, value in register_request.dict().items()
+            if key not in ["birth_date", "gender", "blood_type"]
+        }
+        patient = Patient(**patient_data, id=auth_uid)
         patient.create()
+        record_data = {
+            key: value
+            for key, value in register_request.dict().items()
+            if key not in ["role", "email"]
+        }
+        record = Record(**record_data, id=auth_uid)
+        record.create()
     else:
         physician = Physician(**register_request.dict(exclude_none=True), id=auth_uid)
         physician.create()
