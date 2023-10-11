@@ -210,6 +210,9 @@ def create_test_environment(create_physicians):
         "appointment_id"
     ]
     yield
+    db.collection("patients").document(pytest.first_user_id).delete()
+    db.collection("patients").document(pytest.second_user_id).delete()
+    db.collection("patients").document(pytest.third_user_id).delete()
 
 
 @pytest.fixture(autouse=True)

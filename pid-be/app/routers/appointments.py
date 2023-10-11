@@ -51,7 +51,7 @@ async def create_appointment(
     try:
         appointment_id = appointment.create()
         return {"appointment_id": appointment_id}
-    except:
+    except Exception:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal server error"},
@@ -76,7 +76,7 @@ def get_all_appointments(uid=Depends(Auth.is_logged_in)):
 
     This path operation will:
 
-    * Return all of users appointments.
+    * Return all of users appointments ordered by date.
     * Throw an error if appointment retrieving fails.
     """
     try:

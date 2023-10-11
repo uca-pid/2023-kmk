@@ -85,6 +85,7 @@ def delete_physician(create_patient_and_then_delete_him):
         ).uid
         auth.delete_user(created_test_physician_uid)
         db.collection("physicians").document(created_test_physician_uid).delete()
+        db.collection("superusers").document(created_test_physician_uid).delete()
     except:
         print("[+] Physisican has not been created")
 

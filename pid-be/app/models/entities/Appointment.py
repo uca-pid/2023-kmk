@@ -39,11 +39,17 @@ class Appointment:
     def get_all_appointments_for_user_with(uid):
         if Patient.is_patient(uid):
             appointments = (
-                db.collection("appointments").where("patient_id", "==", uid).get()
+                db.collection("appointments")
+                .where("patient_id", "==", uid)
+                .order_by("date")
+                .get()
             )
         else:
             appointments = (
-                db.collection("appointments").where("physician_id", "==", uid).get()
+                db.collection("appointments")
+                .where("physician_id", "==", uid)
+                .order_by("date")
+                .get()
             )
         return [appointment.to_dict() for appointment in appointments]
 
