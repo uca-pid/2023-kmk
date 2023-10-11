@@ -121,7 +121,7 @@ async def register(
         user = auth.get_user_by_email(register_request.email)
         auth_uid = user.uid
     except:
-        print("[+] User already doesnt exist in authentication")
+        print("[+] User doesnt exist in authentication")
 
     if not auth_uid:
         register_response = requests.post(

@@ -27,7 +27,7 @@ class AppointmentCreationRequest(BaseModel):
             raise ValueError("Can only set an appointment with a valid physician")
         return physician_id_to_validate
 
-    @root_validator(pre=True)
+    @root_validator(pre=False, skip_on_failure=True)
     def validate_physicians_availability(cls, appointment_creation_request_attributes):
         if not Physician.has_availability(
             id=appointment_creation_request_attributes["physician_id"],

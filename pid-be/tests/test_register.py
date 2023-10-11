@@ -72,15 +72,6 @@ def delete_test_patients():
     except:
         print("[+] Patient doesnt exist")
 
-    try:
-        another_created_test_user_uid = auth.get_user_by_email(
-            another_KMK_patient_information["email"]
-        ).uid
-        auth.delete_user(another_created_test_user_uid)
-        db.collection("patients").document(another_created_test_user_uid).delete()
-    except:
-        print("[+] Patient doesnt exist")
-
 
 @pytest.fixture(autouse=True)
 def delete_test_physicians():
@@ -91,15 +82,6 @@ def delete_test_physicians():
         ).uid
         auth.delete_user(created_test_user_uid)
         db.collection("physicians").document(created_test_user_uid).delete()
-    except:
-        print("[+] Physician doesnt exist")
-
-    try:
-        another_created_test_users_uid = auth.get_user_by_email(
-            another_KMK_patient_information["email"]
-        ).uid
-        auth.delete_user(another_created_test_users_uid)
-        db.collection("physicians").document(another_created_test_users_uid).delete()
     except:
         print("[+] Physician doesnt exist")
 
@@ -421,6 +403,13 @@ def test_register_user_as_physician_and_as_patient_is_valid():
 
     assert response_to_register_endpoint_as_physician.status_code == 201
     assert response_to_register_endpoint_as_patient.status_code == 201
+
+    another_created_test_user_uid = auth.get_user_by_email(
+        another_KMK_patient_information["email"]
+    ).uid
+    db.collection("patients").document(another_created_test_user_uid).delete()
+    db.collection("physicians").document(another_created_test_user_uid).delete()
+    auth.delete_user(another_created_test_user_uid)
 
 
 def test_registration_with_invalid_role_returns_a_422_code():
