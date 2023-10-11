@@ -15,6 +15,9 @@ class PatientRegisterRequest(BaseModel):
     name: str = Field(min_length=1)
     last_name: str = Field(min_length=1)
     email: Annotated[str, Query(regex="^[-\w\.]+@([-\w]+\.)+[-\w]{2,4}$")]
+    birth_date: str
+    sex: str
+    blood_type: str
     password: str
 
 

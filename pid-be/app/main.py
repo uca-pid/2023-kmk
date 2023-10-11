@@ -14,7 +14,7 @@ from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 
 load_dotenv()
 
-from app.routers import users, appointments, specialties, physicians, admin
+from app.routers import users, appointments, specialties, physicians, admin, records
 from app.models.entities.Auth import Auth
 
 
@@ -32,6 +32,7 @@ routers = [
     specialties.router,
     physicians.router,
     admin.router,
+    records.router,
 ]
 
 for router in routers:
