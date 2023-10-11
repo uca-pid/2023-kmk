@@ -17,12 +17,15 @@ const Dashboard = () => {
     const router = useRouter();
     const [appointments, setAppointments] = useState([]);
     const [date, setDate] = useState(new Date());
+    const [dateToEdit, setDateToEdit] = useState(new Date());
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingAppointment, setEditingAppointment] = useState({
         id: null,
         specialty: "",
-        doctor: "",
+        doctor: {},
         date: new Date(),
+        patient: "",
+        agenda: {},
     });
 
     const fetchAppointments = async () => {
@@ -39,15 +42,18 @@ const Dashboard = () => {
     };
 
     const handleEditAppointment = (appointment) => {
-        console.log(isEditModalOpen);
+        console.log(appointment);
+        console.log(editingAppointment);
         setIsEditModalOpen(true);
         setEditingAppointment({
             id: appointment.id,
-            specialty: appointment.specialty,
-            doctor: appointment.doctor,
-            date: new Date(appointment.date),
+            specialty: appointment.physician.specialty,
+            doctor: appointment.physician,
+            date: appointment.date,
+            patient: appointment.patient,
+            agenda: appointment.physician.agenda,
         });
-        fetchAppointments();
+        console.log(editingAppointment);
     };
 
     const handleCloseEditModal = () => {
@@ -106,6 +112,7 @@ const Dashboard = () => {
             {/* Modal de edición */}
             {isEditModalOpen && (
                 <Modal
+                    ariaHideApp={false}
                     isOpen={isEditModalOpen}
                     onRequestClose={handleCloseEditModal}
                     style={customStyles}
@@ -121,29 +128,66 @@ const Dashboard = () => {
 
                         <DatePicker
                             locale="es"
-                            //dateFormat="dd-MM-yyyy HH:mm"
-                            selected={date}
+                            selected={dateToEdit}
                             onChange={(date) => {
-                                setDate(date);
-                                console.log(date);
+                                setDateToEdit(date);
                             }}
                             timeCaption="Hora"
                             timeIntervals={30}
                             showPopperArrow={false}
                             showTimeSelect
                             inline
+                            filterDate={(date) => {
+                                if (
+                                    editingAppointment.doctor.agenda
+                                        .working_days
+                                ) {
+                                    return editingAppointment.doctor.agenda.working_days.includes(
+                                        date.getDay()
+                                    );
+                                }
+                                return false;
+                            }}
+                            minDate={new Date()}
+                            filterTime={(time) => {
+                                if (
+                                    editingAppointment.doctor.agenda
+                                        .appointments &&
+                                    !editingAppointment.doctor.agenda.appointments.includes(
+                                        Math.round(time.getTime() / 1000)
+                                    ) &&
+                                    editingAppointment.doctor.agenda
+                                        .working_hours &&
+                                    time >= new Date()
+                                ) {
+                                    let workingHour =
+                                        editingAppointment.doctor.agenda.working_hours.filter(
+                                            (workingHour) =>
+                                                workingHour.day_of_week ===
+                                                date.getDay()
+                                        )[0];
+                                    let parsedTime =
+                                        time.getHours() +
+                                        time.getMinutes() / 60;
+                                    return (
+                                        workingHour.start_time <= parsedTime &&
+                                        workingHour.finish_time > parsedTime
+                                    );
+                                }
+                                return false;
+                            }}
                         />
                     </div>
 
                     {/* Botones de Guardar y Cerrar */}
                     <button
-                        className={styles["stantard-button"]}
+                        className={styles["standard-button"]}
                         onClick={handleSaveAppointment}
                     >
                         Guardar
                     </button>
                     <button
-                        className={styles["stantard-button"]}
+                        className={styles["standard-button"]}
                         onClick={handleCloseEditModal}
                     >
                         Cerrar
@@ -191,7 +235,7 @@ const Dashboard = () => {
                                                 }
                                                 onClick={() =>
                                                     handleEditAppointment(
-                                                        appointment.id
+                                                        appointment
                                                     )
                                                 }
                                             >
