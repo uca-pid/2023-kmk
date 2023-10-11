@@ -7,9 +7,8 @@ class GetRecordError(BaseModel):
 
 
 class BasicRecordResponse(BaseModel):
-    first_name: str
+    name: str
     last_name: str
-    email: str
     birth_date: str
     sex: str
     blood_type: str

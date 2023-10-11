@@ -6,9 +6,8 @@ db = firestore.client()
 
 
 class Record:
-    first_name: str
+    name: str
     last_name: str
-    email: str
     birth_date: str
     sex: str
     blood_type: str
@@ -17,17 +16,15 @@ class Record:
 
     def __init__(
         self,
-        first_name: str,
+        name: str,
         last_name: str,
-        email: str,
         birth_date: str,
         sex: str,
         blood_type: str,
         id: str,
     ):
-        self.first_name = first_name
+        self.name = name
         self.last_name = last_name
-        self.email = email
         self.birth_date = birth_date
         self.sex = sex
         self.blood_type = blood_type
@@ -56,9 +53,8 @@ class Record:
         db.collection("records").document(self.id).set(
             {
                 "id": self.id,
-                "first_name": self.first_name,
+                "name": self.name,
                 "last_name": self.last_name,
-                "email": self.email,
                 "birth_date": self.birth_date,
                 "sex": self.sex,
                 "blood_type": self.blood_type,

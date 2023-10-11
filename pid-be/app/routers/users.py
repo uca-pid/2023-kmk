@@ -154,7 +154,7 @@ async def register(
         record_data = {
             key: value
             for key, value in register_request.dict().items()
-            if key != "role"
+            if key not in ["role", "email"]
         }
         record = Record(**record_data, id=auth_uid)
         record.create()

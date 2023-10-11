@@ -28,6 +28,19 @@ if __name__ == "__main__":
         "Urologia",
     ]
 
+    blood_types = [
+        "A+",
+        "A-",
+        "B+",
+        "B-",
+        "AB+",
+        "AB-",
+        "O+",
+        "O-",
+    ]
+
+    genders = ["Femenino", "Masculino", "Otro"]
+
     today_date = datetime.now().date()
     number_of_day_of_week = int(today_date.strftime("%w"))
 
@@ -36,6 +49,36 @@ if __name__ == "__main__":
         "email": "getPhysiciansBySpecialtyTestUser@kmk.com",
         "email_verified": True,
         "password": "verySecurePassword123",
+    }
+
+    a_patient_information = {
+        "id": "apatientid",
+        "name": "Patient",
+        "last_name": "Test",
+        "email": "aPatientEmail@kmk.com",
+        "birth_date": "2000-01-01",
+        "sex": genders[0],
+        "blood_type": blood_types[0],
+    }
+
+    other_patient_information = {
+        "id": "otherpatientid",
+        "name": "OtherPatient",
+        "last_name": "OtherTest",
+        "email": "otherPatientEmail@kmk.com",
+        "birth_date": "2012-12-19",
+        "sex": genders[1],
+        "blood_type": blood_types[3],
+    }
+
+    observation_one = {
+        "date": "2023-01-01",
+        "observations": "This is an observation",
+    }
+
+    observation_two = {
+        "date": "2023-09-12",
+        "observations": "This is another observation",
     }
 
     a_physician_information = {
@@ -81,5 +124,33 @@ if __name__ == "__main__":
         other_physician_information
     )
 
+    a_patient_data = {
+        key: value
+        for key, value in a_patient_information.items()
+        if key not in ["birth_date", "sex", "blood_type"]
+    }
+    db.collection("patients").document(a_patient_information["id"]).set(a_patient_data)
+    other_patient_data = {
+        key: value
+        for key, value in other_patient_information.items()
+        if key not in ["birth_date", "sex", "blood_type"]
+    }
+    db.collection("patients").document(other_patient_information["id"]).set(
+        other_patient_data
+    )
+    record_data = {
+        key: value
+        for key, value in a_patient_information.items()
+        if key not in ["role", "email"]
+    }
+    record_data["observations"] = [observation_one, observation_two]
+    db.collection("records").document(a_patient_information["id"]).set(record_data)
+
     for specialty in specialties:
         db.collection("specialties").document().set({"name": specialty})
+
+    for blood_type in blood_types:
+        db.collection("blood_types").document().set({"type": blood_type})
+
+    for gender in genders:
+        db.collection("genders").document().set({"gender": gender})
