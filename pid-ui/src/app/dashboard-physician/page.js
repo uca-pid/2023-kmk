@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import styles from "../styles/styles.module.css";
 import { useRouter } from "next/navigation";
 import DatePicker, { registerLocale } from "react-datepicker";
@@ -229,6 +230,25 @@ const Dashboard = () => {
                                                 ]
                                             }
                                         >
+                                            <Link
+                                                href={{
+                                                    pathname:
+                                                        "/medical-records?patientId",
+                                                    query: appointment.patient
+                                                        .id,
+                                                }}
+                                                as={`medical-records?patientId=${appointment.patient.id}`}
+                                            >
+                                                <button
+                                                    className={
+                                                        styles[
+                                                            "standard-button"
+                                                        ]
+                                                    }
+                                                >
+                                                    Ver Historia Clinica
+                                                </button>
+                                            </Link>
                                             <button
                                                 className={
                                                     styles["edit-button"]
