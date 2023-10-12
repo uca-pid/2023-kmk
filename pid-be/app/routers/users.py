@@ -21,6 +21,7 @@ from app.models.responses.UserResponses import (
     UserProfileErrorResponse,
     UserInfoResponse,
     UserInfoErrorResponse,
+    IsLoggedInResponse,
 )
 
 from app.models.entities.Auth import Auth
@@ -236,3 +237,26 @@ def get_user_info(user_id=Depends(Auth.is_logged_in)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal server error"},
         )
+
+
+@router.get(
+    "/is-logged-in", status_code=status.HTTP_200_OK, response_model=IsLoggedInResponse
+)
+def is_logged_in(token=Depends(Auth.get_bearer_token)):
+    """
+    Get a users logged in status.
+
+    This will return the users logged in status.
+
+    This path operation will:
+
+    * Return True if user is logged in.
+    * Return False if user is not logged in.
+    """
+    if token:
+        try:
+            auth.verify_id_token(token.credentials)
+            return {"is_logged_in": True}
+        except:
+            return {"is_logged_in": False}
+    return {"is_logged_in": False}
