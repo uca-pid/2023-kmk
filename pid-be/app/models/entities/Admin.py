@@ -1,6 +1,8 @@
 from fastapi import HTTPException, status
 from firebase_admin import firestore
 
+from app.models.entities.Physician import Physician
+
 db = firestore.client()
 
 
@@ -34,7 +36,14 @@ class Admin:
 
     @staticmethod
     def deny_physician(id):
-        db.collection("physicians").document(id).update({"approved": "denied"})
+        denied_physician = Physician.get_by_id(id)
+        db.collection("deniedPhysicians").document(id).set(denied_physician)
+        db.collection("deniedPhysicians").document(id).update({"approved": "denied"})
+        Admin.delete_physician(id)
+
+    @staticmethod
+    def delete_physician(id):
+        db.collection("physicians").document(id).delete()
 
     def create(self):
         if db.collection("superusers").document(self.id).get().exists:
