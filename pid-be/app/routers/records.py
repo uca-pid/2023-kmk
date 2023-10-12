@@ -59,7 +59,11 @@ def get_record(patient_id):
         500: {"model": GetRecordError},
     },
 )
-def update_record(patient_id, observation_creation_request: ObservationRequest):
+def update_record(
+    patient_id,
+    observation_creation_request: ObservationRequest,
+    uid=Depends(Auth.is_admin),
+):
     """
     Update a patient's record with new observation.
 
@@ -72,7 +76,9 @@ def update_record(patient_id, observation_creation_request: ObservationRequest):
     * Throw an error if the record is not found or updating fails.
     """
     try:
-        record = Record.add_observation(patient_id, observation_creation_request.dict())
+        record = Record.add_observation(
+            patient_id, observation_creation_request.dict(), uid
+        )
         return {"record": record}
     except:
         return JSONResponse(

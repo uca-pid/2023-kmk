@@ -5,4 +5,6 @@ from fastapi import Query
 
 class ObservationRequest(BaseModel):
     date: str
+    physician: str
+    specialty: str
     observation: str
