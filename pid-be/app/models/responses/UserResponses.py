@@ -14,12 +14,20 @@ class SuccessfullRegisterResponse(BaseModel):
     message: str
 
 
+class SuccessfullChangePasswordResponse(BaseModel):
+    message: str
+
+
 class RegisterErrorResponse(BaseModel):
     detail: str
 
 
 class IsLoggedInResponse(BaseModel):
     is_logged_in: bool
+
+
+class ChangePasswordErrorResponse(BaseModel):
+    detail: str
 
 
 class UserRolesEnum(str, Enum):
