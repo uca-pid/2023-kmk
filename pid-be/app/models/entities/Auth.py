@@ -20,6 +20,12 @@ security = HTTPBasic()
 
 class Auth:
     @staticmethod
+    def get_bearer_token(
+        token: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_error=False)),
+    ):
+        return token
+
+    @staticmethod
     def has_bearer_token(
         token: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_error=False)),
     ):
