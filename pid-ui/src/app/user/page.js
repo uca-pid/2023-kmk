@@ -47,9 +47,9 @@ const UserProfile = () => {
 
         try {
             // Realiza una solicitud a la API para cambiar la contraseña
-            await axios.post("/api/change-password", {
-                currentPassword: password,
-                newPassword: newPassword,
+            await axios.post("http://localhost:8080/users/change-password", {
+                current_password: password,
+                new_password: newPassword,
             });
 
             setSuccessMessage("Contraseña cambiada exitosamente.");
@@ -73,28 +73,28 @@ const UserProfile = () => {
                     {/* Datos del usuario */}
                     <div className={styles["title"]}>Datos del Usuario</div>
                     <div className={styles["form-group"]}>
-                        <label htmlFor="firstName">Nombre:</label>
+                        <label htmlFor='firstName'>Nombre:</label>
                         <input
-                            type="text"
-                            id="firstName"
+                            type='text'
+                            id='firstName'
                             value={user.firstName}
                             readOnly
                         />
                     </div>
                     <div className={styles["form-group"]}>
-                        <label htmlFor="lastName">Apellido:</label>
+                        <label htmlFor='lastName'>Apellido:</label>
                         <input
-                            type="text"
-                            id="lastName"
+                            type='text'
+                            id='lastName'
                             value={user.lastName}
                             readOnly
                         />
                     </div>
                     <div className={styles["form-group"]}>
-                        <label htmlFor="email">Correo Electrónico:</label>
+                        <label htmlFor='email'>Correo Electrónico:</label>
                         <input
-                            type="email"
-                            id="email"
+                            type='email'
+                            id='email'
                             value={user.email}
                             readOnly
                         />
@@ -103,34 +103,34 @@ const UserProfile = () => {
                     {/* Cambio de Contraseña */}
                     <div className={styles["title"]}>Cambiar Contraseña</div>
                     <div className={styles["form-group"]}>
-                        <label htmlFor="currentPassword">
+                        <label htmlFor='currentPassword'>
                             Contraseña Actual:
                         </label>
                         <input
-                            type="password"
-                            id="currentPassword"
+                            type='password'
+                            id='currentPassword'
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
                         />
                     </div>
                     <div className={styles["form-group"]}>
-                        <label htmlFor="newPassword">Nueva Contraseña:</label>
+                        <label htmlFor='newPassword'>Nueva Contraseña:</label>
                         <input
-                            type="password"
-                            id="newPassword"
+                            type='password'
+                            id='newPassword'
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
                             required
                         />
                     </div>
                     <div className={styles["form-group"]}>
-                        <label htmlFor="confirmNewPassword">
+                        <label htmlFor='confirmNewPassword'>
                             Confirmar Nueva Contraseña:
                         </label>
                         <input
-                            type="password"
-                            id="confirmNewPassword"
+                            type='password'
+                            id='confirmNewPassword'
                             value={confirmNewPassword}
                             onChange={(e) =>
                                 setConfirmNewPassword(e.target.value)
@@ -147,7 +147,7 @@ const UserProfile = () => {
                         </div>
                     )}
                     <button
-                        type="button"
+                        type='button'
                         className={`${styles["standard-button"]}`}
                         onClick={handleChangePassword}
                     >

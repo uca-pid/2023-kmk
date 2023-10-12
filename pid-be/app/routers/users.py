@@ -11,6 +11,7 @@ from app.models.requests.UserRequests import (
     UserLoginRequest,
     PatientRegisterRequest,
     PhysicianRegisterRequest,
+    ChangePasswordRequest,
 )
 from app.models.responses.UserResponses import (
     SuccessfulLoginResponse,
@@ -22,6 +23,8 @@ from app.models.responses.UserResponses import (
     UserInfoResponse,
     UserInfoErrorResponse,
     IsLoggedInResponse,
+    SuccessfullChangePasswordResponse,
+    ChangePasswordErrorResponse,
 )
 
 from app.models.entities.Auth import Auth
@@ -260,3 +263,44 @@ def is_logged_in(token=Depends(Auth.get_bearer_token)):
         except:
             return {"is_logged_in": False}
     return {"is_logged_in": False}
+
+
+@router.post(
+    "/change-password",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessfullChangePasswordResponse,
+    responses={
+        400: {"model": ChangePasswordErrorResponse},
+        401: {"model": ChangePasswordErrorResponse},
+    },
+)
+def change_password(
+    change_password_request: ChangePasswordRequest, uid=Depends(Auth.is_logged_in)
+):
+    """
+    Change users password.
+
+    This will allow authenticated users to change their passwords.
+
+    This path operation will:
+
+    * Change users password.
+    * Raise an error if password change fails.
+    """
+    user = auth.get_user(uid)
+    url = os.environ.get("LOGIN_URL")
+    login_response = requests.post(
+        url,
+        json={
+            "email": user.email,
+            "password": change_password_request.current_password,
+        },
+        params={"key": firebase_client_config["apiKey"]},
+    )
+    if login_response.status_code == 200:
+        auth.update_user(uid, **{"password": change_password_request.new_password})
+        return {"message": "Password changed successfully"}
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={"detail": "Invalid current password"},
+    )
