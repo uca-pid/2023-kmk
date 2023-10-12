@@ -14,6 +14,7 @@ class Appointment:
     physician_id: str
     patient_id: str
     created_at: int = None
+    updated_at: int = None
 
     def __init__(
         self,
@@ -22,6 +23,7 @@ class Appointment:
         patient_id: str,
         id: str = None,
         created_at: int = None,
+        updated_at: int = None,
     ):
         if not Patient.is_patient(patient_id):
             raise HTTPException(
@@ -34,6 +36,7 @@ class Appointment:
         self.patient_id = patient_id
         self.id = id
         self.created_at = created_at
+        self.updated_at = updated_at
 
     @staticmethod
     def get_all_appointments_for_user_with(uid):
@@ -71,6 +74,21 @@ class Appointment:
     def delete(self):
         db.collection("appointments").document(self.id).delete()
         Physician.free_agenda(self.physician_id, self.date)
+
+    def update(self, updated_values):
+        if not Physician.has_availability(
+            id=self.physician_id, date=updated_values["date"]
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Can only set appointment at physicians available hours",
+            )
+        Physician.free_agenda(self.physician_id, self.date)
+        db.collection("appointments").document(self.id).update(
+            {**updated_values, "updated_at": round(time.time())}
+        )
+        self.date = updated_values["date"]
+        Physician.schedule_appointment(id=self.physician_id, date=self.date)
 
     def create(self):
         id = db.collection("appointments").document().id

@@ -35,3 +35,15 @@ class AppointmentCreationRequest(BaseModel):
         ):
             raise ValueError("Can only set appointment at physicians available hours")
         return appointment_creation_request_attributes
+
+
+class UpdateAppointmentRequest(BaseModel):
+    date: int = Query(
+        description="Date should be in seconds. The _date_ must be after now"
+    )
+
+    @validator("date")
+    def validate_date(cls, date_to_validate):
+        if date_to_validate < time.time():
+            raise ValueError("Date can't be in the past")
+        return date_to_validate
