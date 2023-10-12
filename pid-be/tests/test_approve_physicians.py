@@ -1,3 +1,4 @@
+import os
 import pytest
 import requests
 from .config import *
@@ -57,7 +58,12 @@ initial_admin_information = {
 
 
 @pytest.fixture(scope="session", autouse=True)
-def load_and_delete_specialties():
+def clean_firestore():
+    os.system("firebase firestore:delete --all-collections -y")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def load_and_delete_specialties(clean_firestore):
     for specialty in specialties:
         db.collection("specialties").document().set({"name": specialty})
     yield

@@ -77,8 +77,13 @@ other_appointment_data = {
 }
 
 
+@pytest.fixture(scope="session", autouse=True)
+def clean_firestore():
+    os.system("firebase firestore:delete --all-collections -y")
+
+
 @pytest.fixture(autouse=True)
-def create_users():
+def create_users(clean_firestore):
     first_created_user = auth.create_user(**a_KMK_user_information)
     second_created_user = auth.create_user(**another_KMK_user_information)
     third_created_user = auth.create_user(**other_KMK_user_information)

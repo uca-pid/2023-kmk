@@ -66,8 +66,13 @@ another_KMK_patient_information = {
 }
 
 
+@pytest.fixture(scope="session", autouse=True)
+def clean_firestore():
+    os.system("firebase firestore:delete --all-collections -y")
+
+
 @pytest.fixture(autouse=True)
-def delete_test_patients():
+def delete_test_patients(clean_firestore):
     yield
     try:
         created_test_user_uid = auth.get_user_by_email(

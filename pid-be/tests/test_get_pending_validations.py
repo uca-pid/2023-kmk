@@ -55,6 +55,9 @@ a_KMK_patient_information = {
     "last_name": "Test Last Name",
     "email": "testpatientforpendingvalidations@kmk.com",
     "password": "verySecurePassword123",
+    "birth_date": "9/1/2000",
+    "gender": "m",
+    "blood_type": "a",
 }
 
 initial_admin_information = {
@@ -64,7 +67,12 @@ initial_admin_information = {
 
 
 @pytest.fixture(scope="session", autouse=True)
-def load_and_delete_specialties():
+def clean_firestore():
+    os.system("firebase firestore:delete --all-collections -y")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def load_and_delete_specialties(clean_firestore):
     for specialty in specialties:
         db.collection("specialties").document().set({"name": specialty})
     yield

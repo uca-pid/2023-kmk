@@ -78,7 +78,12 @@ denied_approve_physician_information = {
 
 
 @pytest.fixture(scope="session", autouse=True)
-def load_and_delete_physicians():
+def clean_firestore():
+    os.system("firebase firestore:delete --all-collections -y")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def load_and_delete_physicians(clean_firestore):
     db.collection("physicians").document(a_physician_information["id"]).set(
         a_physician_information
     )

@@ -28,7 +28,12 @@ a_KMK_user_information = {
 
 
 @pytest.fixture(scope="session", autouse=True)
-def create_test_user():
+def clean_firestore():
+    os.system("firebase firestore:delete --all-collections -y")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def create_test_user(clean_firestore):
     created_user = auth.create_user(**a_KMK_user_information)
     a_KMK_user_information["uid"] = created_user.uid
     yield

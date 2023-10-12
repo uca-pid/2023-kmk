@@ -17,8 +17,13 @@ a_KMK_patient_information = {
 }
 
 
+@pytest.fixture(scope="session", autouse=True)
+def clean_firestore():
+    os.system("firebase firestore:delete --all-collections -y")
+
+
 @pytest.fixture(autouse=True)
-def create_patient_and_then_delete_him():
+def create_patient_and_then_delete_him(clean_firestore):
     requests.post(
         "http://localhost:8080/users/register",
         json=a_KMK_patient_information,
