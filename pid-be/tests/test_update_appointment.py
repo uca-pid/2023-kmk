@@ -38,6 +38,9 @@ a_KMK_patient_information = {
     "last_name": "Test Last Name",
     "email": "testpatientforupdatingappointments@kmk.com",
     "password": "verySecurePassword123",
+    "birth_date": "9/1/2000",
+    "gender": "m",
+    "blood_type": "a",
 }
 
 another_KMK_patient_information = {
@@ -46,6 +49,9 @@ another_KMK_patient_information = {
     "last_name": "Test Last Name",
     "email": "testpatientforupdatingappointmentssecond@kmk.com",
     "password": "verySecurePassword123",
+    "birth_date": "9/1/2000",
+    "gender": "m",
+    "blood_type": "a",
 }
 
 
