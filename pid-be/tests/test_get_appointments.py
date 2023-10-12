@@ -92,6 +92,9 @@ def create_test_users():
     auth.delete_user(a_KMK_user_information["uid"])
     auth.delete_user(another_KMK_user_information["uid"])
     auth.delete_user(other_KMK_user_information["uid"])
+    db.collection("patients").document(a_KMK_user_information["uid"]).delete()
+    db.collection("patients").document(another_KMK_user_information["uid"]).delete()
+    db.collection("patients").document(other_KMK_user_information["uid"]).delete()
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -124,6 +127,10 @@ def create_test_physicians(create_test_users):
     yield
     auth.delete_user(a_KMK_physician_information["uid"])
     auth.delete_user(another_KMK_physician_information["uid"])
+    db.collection("physicians").document(a_KMK_physician_information["uid"]).delete()
+    db.collection("physicians").document(
+        another_KMK_physician_information["uid"]
+    ).delete()
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -266,13 +273,8 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects():
     )
 
     appointments = response_to_get_endpoint.json()["appointments"]
-
-    if appointments[0]["id"] == an_appointment_data["id"]:
-        first_appointment_to_validate = appointments[0]
-        second_appointment_to_validate = appointments[1]
-    else:
-        first_appointment_to_validate = appointments[1]
-        second_appointment_to_validate = appointments[0]
+    first_appointment_to_validate = appointments[0]
+    second_appointment_to_validate = appointments[1]
 
     assert first_appointment_to_validate["id"] == an_appointment_data["id"]
     assert first_appointment_to_validate["date"] == an_appointment_data["date"]
@@ -435,13 +437,8 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects_for
     )
 
     appointments = response_to_get_endpoint.json()["appointments"]
-
-    if appointments[0]["id"] == another_appointment_data["id"]:
-        first_appointment_to_validate = appointments[0]
-        second_appointment_to_validate = appointments[1]
-    else:
-        first_appointment_to_validate = appointments[1]
-        second_appointment_to_validate = appointments[0]
+    first_appointment_to_validate = appointments[0]
+    second_appointment_to_validate = appointments[1]
 
     assert first_appointment_to_validate["id"] == another_appointment_data["id"]
     assert first_appointment_to_validate["date"] == another_appointment_data["date"]
