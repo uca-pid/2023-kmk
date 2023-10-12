@@ -76,6 +76,9 @@ a_KMK_user_information = {
     "role": "patient",
     "name": "KMK",
     "last_name": "Test User",
+    "birth_date": "9/1/2000",
+    "gender": "m",
+    "blood_type": "a",
 }
 
 

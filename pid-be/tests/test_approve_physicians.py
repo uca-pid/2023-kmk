@@ -45,6 +45,9 @@ a_KMK_patient_information = {
     "last_name": "Test Last Name",
     "email": "testpatientforapproving@kmk.com",
     "password": "verySecurePassword123",
+    "birth_date": "9/1/2000",
+    "gender": "m",
+    "blood_type": "a",
 }
 
 initial_admin_information = {
