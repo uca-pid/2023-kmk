@@ -7,7 +7,14 @@ import axios from "axios";
 import { Footer, Header } from "../components/header";
 
 const MedicalRecords = ({ searchParams }) => {
-    const urlSearchParams = new URLSearchParams(window.location.search);
+    const [urlSearchParams, setUrlSearchParams] = useState(null);
+
+    useEffect(() => {
+        console.log(window.location.search, "jijijijiijij");
+        if (window)
+            setUrlSearchParams(new URLSearchParams(window.location.search));
+    }, []);
+
     const [patientId, setPatientId] = useState(
         searchParams.patientId || urlSearchParams.get("patientId")
     );
@@ -131,28 +138,35 @@ const MedicalRecords = ({ searchParams }) => {
                         {record.observations.length > 0 ? (
                             // If there are appointments, map through them and display each appointment
                             <>
-                                {record.observations.map((observation) => {
-                                    return (
-                                        <div className={styles["record-card"]}>
+                                {record.observations.map(
+                                    (observation, index) => {
+                                        return (
                                             <div
                                                 className={
-                                                    styles["record-date"]
+                                                    styles["record-card"]
                                                 }
+                                                key={index}
                                             >
-                                                {observation.date}
+                                                <div
+                                                    className={
+                                                        styles["record-date"]
+                                                    }
+                                                >
+                                                    {observation.date}
+                                                </div>
+                                                <div
+                                                    className={
+                                                        styles[
+                                                            "record-observations"
+                                                        ]
+                                                    }
+                                                >
+                                                    {observation.observation}
+                                                </div>
                                             </div>
-                                            <div
-                                                className={
-                                                    styles[
-                                                        "record-observations"
-                                                    ]
-                                                }
-                                            >
-                                                {observation.observation}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    }
+                                )}
                             </>
                         ) : (
                             // If there are no appointments, display the message
