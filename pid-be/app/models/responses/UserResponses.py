@@ -18,6 +18,10 @@ class RegisterErrorResponse(BaseModel):
     detail: str
 
 
+class IsLoggedInResponse(BaseModel):
+    is_logged_in: bool
+
+
 class UserRolesEnum(str, Enum):
     admin = "admin"
     physician = "physician"

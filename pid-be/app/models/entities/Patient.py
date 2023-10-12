@@ -12,7 +12,14 @@ class Patient:
     email: str
     id: str
 
-    def __init__(self, role: str, name: str, last_name: str, email: str, id: str):
+    def __init__(
+        self,
+        role: str,
+        name: str,
+        last_name: str,
+        email: str,
+        id: str,
+    ):
         self.role = role
         self.name = name
         self.last_name = last_name

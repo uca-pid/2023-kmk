@@ -21,12 +21,14 @@ from app.models.responses.UserResponses import (
     UserProfileErrorResponse,
     UserInfoResponse,
     UserInfoErrorResponse,
+    IsLoggedInResponse,
 )
 
 from app.models.entities.Auth import Auth
 from app.models.entities.Patient import Patient
 from app.models.entities.Physician import Physician
 from app.models.entities.Admin import Admin
+from app.models.entities.Record import Record
 
 from firebase_admin import firestore, auth
 
@@ -112,6 +114,7 @@ async def register(
     This will allow users to register on the platform.
     This path operation will:
     * Register users, performing validations on data received and on its validity.
+    * If the user is a patient, it's record will be created.
     * Throw an error if registration fails.
     """
 
@@ -121,7 +124,7 @@ async def register(
         user = auth.get_user_by_email(register_request.email)
         auth_uid = user.uid
     except:
-        print("[+] User already doesnt exist in authentication")
+        print("[+] User doesnt exist in authentication")
 
     if not auth_uid:
         register_response = requests.post(
@@ -142,8 +145,20 @@ async def register(
 
     del register_request.password
     if register_request.role == "patient":
-        patient = Patient(**register_request.dict(exclude_none=True), id=auth_uid)
+        patient_data = {
+            key: value
+            for key, value in register_request.dict().items()
+            if key not in ["birth_date", "gender", "blood_type"]
+        }
+        patient = Patient(**patient_data, id=auth_uid)
         patient.create()
+        record_data = {
+            key: value
+            for key, value in register_request.dict().items()
+            if key not in ["role", "email"]
+        }
+        record = Record(**record_data, id=auth_uid)
+        record.create()
     else:
         physician = Physician(**register_request.dict(exclude_none=True), id=auth_uid)
         physician.create()
@@ -222,3 +237,26 @@ def get_user_info(user_id=Depends(Auth.is_logged_in)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal server error"},
         )
+
+
+@router.get(
+    "/is-logged-in", status_code=status.HTTP_200_OK, response_model=IsLoggedInResponse
+)
+def is_logged_in(token=Depends(Auth.get_bearer_token)):
+    """
+    Get a users logged in status.
+
+    This will return the users logged in status.
+
+    This path operation will:
+
+    * Return True if user is logged in.
+    * Return False if user is not logged in.
+    """
+    if token:
+        try:
+            auth.verify_id_token(token.credentials)
+            return {"is_logged_in": True}
+        except:
+            return {"is_logged_in": False}
+    return {"is_logged_in": False}

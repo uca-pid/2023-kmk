@@ -157,26 +157,52 @@ def test_deny_physician_endpoint_returns_message():
     )
 
 
-def test_deny_physician_endpoint_updates_approved_field_in_firestore():
-    assert (
-        db.collection("physicians")
-        .document(pytest.a_physician_uid)
-        .get()
-        .to_dict()["approved"]
-        == "pending"
-    )
+# def test_deny_physician_endpoint_updates_approved_field_in_firestore():
+#     assert (
+#         db.collection("physicians")
+#         .document(pytest.a_physician_uid)
+#         .get()
+#         .to_dict()["approved"]
+#         == "pending"
+#     )
+#     requests.post(
+#         f"http://localhost:8080/admin/deny-physician/{pytest.a_physician_uid}",
+#         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
+#     )
+
+#     assert (
+#         db.collection("physicians")
+#         .document(pytest.a_physician_uid)
+#         .get()
+#         .to_dict()["approved"]
+#         == "denied"
+#     )
+
+
+def test_deny_physician_endpoint_updates_firestore_collections():
+    # Verifica que el médico esté inicialmente en la colección "physicians" con el estado "pending"
+    physician_ref = db.collection("physicians").document(pytest.a_physician_uid)
+    physician_data = physician_ref.get().to_dict()
+    assert physician_data is not None
+    assert physician_data["approved"] == "pending"
+
+    # Realiza la solicitud para denegar al médico
     requests.post(
         f"http://localhost:8080/admin/deny-physician/{pytest.a_physician_uid}",
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
 
-    assert (
-        db.collection("physicians")
-        .document(pytest.a_physician_uid)
-        .get()
-        .to_dict()["approved"]
-        == "denied"
+    # Verifica que el médico ya no esté en la colección "physicians" y su estado sea "denied"
+    physician_data = physician_ref.get().to_dict()
+    assert physician_data is None
+
+    # Verifica que el médico haya sido agregado a la colección "deniedPhysicians"
+    denied_physician_ref = db.collection("deniedPhysicians").document(
+        pytest.a_physician_uid
     )
+    denied_physician_data = denied_physician_ref.get().to_dict()
+    assert denied_physician_data is not None
+    assert denied_physician_data["approved"] == "denied"
 
 
 def test_deny_physician_endpoint_for_a_non_physician_returns_a_400_code_and_message():

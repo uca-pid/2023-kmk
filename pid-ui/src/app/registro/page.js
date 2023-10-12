@@ -19,6 +19,11 @@ const Registro = () => {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
     const [role, setRole] = useState("patient");
+    const [birth_date, setBirthDate] = useState("");
+    const [genders, setGenders] = useState([]);
+    const [gender, setGender] = useState("");
+    const [blood_types, setBloodTypes] = useState([]);
+    const [blood_type, setBloodType] = useState("");
     const router = useRouter();
 
     const validate = (value) => {
@@ -53,6 +58,32 @@ const Registro = () => {
         fetchSpecialties();
     }, []);
 
+    useEffect(() => {
+        const fetchGenders = async () => {
+            const response = await axios.get(`http://localhost:8080/genders`);
+            console.log(response.data.genders);
+            response.data.genders == undefined
+                ? setGenders([])
+                : setGenders(response.data.genders);
+        };
+
+        fetchGenders();
+    }, []);
+
+    useEffect(() => {
+        const fetchBloodTypes = async () => {
+            const response = await axios.get(
+                `http://localhost:8080/blood-types`
+            );
+            console.log(response.data.blood_types);
+            response.data.blood_types == undefined
+                ? setBloodTypes([])
+                : setBloodTypes(response.data.blood_types);
+        };
+
+        fetchBloodTypes();
+    }, []);
+
     const handleLogoClick = () => {
         router.push("/");
     };
@@ -66,6 +97,9 @@ const Registro = () => {
             email,
             password,
             role,
+            gender,
+            blood_type,
+            birth_date,
         };
 
         if (role === "physician")
@@ -179,6 +213,52 @@ const Registro = () => {
                         </div>
                     </>
                 )}
+                <div className={styles["form-group"]}>
+                    <label htmlFor="birth_date">Fecha de Nacimiento</label>
+                    <input
+                        type="date"
+                        id="birth_date"
+                        value={birth_date}
+                        onChange={(e) => setBirthDate(e.target.value)}
+                        required
+                    />
+                </div>
+                <div className={styles["form-group"]}>
+                    <label htmlFor="gender">Género:</label>
+                    <select
+                        id="gender"
+                        value={gender}
+                        required
+                        onChange={(e) => {
+                            setGender(e.target.value);
+                        }}
+                    >
+                        <option value="">Selecciona tu género</option>
+                        {genders.map((gender) => (
+                            <option key={gender} value={gender}>
+                                {gender}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div className={styles["form-group"]}>
+                    <label htmlFor="blood_type">Grupo sanguíneo:</label>
+                    <select
+                        id="blood_type"
+                        value={blood_type}
+                        required
+                        onChange={(e) => {
+                            setBloodType(e.target.value);
+                        }}
+                    >
+                        <option value="">Selecciona tu grupo sanguíneo</option>
+                        {blood_types.map((blood_type) => (
+                            <option key={blood_type} value={blood_type}>
+                                {blood_type}
+                            </option>
+                        ))}
+                    </select>
+                </div>
                 <div className={styles["form-group"]}>
                     <label htmlFor="email">Correo Electrónico</label>
                     <input

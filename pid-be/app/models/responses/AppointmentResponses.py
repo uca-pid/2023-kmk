@@ -15,6 +15,10 @@ class SuccessfulAppointmentDeletionResponse(BaseModel):
     message: str
 
 
+class SuccessfulAppointmentUpdateResponse(BaseModel):
+    message: str
+
+
 class AppointmentCreationError(BaseModel):
     detail: str
 
@@ -24,6 +28,10 @@ class GetAppointmentError(BaseModel):
 
 
 class DeleteAppointmentError(BaseModel):
+    detail: str
+
+
+class UpdateAppointmentError(BaseModel):
     detail: str
 
 

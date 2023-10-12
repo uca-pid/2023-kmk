@@ -108,13 +108,22 @@ const Dashboard = () => {
         else setPhysiciansAgenda({});
     };
 
-    const handleSaveAppointment = () => {
+    const handleSaveAppointment = async () => {
         // Lógica para guardar los cambios de la cita en tu sistema
         // Esto puede variar según cómo esté implementada tu lógica de backend
         // Una vez guardados los cambios, cierra el modal
         // y actualiza la lista de citas o realiza cualquier otra acción necesaria
+        try {
+            await axios.put(
+                `http://localhost:8080/appointments/${editingAppointment.id}`,
+                { date: Math.round(dateToEdit.getTime() / 1000) }
+            );
+            alert("Turno actualizado exitosamente");
+            fetchAppointments();
+        } catch (error) {
+            console.error(error);
+        }
         setIsEditModalOpen(false);
-        console.log(editingAppointment);
         alert("Turno modificado exitosamente");
     };
 
@@ -181,7 +190,7 @@ const Dashboard = () => {
                     isOpen={isEditModalOpen}
                     onRequestClose={handleCloseEditModal}
                     style={customStyles}
-                    contentLabel="Example Modal"
+                    contentLabel='Example Modal'
                 >
                     {/* Campos de edición de especialidad, médico y fecha */}
 
@@ -189,15 +198,15 @@ const Dashboard = () => {
                         <div className={styles["title"]}>Editar Cita</div>
 
                         {/* Selector de fechas */}
-                        <label htmlFor="fecha">Fechas disponibles:</label>
+                        <label htmlFor='fecha'>Fechas disponibles:</label>
 
                         <DatePicker
-                            locale="es"
+                            locale='es'
                             selected={dateToEdit}
                             onChange={(date) => {
                                 setDateToEdit(date);
                             }}
-                            timeCaption="Hora"
+                            timeCaption='Hora'
                             timeIntervals={30}
                             showPopperArrow={false}
                             showTimeSelect
@@ -340,9 +349,9 @@ const Dashboard = () => {
                     </div>
 
                     {/* Selector de especialidades */}
-                    <label htmlFor="specialty">Especialidad:</label>
+                    <label htmlFor='specialty'>Especialidad:</label>
                     <select
-                        id="specialty"
+                        id='specialty'
                         value={selectedSpecialty}
                         required
                         onChange={(e) => {
@@ -350,7 +359,7 @@ const Dashboard = () => {
                             fetchPhysicians(e.target.value);
                         }}
                     >
-                        <option value="">Selecciona una especialidad</option>
+                        <option value=''>Selecciona una especialidad</option>
                         {specialties.map((specialty) => (
                             <option key={specialty} value={specialty}>
                                 {specialty}
@@ -359,9 +368,9 @@ const Dashboard = () => {
                     </select>
 
                     {/* Selector de médicos */}
-                    <label htmlFor="doctor">Médico:</label>
+                    <label htmlFor='doctor'>Médico:</label>
                     <select
-                        id="doctor"
+                        id='doctor'
                         value={selectedDoctor}
                         required
                         onChange={(e) => {
@@ -370,7 +379,7 @@ const Dashboard = () => {
                         }}
                         disabled={!selectedSpecialty} // Deshabilita si no se ha seleccionado una especialidad
                     >
-                        <option value="">Selecciona un médico</option>
+                        <option value=''>Selecciona un médico</option>
                         {doctors.map((doctor) => (
                             <option
                                 key={doctor.id}
@@ -383,15 +392,15 @@ const Dashboard = () => {
                     </select>
 
                     {/* Selector de fechas */}
-                    <label htmlFor="fecha">Fechas disponibles:</label>
+                    <label htmlFor='fecha'>Fechas disponibles:</label>
 
                     <DatePicker
-                        locale="es"
+                        locale='es'
                         selected={date}
                         onChange={(date) => {
                             setDate(date);
                         }}
-                        timeCaption="Hora"
+                        timeCaption='Hora'
                         timeIntervals={30}
                         showPopperArrow={false}
                         showTimeSelect
@@ -432,7 +441,7 @@ const Dashboard = () => {
                     />
 
                     <button
-                        type="submit"
+                        type='submit'
                         className={`${styles["submit-button"]} ${
                             !selectedDoctor ? styles["disabled-button"] : ""
                         }`}

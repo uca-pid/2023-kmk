@@ -189,20 +189,20 @@ def test_role_retrieving_of_a_patient_returns_only_patient_role():
     assert response_from_users_role_endpoint.json()["roles"][0] == "patient"
 
 
-def test_role_retrieving_of_a_pending_physician_returns_a_401_code():
+def test_role_retrieving_of_a_pending_physician_returns_a_403_code():
     response_from_users_role_endpoint = requests.get(
         "http://localhost:8080/users/role",
         headers={"Authorization": f"Bearer {pytest.physician_bearer}"},
     )
 
-    assert response_from_users_role_endpoint.status_code == 401
+    assert response_from_users_role_endpoint.status_code == 403
     assert (
         response_from_users_role_endpoint.json()["detail"]
         == "Physician must be approved by admin"
     )
 
 
-def test_role_retrieving_of_a_denied_physician_returns_a_401_code():
+def test_role_retrieving_of_a_denied_physician_returns_a_403_code():
     physician_uid = auth.get_user_by_email(a_KMK_physician_information["email"]).uid
     db.collection("physicians").document(physician_uid).update({"approved": "denied"})
     response_from_users_role_endpoint = requests.get(
@@ -210,7 +210,7 @@ def test_role_retrieving_of_a_denied_physician_returns_a_401_code():
         headers={"Authorization": f"Bearer {pytest.physician_bearer}"},
     )
 
-    assert response_from_users_role_endpoint.status_code == 401
+    assert response_from_users_role_endpoint.status_code == 403
     assert (
         response_from_users_role_endpoint.json()["detail"]
         == "Physician must be approved by admin"
@@ -274,6 +274,7 @@ def test_role_retrieving_of_a_user_that_has_multiple_roles_returns_a_list_with_t
         "patient",
         "physician",
     }
+    db.collection("patients").document(physician_uid).delete()
 
 
 def test_get_roles_with_no_authorization_header_returns_401_code():

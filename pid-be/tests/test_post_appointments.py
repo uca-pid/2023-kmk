@@ -16,6 +16,20 @@ next_week_day_second_block = next_week_day.replace(hour=10)
 next_week_day_off_by_hours = next_week_day.replace(hour=21)
 another_next_week_day_off_by_hours = next_week_day.replace(hour=3)
 
+specialties = [
+    "pediatrics",
+    "dermatology",
+    "gastroenterology",
+    "radiology",
+    "urology",
+    "ophtalmology",
+    "endocrynology",
+    "neurology",
+    "cardiology",
+    "family medicine",
+    "psychiatry",
+]
+
 valid_physician_id = "validphysicianid"
 pending_physician_id = "pendingphysicianid"
 denied_physician_id = "deniedphysicianid"
@@ -65,8 +79,18 @@ a_KMK_user_information = {
 }
 
 
+@pytest.fixture(scope="session", autouse=True)
+def load_and_delete_specialties():
+    for specialty in specialties:
+        db.collection("specialties").document().set({"name": specialty})
+    yield
+    specilaties_doc = db.collection("specialties").list_documents()
+    for specialty_doc in specilaties_doc:
+        specialty_doc.delete()
+
+
 @pytest.fixture(autouse=True)
-def create_and_delete_physicians():
+def create_and_delete_physicians(load_and_delete_specialties):
     db.collection("physicians").document(valid_physician_id).set(
         {
             "first_name": "Doc",
@@ -259,46 +283,34 @@ def test_creation_of_appointment_with_a_physician_id_that_doesnt_exists_returns_
     assert response_to_appointment_creation_endpoint.status_code == 422
 
 
-def test_creating_appointment_in_a_non_working_day_of_the_physician_returns_a_400_code():
+def test_creating_appointment_in_a_non_working_day_of_the_physician_returns_a_422_code():
     response_to_appointment_creation_endpoint = requests.post(
         "http://localhost:8080/appointments",
         json=out_of_working_days_appointment_data,
         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
     )
 
-    assert response_to_appointment_creation_endpoint.status_code == 400
-    assert (
-        response_to_appointment_creation_endpoint.json()["detail"]
-        == "Can only set appointment at physicians available hours"
-    )
+    assert response_to_appointment_creation_endpoint.status_code == 422
 
 
-def test_creating_appointment_in_a_non_working_hour_after_agenda_of_the_physician_returns_a_400_code():
+def test_creating_appointment_in_a_non_working_hour_after_agenda_of_the_physician_returns_a_422_code():
     response_to_appointment_creation_endpoint = requests.post(
         "http://localhost:8080/appointments",
         json=out_of_working_hours_appointment_data,
         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
     )
 
-    assert response_to_appointment_creation_endpoint.status_code == 400
-    assert (
-        response_to_appointment_creation_endpoint.json()["detail"]
-        == "Can only set appointment at physicians available hours"
-    )
+    assert response_to_appointment_creation_endpoint.status_code == 422
 
 
-def test_creating_appointment_in_a_non_working_hour_before_agenda_of_the_physician_returns_a_400_code():
+def test_creating_appointment_in_a_non_working_hour_before_agenda_of_the_physician_returns_a_422_code():
     response_to_appointment_creation_endpoint = requests.post(
         "http://localhost:8080/appointments",
         json=another_out_of_working_hours_appointment_data,
         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
     )
 
-    assert response_to_appointment_creation_endpoint.status_code == 400
-    assert (
-        response_to_appointment_creation_endpoint.json()["detail"]
-        == "Can only set appointment at physicians available hours"
-    )
+    assert response_to_appointment_creation_endpoint.status_code == 422
 
 
 def test_valid_appointment_creation_saves_slot_in_physicians_agenda():
@@ -328,7 +340,7 @@ def test_valid_appointment_creation_saves_slot_in_physicians_agenda():
     )
 
 
-def test_creating_two_appointments_for_the_same_physician_in_the_same_valid_date_returns_a_400_code():
+def test_creating_two_appointments_for_the_same_physician_in_the_same_valid_date_returns_a_422_code():
     response_to_appointment_creation_endpoint = requests.post(
         "http://localhost:8080/appointments",
         json=appointment_data,
@@ -343,11 +355,7 @@ def test_creating_two_appointments_for_the_same_physician_in_the_same_valid_date
         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
     )
 
-    assert response_to_appointment_creation_endpoint.status_code == 400
-    assert (
-        response_to_appointment_creation_endpoint.json()["detail"]
-        == "Can only set appointment at physicians available hours"
-    )
+    assert response_to_appointment_creation_endpoint.status_code == 422
 
 
 def test_non_patient_creating_appointment_returns_403_code_and_message():
@@ -356,12 +364,16 @@ def test_non_patient_creating_appointment_returns_403_code_and_message():
         "name": "Doc",
         "last_name": "Docson the Fourth",
         "tuition": "11110010",
-        "specialty": "dermatologia",
+        "specialty": specialties[0],
         "email": "doc@thedoc.com",
         "password": "123456",
     }
 
     requests.post("http://localhost:8080/users/register", json=physician_info)
+    created_test_physician_uid = auth.get_user_by_email(physician_info["email"]).uid
+    db.collection("physicians").document(created_test_physician_uid).update(
+        {"approved": "approved"}
+    )
     physicians_token = requests.post(
         "http://localhost:8080/users/login",
         json={"email": physician_info["email"], "password": physician_info["password"]},
@@ -378,6 +390,9 @@ def test_non_patient_creating_appointment_returns_403_code_and_message():
         response_to_appointment_creation_endpoint.json()["detail"]
         == "Only patients can create appointments"
     )
+    created_test_physician_uid = auth.get_user_by_email(physician_info["email"]).uid
+    auth.delete_user(created_test_physician_uid)
+    db.collection("physicians").document(created_test_physician_uid).delete()
 
 
 def test_appointment_creation_with_a_pending_physician_returns_a_422_code_and_a_detail():

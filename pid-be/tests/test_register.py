@@ -49,6 +49,9 @@ a_KMK_patient_information = {
     "last_name": "Test Last Name",
     "email": "testpatientforregister@kmk.com",
     "password": "verySecurePassword123",
+    "birth_date": "9/1/2000",
+    "gender": "m",
+    "blood_type": "a",
 }
 
 another_KMK_patient_information = {
@@ -57,6 +60,9 @@ another_KMK_patient_information = {
     "last_name": "Test Last Name",
     "email": "userforphysicianandpatient@kmk.com",
     "password": "verySecurePassword123",
+    "birth_date": "9/1/2000",
+    "gender": "m",
+    "blood_type": "a",
 }
 
 
@@ -72,15 +78,6 @@ def delete_test_patients():
     except:
         print("[+] Patient doesnt exist")
 
-    try:
-        another_created_test_user_uid = auth.get_user_by_email(
-            another_KMK_patient_information["email"]
-        ).uid
-        auth.delete_user(another_created_test_user_uid)
-        db.collection("patients").document(another_created_test_user_uid).delete()
-    except:
-        print("[+] Patient doesnt exist")
-
 
 @pytest.fixture(autouse=True)
 def delete_test_physicians():
@@ -91,15 +88,6 @@ def delete_test_physicians():
         ).uid
         auth.delete_user(created_test_user_uid)
         db.collection("physicians").document(created_test_user_uid).delete()
-    except:
-        print("[+] Physician doesnt exist")
-
-    try:
-        another_created_test_users_uid = auth.get_user_by_email(
-            another_KMK_patient_information["email"]
-        ).uid
-        auth.delete_user(another_created_test_users_uid)
-        db.collection("physicians").document(another_created_test_users_uid).delete()
     except:
         print("[+] Physician doesnt exist")
 
@@ -256,6 +244,78 @@ def test_register_patient_with_invalid_email_returns_a_422_code():
             "last_name": a_KMK_patient_information["last_name"],
             "email": "notanemail",
             "password": a_KMK_patient_information["password"],
+        },
+    )
+
+    assert register_patient_response.status_code == 422
+
+
+def test_register_patient_with_password_of_less_than_8_characters_returns_a_422_code():
+    register_patient_response = requests.post(
+        "http://localhost:8080/users/register",
+        json={
+            "role": a_KMK_patient_information["role"],
+            "name": a_KMK_patient_information["name"],
+            "last_name": a_KMK_patient_information["last_name"],
+            "email": a_KMK_patient_information["email"],
+            "password": "lT8",
+            "birth_date": a_KMK_patient_information["birth_date"],
+            "gender": a_KMK_patient_information["gender"],
+            "blood_type": a_KMK_patient_information["blood_type"],
+        },
+    )
+
+    assert register_patient_response.status_code == 422
+
+
+def test_register_patient_with_password_with_no_uppercase_returns_a_422_code():
+    register_patient_response = requests.post(
+        "http://localhost:8080/users/register",
+        json={
+            "role": a_KMK_patient_information["role"],
+            "name": a_KMK_patient_information["name"],
+            "last_name": a_KMK_patient_information["last_name"],
+            "email": a_KMK_patient_information["email"],
+            "password": "nouppercase33",
+            "birth_date": a_KMK_patient_information["birth_date"],
+            "gender": a_KMK_patient_information["gender"],
+            "blood_type": a_KMK_patient_information["blood_type"],
+        },
+    )
+
+    assert register_patient_response.status_code == 422
+
+
+def test_register_patient_with_password_with_no_lowercase_returns_a_422_code():
+    register_patient_response = requests.post(
+        "http://localhost:8080/users/register",
+        json={
+            "role": a_KMK_patient_information["role"],
+            "name": a_KMK_patient_information["name"],
+            "last_name": a_KMK_patient_information["last_name"],
+            "email": a_KMK_patient_information["email"],
+            "password": "NOLOWERCASE33",
+            "birth_date": a_KMK_patient_information["birth_date"],
+            "gender": a_KMK_patient_information["gender"],
+            "blood_type": a_KMK_patient_information["blood_type"],
+        },
+    )
+
+    assert register_patient_response.status_code == 422
+
+
+def test_register_patient_with_password_with_no_numbers_returns_a_422_code():
+    register_patient_response = requests.post(
+        "http://localhost:8080/users/register",
+        json={
+            "role": a_KMK_patient_information["role"],
+            "name": a_KMK_patient_information["name"],
+            "last_name": a_KMK_patient_information["last_name"],
+            "email": a_KMK_patient_information["email"],
+            "password": "noNUMBERS",
+            "birth_date": a_KMK_patient_information["birth_date"],
+            "gender": a_KMK_patient_information["gender"],
+            "blood_type": a_KMK_patient_information["blood_type"],
         },
     )
 
@@ -422,6 +482,13 @@ def test_register_user_as_physician_and_as_patient_is_valid():
     assert response_to_register_endpoint_as_physician.status_code == 201
     assert response_to_register_endpoint_as_patient.status_code == 201
 
+    another_created_test_user_uid = auth.get_user_by_email(
+        another_KMK_patient_information["email"]
+    ).uid
+    db.collection("patients").document(another_created_test_user_uid).delete()
+    db.collection("physicians").document(another_created_test_user_uid).delete()
+    auth.delete_user(another_created_test_user_uid)
+
 
 def test_registration_with_invalid_role_returns_a_422_code():
     response_to_register_endpoint_with_invalid_role = requests.post(
@@ -436,3 +503,71 @@ def test_registration_with_invalid_role_returns_a_422_code():
     )
 
     assert response_to_register_endpoint_with_invalid_role.status_code == 422
+
+
+def test_register_physician_with_password_of_less_than_8_characters_returns_a_422_code():
+    register_physician_response = requests.post(
+        "http://localhost:8080/users/register",
+        json={
+            "role": a_KMK_physician_information["role"],
+            "name": a_KMK_physician_information["name"],
+            "last_name": a_KMK_physician_information["last_name"],
+            "email": a_KMK_physician_information["email"],
+            "password": "lT8",
+            "tuition": a_KMK_physician_information["tuition"],
+            "specialty": a_KMK_physician_information["specialty"],
+        },
+    )
+
+    assert register_physician_response.status_code == 422
+
+
+def test_register_physician_with_password_with_no_uppercase_returns_a_422_code():
+    register_physician_response = requests.post(
+        "http://localhost:8080/users/register",
+        json={
+            "role": a_KMK_physician_information["role"],
+            "name": a_KMK_physician_information["name"],
+            "last_name": a_KMK_physician_information["last_name"],
+            "email": a_KMK_physician_information["email"],
+            "password": "nouppercase33",
+            "tuition": a_KMK_physician_information["tuition"],
+            "specialty": a_KMK_physician_information["specialty"],
+        },
+    )
+
+    assert register_physician_response.status_code == 422
+
+
+def test_register_physician_with_password_with_no_lowercase_returns_a_422_code():
+    register_physician_response = requests.post(
+        "http://localhost:8080/users/register",
+        json={
+            "role": a_KMK_physician_information["role"],
+            "name": a_KMK_physician_information["name"],
+            "last_name": a_KMK_physician_information["last_name"],
+            "email": a_KMK_physician_information["email"],
+            "password": "NOLOWERCASE33",
+            "tuition": a_KMK_physician_information["tuition"],
+            "specialty": a_KMK_physician_information["specialty"],
+        },
+    )
+
+    assert register_physician_response.status_code == 422
+
+
+def test_register_physician_with_password_with_no_numbers_returns_a_422_code():
+    register_physician_response = requests.post(
+        "http://localhost:8080/users/register",
+        json={
+            "role": a_KMK_physician_information["role"],
+            "name": a_KMK_physician_information["name"],
+            "last_name": a_KMK_physician_information["last_name"],
+            "email": a_KMK_physician_information["email"],
+            "password": "noNUMBERS",
+            "tuition": a_KMK_physician_information["tuition"],
+            "specialty": a_KMK_physician_information["specialty"],
+        },
+    )
+
+    assert register_physician_response.status_code == 422
