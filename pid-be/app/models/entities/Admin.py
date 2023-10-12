@@ -38,6 +38,7 @@ class Admin:
     def deny_physician(id):
         denied_physician = Physician.get_by_id(id)
         db.collection("deniedPhysicians").document(id).set(denied_physician)
+        db.collection("deniedPhysicians").document(id).update({"approved": "denied"})
         Admin.delete_physician(id)
 
     @staticmethod
