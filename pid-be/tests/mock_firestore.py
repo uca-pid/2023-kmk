@@ -73,12 +73,12 @@ if __name__ == "__main__":
 
     observation_one = {
         "date": "2023-01-01",
-        "observations": "This is an observation",
+        "observation": "This is an observation",
     }
 
     observation_two = {
         "date": "2023-09-12",
-        "observations": "This is another observation",
+        "observation": "This is another observation",
     }
 
     a_physician_information = {

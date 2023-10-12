@@ -10,6 +10,7 @@ const UserProfile = () => {
         firstName: "",
         lastName: "",
         email: "",
+        bloodtype: "",
     });
     const [password, setPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
@@ -28,10 +29,13 @@ const UserProfile = () => {
                 `http://localhost:8080/users/user-info/`
             );
 
+            console.log(response);
+
             let user = {
                 firstName: response.data.first_name,
                 lastName: response.data.last_name,
                 email: response.data.email,
+                bloodtype: response.data.blood_type,
             };
             setUser(user);
         } catch (error) {
@@ -90,6 +94,15 @@ const UserProfile = () => {
                             readOnly
                         />
                     </div>
+                    {/* <div className={styles["form-group"]}>
+                        <label htmlFor="lastName">Grupo Sanguíneo:</label>
+                        <input
+                            type="text"
+                            id="bloodType"
+                            value={user.blood_type}
+                            readOnly
+                        />
+                    </div> */}
                     <div className={styles["form-group"]}>
                         <label htmlFor="email">Correo Electrónico:</label>
                         <input
