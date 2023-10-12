@@ -79,7 +79,9 @@ other_appointment_data = {
 
 @pytest.fixture(scope="session", autouse=True)
 def clean_firestore():
-    os.system("firebase firestore:delete --all-collections -y")
+    requests.delete(
+        "http://localhost:8081/emulator/v1/projects/pid-kmk/databases/(default)/documents"
+    )
 
 
 @pytest.fixture(autouse=True)
