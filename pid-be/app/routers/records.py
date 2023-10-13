@@ -62,7 +62,7 @@ def get_record(patient_id):
 def update_record(
     patient_id,
     observation_creation_request: ObservationRequest,
-    uid=Depends(Auth.is_admin),
+    uid=Depends(Auth.is_logged_in),
 ):
     """
     Update a patient's record with new observation.
