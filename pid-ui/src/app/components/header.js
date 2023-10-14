@@ -75,7 +75,12 @@ const TabBar = () => {
             <div className={styles.tab} onClick={handleLogoClick}>
                 Turnos
             </div>
-            <div className={styles.tab_disabled}>Mi Ficha</div>
+            <div
+                className={styles.tab}
+                onClick={() => router.push("/my-record")}
+            >
+                Mi Ficha
+            </div>
         </div>
     );
 };

@@ -197,7 +197,7 @@ const Dashboard = () => {
             )}
 
             <Header />
-            <TabBar />
+            {/* <TabBar /> */}
 
             <div className={styles["tab-content"]}>
                 <div className={styles.form}>
@@ -249,7 +249,7 @@ const Dashboard = () => {
                                                     Ver Historia Clinica
                                                 </button>
                                             </Link>
-                                            <button
+                                            {/* <button
                                                 className={
                                                     styles["edit-button"]
                                                 }
@@ -260,7 +260,7 @@ const Dashboard = () => {
                                                 }
                                             >
                                                 Modificar
-                                            </button>
+                                            </button> */}
 
                                             <button
                                                 className={

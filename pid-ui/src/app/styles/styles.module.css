@@ -193,6 +193,14 @@
     background-color: #0056b3;
 }
 
+.approve-button {
+    background-color: #28a745; /* Cambia el color para el botón de aprobar */
+    color: #fff;
+}
+.approve-button:hover {
+    background-color: #1e7e34; /* Cambia el color al pasar el mouse */
+}
+
 .delete-button {
     background-color: #ff3333; /* Cambia el color para el botón de eliminar */
     color: #fff;

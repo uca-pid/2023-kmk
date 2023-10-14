@@ -9,6 +9,8 @@ class PhysicianResponse(BaseModel):
     first_name: str
     last_name: str
     specialty: str
+    email: str
+    tuition: int
     agenda: AgendaResponse
 
     def __init__(self, **data):
