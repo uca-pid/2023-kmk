@@ -5,6 +5,8 @@ on:
         branches:
             - main
             - develop
+            - feature/*
+            - hotfix/*
 
 jobs:
     build-and-deploy-frontend:
@@ -19,9 +21,18 @@ jobs:
               with:
                   node-version: 20.6.1
 
+            - name: Install Amplify CLI
+              run: npm install -g @aws-amplify/cli
+
             - name: Install dependencies
               working-directory: pid-ui
               run: npm install
+
+            - name: Configure Amplify
+              run: amplify configure # This step might require some interactive setup
+
+            - name: Deploy to Amplify
+              run: amplify publish
 
             - name: Build frontend
               working-directory: pid-ui
