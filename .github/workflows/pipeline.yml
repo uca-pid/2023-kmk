@@ -21,22 +21,9 @@ jobs:
               with:
                   node-version: 20.6.1
 
-            - name: Install Amplify CLI
-              run: npm install -g @aws-amplify/cli
-
-            - name: Install dependencies
+            - name: Install Vercel
               working-directory: pid-ui
-              run: npm install
-
-            - name: Configure Amplify
-              run: amplify configure # This step might require some interactive setup
-
-            - name: Deploy to Amplify
-              run: amplify publish
-
-            - name: Build frontend
-              working-directory: pid-ui
-              run: npm run build
+              run: npm install -g vercel
 
             - name: Deploy frontend to production
               if: github.ref == 'refs/heads/main' # Deploy only from main branch
@@ -44,20 +31,7 @@ jobs:
               run: |
                   # Deployment steps for production environment (main branch)
                   # Replace with your deployment commands.
-
-            - name: Deploy frontend to pre-production
-              if: github.ref == 'refs/heads/main' # Deploy only from main branch
-              working-directory: pid-ui
-              run: |
-                  # Deployment steps for production environment (main branch)
-                  # Replace with your deployment commands.
-
-            - name: Deploy frontend to staging
-              if: github.ref == 'refs/heads/develop' # Deploy from develop branch
-              working-directory: pid-ui
-              run: |
-                  # Deployment steps for staging environment (develop branch)
-                  # Replace with your deployment commands.
+                  vercel --prod
 
     test-backend:
         runs-on: ubuntu-latest
