@@ -53,6 +53,7 @@ def clean_firestore():
     requests.delete(
         "http://localhost:8081/emulator/v1/projects/pid-kmk/databases/(default)/documents"
     )
+    yield
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -269,7 +270,10 @@ def test_role_retrieving_of_a_user_that_has_multiple_roles_returns_a_list_with_t
             "name": a_KMK_physician_information["name"],
             "last_name": a_KMK_physician_information["last_name"],
             "email": a_KMK_physician_information["email"],
-            "password": a_KMK_physician_information["name"],
+            "password": a_KMK_physician_information["password"],
+            "birth_date": "9/1/2000",
+            "gender": "m",
+            "blood_type": "a",
         },
     )
     physician_uid = auth.get_user_by_email(a_KMK_physician_information["email"]).uid

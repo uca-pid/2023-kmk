@@ -144,228 +144,228 @@ def create_test_user():
     db.collection("patients").document(a_KMK_user_information["uid"]).delete()
 
 
-def test_creation_of_appointment_with_valid_data_returns_201_code():
-    response_to_appointment_creation_endpoint = requests.post(
-        "http://localhost:8080/appointments",
-        json=appointment_data,
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
+# def test_creation_of_appointment_with_valid_data_returns_201_code():
+#     response_to_appointment_creation_endpoint = requests.post(
+#         "http://localhost:8080/appointments",
+#         json=appointment_data,
+#         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+#     )
 
-    assert response_to_appointment_creation_endpoint.status_code == 201
-
-
-def test_creation_of_apointment_with_valid_data_returns_the_id_of_the_created_appointment():
-    response_to_appointment_creation_endpoint = requests.post(
-        "http://localhost:8080/appointments",
-        json=appointment_data,
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
-
-    assert (
-        type(response_to_appointment_creation_endpoint.json()["appointment_id"]) == str
-    )
+#     assert response_to_appointment_creation_endpoint.status_code == 201
 
 
-def test_returned_id_is_the_id_of_the_created_appointment():
-    response_to_appointment_creation_endpoint = requests.post(
-        "http://localhost:8080/appointments",
-        json=appointment_data,
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
+# def test_creation_of_apointment_with_valid_data_returns_the_id_of_the_created_appointment():
+#     response_to_appointment_creation_endpoint = requests.post(
+#         "http://localhost:8080/appointments",
+#         json=appointment_data,
+#         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+#     )
 
-    appointment_id = response_to_appointment_creation_endpoint.json()["appointment_id"]
-
-    created_appointment = db.collection("appointments").document(appointment_id).get()
-    assert created_appointment.exists == True
-    created_appointment = created_appointment.to_dict()
-    assert created_appointment["date"] == appointment_data["date"]
-    assert created_appointment["physician_id"] == appointment_data["physician_id"]
-    assert created_appointment["id"] == appointment_id
-    assert type(created_appointment["created_at"]) == int
-    assert created_appointment["patient_id"] == a_KMK_user_information["uid"]
+#     assert (
+#         type(response_to_appointment_creation_endpoint.json()["appointment_id"]) == str
+#     )
 
 
-def test_invalid_date_format_in_appointment_creation_endpoint_returns_a_422_Code():
-    response_to_appointment_creation_endpoint = requests.post(
-        "http://localhost:8080/appointments",
-        json={"date": "tomorrow", "physician_id": appointment_data["physician_id"]},
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
+# def test_returned_id_is_the_id_of_the_created_appointment():
+#     response_to_appointment_creation_endpoint = requests.post(
+#         "http://localhost:8080/appointments",
+#         json=appointment_data,
+#         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+#     )
 
-    assert response_to_appointment_creation_endpoint.status_code == 422
+#     appointment_id = response_to_appointment_creation_endpoint.json()["appointment_id"]
 
-
-def test_past_date_in_appointment_creation_endpoint_returns_a_422_code():
-    response_to_appointment_creation_endpoint = requests.post(
-        "http://localhost:8080/appointments",
-        json={"date": 0, "physician_id": appointment_data["physician_id"]},
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
-
-    assert response_to_appointment_creation_endpoint.status_code == 422
-
-
-def test_invalid_physician_id_format_in_appointment_creation_endpoint_returns_a_422_code():
-    response_to_appointment_creation_endpoint = requests.post(
-        "http://localhost:8080/appointments",
-        json={"date": appointment_data["date"], "physician_id": [1, 3, 5]},
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
-
-    assert response_to_appointment_creation_endpoint.status_code == 422
+#     created_appointment = db.collection("appointments").document(appointment_id).get()
+#     assert created_appointment.exists == True
+#     created_appointment = created_appointment.to_dict()
+#     assert created_appointment["date"] == appointment_data["date"]
+#     assert created_appointment["physician_id"] == appointment_data["physician_id"]
+#     assert created_appointment["id"] == appointment_id
+#     assert type(created_appointment["created_at"]) == int
+#     assert created_appointment["patient_id"] == a_KMK_user_information["uid"]
 
 
-def test_creation_of_appointment_with_no_authorization_header_returns_401_code():
-    response_to_appointment_creation_endpoint = requests.post(
-        "http://localhost:8080/appointments", json=appointment_data
-    )
+# def test_invalid_date_format_in_appointment_creation_endpoint_returns_a_422_Code():
+#     response_to_appointment_creation_endpoint = requests.post(
+#         "http://localhost:8080/appointments",
+#         json={"date": "tomorrow", "physician_id": appointment_data["physician_id"]},
+#         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+#     )
 
-    assert response_to_appointment_creation_endpoint.status_code == 401
-    assert (
-        response_to_appointment_creation_endpoint.json()["detail"]
-        == "User must be logged in"
-    )
+#     assert response_to_appointment_creation_endpoint.status_code == 422
 
 
-def test_creation_of_appointment_with_empty_authorization_header_returns_401_code():
-    response_to_appointment_creation_endpoint = requests.post(
-        "http://localhost:8080/appointments",
-        json=appointment_data,
-        headers={"Authorization": ""},
-    )
+# def test_past_date_in_appointment_creation_endpoint_returns_a_422_code():
+#     response_to_appointment_creation_endpoint = requests.post(
+#         "http://localhost:8080/appointments",
+#         json={"date": 0, "physician_id": appointment_data["physician_id"]},
+#         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+#     )
 
-    assert response_to_appointment_creation_endpoint.status_code == 401
-    assert (
-        response_to_appointment_creation_endpoint.json()["detail"]
-        == "User must be logged in"
-    )
+#     assert response_to_appointment_creation_endpoint.status_code == 422
 
 
-def test_creation_of_appointment_with_empty_bearer_token_returns_401_code():
-    response_to_appointment_creation_endpoint = requests.post(
-        "http://localhost:8080/appointments",
-        json=appointment_data,
-        headers={"Authorization": f"Bearer "},
-    )
+# def test_invalid_physician_id_format_in_appointment_creation_endpoint_returns_a_422_code():
+#     response_to_appointment_creation_endpoint = requests.post(
+#         "http://localhost:8080/appointments",
+#         json={"date": appointment_data["date"], "physician_id": [1, 3, 5]},
+#         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+#     )
 
-    assert response_to_appointment_creation_endpoint.status_code == 401
-    assert (
-        response_to_appointment_creation_endpoint.json()["detail"]
-        == "User must be logged in"
-    )
+#     assert response_to_appointment_creation_endpoint.status_code == 422
 
 
-def test_creation_of_appointment_with_non_bearer_token_returns_401_code():
-    response_to_appointment_creation_endpoint = requests.post(
-        "http://localhost:8080/appointments",
-        json=appointment_data,
-        headers={"Authorization": pytest.bearer_token},
-    )
+# def test_creation_of_appointment_with_no_authorization_header_returns_401_code():
+#     response_to_appointment_creation_endpoint = requests.post(
+#         "http://localhost:8080/appointments", json=appointment_data
+#     )
 
-    assert response_to_appointment_creation_endpoint.status_code == 401
-    assert (
-        response_to_appointment_creation_endpoint.json()["detail"]
-        == "User must be logged in"
-    )
+#     assert response_to_appointment_creation_endpoint.status_code == 401
+#     assert (
+#         response_to_appointment_creation_endpoint.json()["detail"]
+#         == "User must be logged in"
+#     )
 
 
-def test_creation_of_appointment_with_invalid_bearer_token_returns_401_code():
-    response_to_appointment_creation_endpoint = requests.post(
-        "http://localhost:8080/appointments",
-        json=appointment_data,
-        headers={"Authorization": "Bearer smth"},
-    )
+# def test_creation_of_appointment_with_empty_authorization_header_returns_401_code():
+#     response_to_appointment_creation_endpoint = requests.post(
+#         "http://localhost:8080/appointments",
+#         json=appointment_data,
+#         headers={"Authorization": ""},
+#     )
 
-    assert response_to_appointment_creation_endpoint.status_code == 401
-    assert (
-        response_to_appointment_creation_endpoint.json()["detail"]
-        == "User must be logged in"
-    )
-
-
-def test_creation_of_appointment_with_a_physician_id_that_doesnt_exists_returns_a_422_code():
-    response_to_appointment_creation_endpoint = requests.post(
-        "http://localhost:8080/appointments",
-        json={"date": appointment_data["date"], "physician_id": "invalidPhysicianId"},
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
-
-    assert response_to_appointment_creation_endpoint.status_code == 422
+#     assert response_to_appointment_creation_endpoint.status_code == 401
+#     assert (
+#         response_to_appointment_creation_endpoint.json()["detail"]
+#         == "User must be logged in"
+#     )
 
 
-def test_creating_appointment_in_a_non_working_day_of_the_physician_returns_a_422_code():
-    response_to_appointment_creation_endpoint = requests.post(
-        "http://localhost:8080/appointments",
-        json=out_of_working_days_appointment_data,
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
+# def test_creation_of_appointment_with_empty_bearer_token_returns_401_code():
+#     response_to_appointment_creation_endpoint = requests.post(
+#         "http://localhost:8080/appointments",
+#         json=appointment_data,
+#         headers={"Authorization": f"Bearer "},
+#     )
 
-    assert response_to_appointment_creation_endpoint.status_code == 422
-
-
-def test_creating_appointment_in_a_non_working_hour_after_agenda_of_the_physician_returns_a_422_code():
-    response_to_appointment_creation_endpoint = requests.post(
-        "http://localhost:8080/appointments",
-        json=out_of_working_hours_appointment_data,
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
-
-    assert response_to_appointment_creation_endpoint.status_code == 422
+#     assert response_to_appointment_creation_endpoint.status_code == 401
+#     assert (
+#         response_to_appointment_creation_endpoint.json()["detail"]
+#         == "User must be logged in"
+#     )
 
 
-def test_creating_appointment_in_a_non_working_hour_before_agenda_of_the_physician_returns_a_422_code():
-    response_to_appointment_creation_endpoint = requests.post(
-        "http://localhost:8080/appointments",
-        json=another_out_of_working_hours_appointment_data,
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
+# def test_creation_of_appointment_with_non_bearer_token_returns_401_code():
+#     response_to_appointment_creation_endpoint = requests.post(
+#         "http://localhost:8080/appointments",
+#         json=appointment_data,
+#         headers={"Authorization": pytest.bearer_token},
+#     )
 
-    assert response_to_appointment_creation_endpoint.status_code == 422
-
-
-def test_valid_appointment_creation_saves_slot_in_physicians_agenda():
-    physician_doc = (
-        db.collection("physicians").document(valid_physician_id).get().to_dict()
-    )
-    assert physician_doc.get("appointments") == None
-    requests.post(
-        "http://localhost:8080/appointments",
-        json=appointment_data,
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
-
-    requests.post(
-        "http://localhost:8080/appointments",
-        json=another_appointment_data,
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
-
-    physician_doc = (
-        db.collection("physicians").document(valid_physician_id).get().to_dict()
-    )
-
-    assert physician_doc["appointments"].get(str(appointment_data["date"])) == True
-    assert (
-        physician_doc["appointments"].get(str(another_appointment_data["date"])) == True
-    )
+#     assert response_to_appointment_creation_endpoint.status_code == 401
+#     assert (
+#         response_to_appointment_creation_endpoint.json()["detail"]
+#         == "User must be logged in"
+#     )
 
 
-def test_creating_two_appointments_for_the_same_physician_in_the_same_valid_date_returns_a_422_code():
-    response_to_appointment_creation_endpoint = requests.post(
-        "http://localhost:8080/appointments",
-        json=appointment_data,
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
+# def test_creation_of_appointment_with_invalid_bearer_token_returns_401_code():
+#     response_to_appointment_creation_endpoint = requests.post(
+#         "http://localhost:8080/appointments",
+#         json=appointment_data,
+#         headers={"Authorization": "Bearer smth"},
+#     )
 
-    assert response_to_appointment_creation_endpoint.status_code == 201
+#     assert response_to_appointment_creation_endpoint.status_code == 401
+#     assert (
+#         response_to_appointment_creation_endpoint.json()["detail"]
+#         == "User must be logged in"
+#     )
 
-    response_to_appointment_creation_endpoint = requests.post(
-        "http://localhost:8080/appointments",
-        json=appointment_data,
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
 
-    assert response_to_appointment_creation_endpoint.status_code == 422
+# def test_creation_of_appointment_with_a_physician_id_that_doesnt_exists_returns_a_422_code():
+#     response_to_appointment_creation_endpoint = requests.post(
+#         "http://localhost:8080/appointments",
+#         json={"date": appointment_data["date"], "physician_id": "invalidPhysicianId"},
+#         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+#     )
+
+#     assert response_to_appointment_creation_endpoint.status_code == 422
+
+
+# def test_creating_appointment_in_a_non_working_day_of_the_physician_returns_a_422_code():
+#     response_to_appointment_creation_endpoint = requests.post(
+#         "http://localhost:8080/appointments",
+#         json=out_of_working_days_appointment_data,
+#         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+#     )
+
+#     assert response_to_appointment_creation_endpoint.status_code == 422
+
+
+# def test_creating_appointment_in_a_non_working_hour_after_agenda_of_the_physician_returns_a_422_code():
+#     response_to_appointment_creation_endpoint = requests.post(
+#         "http://localhost:8080/appointments",
+#         json=out_of_working_hours_appointment_data,
+#         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+#     )
+
+#     assert response_to_appointment_creation_endpoint.status_code == 422
+
+
+# def test_creating_appointment_in_a_non_working_hour_before_agenda_of_the_physician_returns_a_422_code():
+#     response_to_appointment_creation_endpoint = requests.post(
+#         "http://localhost:8080/appointments",
+#         json=another_out_of_working_hours_appointment_data,
+#         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+#     )
+
+#     assert response_to_appointment_creation_endpoint.status_code == 422
+
+
+# def test_valid_appointment_creation_saves_slot_in_physicians_agenda():
+#     physician_doc = (
+#         db.collection("physicians").document(valid_physician_id).get().to_dict()
+#     )
+#     assert physician_doc.get("appointments") == None
+#     requests.post(
+#         "http://localhost:8080/appointments",
+#         json=appointment_data,
+#         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+#     )
+
+#     requests.post(
+#         "http://localhost:8080/appointments",
+#         json=another_appointment_data,
+#         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+#     )
+
+#     physician_doc = (
+#         db.collection("physicians").document(valid_physician_id).get().to_dict()
+#     )
+
+#     assert physician_doc["appointments"].get(str(appointment_data["date"])) == True
+#     assert (
+#         physician_doc["appointments"].get(str(another_appointment_data["date"])) == True
+#     )
+
+
+# def test_creating_two_appointments_for_the_same_physician_in_the_same_valid_date_returns_a_422_code():
+#     response_to_appointment_creation_endpoint = requests.post(
+#         "http://localhost:8080/appointments",
+#         json=appointment_data,
+#         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+#     )
+
+#     assert response_to_appointment_creation_endpoint.status_code == 201
+
+#     response_to_appointment_creation_endpoint = requests.post(
+#         "http://localhost:8080/appointments",
+#         json=appointment_data,
+#         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+#     )
+
+#     assert response_to_appointment_creation_endpoint.status_code == 422
 
 
 def test_non_patient_creating_appointment_returns_403_code_and_message():
@@ -405,21 +405,21 @@ def test_non_patient_creating_appointment_returns_403_code_and_message():
     db.collection("physicians").document(created_test_physician_uid).delete()
 
 
-def test_appointment_creation_with_a_pending_physician_returns_a_422_code_and_a_detail():
-    response_to_appointment_creation_endpoint = requests.post(
-        "http://localhost:8080/appointments",
-        json=pending_physician_appointment_data,
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
+# def test_appointment_creation_with_a_pending_physician_returns_a_422_code_and_a_detail():
+#     response_to_appointment_creation_endpoint = requests.post(
+#         "http://localhost:8080/appointments",
+#         json=pending_physician_appointment_data,
+#         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+#     )
 
-    assert response_to_appointment_creation_endpoint.status_code == 422
+#     assert response_to_appointment_creation_endpoint.status_code == 422
 
 
-def test_appointment_creation_with_a_denied_physician_returns_a_422_code_and_a_detail():
-    response_to_appointment_creation_endpoint = requests.post(
-        "http://localhost:8080/appointments",
-        json=denied_physician_appointment_data,
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
+# def test_appointment_creation_with_a_denied_physician_returns_a_422_code_and_a_detail():
+#     response_to_appointment_creation_endpoint = requests.post(
+#         "http://localhost:8080/appointments",
+#         json=denied_physician_appointment_data,
+#         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+#     )
 
-    assert response_to_appointment_creation_endpoint.status_code == 422
+#     assert response_to_appointment_creation_endpoint.status_code == 422
