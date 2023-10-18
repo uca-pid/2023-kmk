@@ -48,6 +48,26 @@ header {
     height: 100px; /* Fija una altura fija para el encabezado */
 }
 
+subtitle {
+    padding-top: 0.5rem;
+    font-size: 1.5rem; /* Tamaño del subtítulo */
+    color: #333;
+}
+
+input {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    color: #000;
+    background-color: #fff;
+    appearance: none;
+    outline: none;
+    cursor: pointer;
+    margin-bottom: 2rem;
+}
+
 /* Estilos para el pie de página de la página de inicio */
 footer {
     font-size: 0.8rem;

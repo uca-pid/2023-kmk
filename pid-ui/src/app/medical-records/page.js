@@ -42,24 +42,24 @@ const MedicalRecords = ({ searchParams }) => {
         }
     };
 
-    const handleAddObservation = async (e) => {
-        console.log(patientId, "handleAddObservation");
-        console.log(newObservationDate, newObservationContent);
-        e.preventDefault();
-        try {
-            const response = await axios.post(
-                `http://localhost:8080/records/update/${patientId}`,
-                {
-                    date: newObservationDate,
-                    observation: newObservationContent,
-                }
-            );
-            console.log(response);
-            fetchData();
-        } catch (error) {
-            console.error(error);
-        }
-    };
+    // const handleAddObservation = async (e) => {
+    //     console.log(patientId, "handleAddObservation");
+    //     console.log(newObservationDate, newObservationContent);
+    //     e.preventDefault();
+    //     try {
+    //         const response = await axios.post(
+    //             `http://localhost:8080/records/update/${patientId}`,
+    //             {
+    //                 date: newObservationDate,
+    //                 observation: newObservationContent,
+    //             }
+    //         );
+    //         console.log(response);
+    //         fetchData();
+    //     } catch (error) {
+    //         console.error(error);
+    //     }
+    // };
 
     useEffect(() => {
         if (patientId) {
@@ -89,7 +89,7 @@ const MedicalRecords = ({ searchParams }) => {
                         Grupo sanguíneo: {record.blood_type}
                     </div>
 
-                    <form
+                    {/* <form
                         className={styles["new-record-section"]}
                         onSubmit={handleAddObservation}
                     >
@@ -132,7 +132,7 @@ const MedicalRecords = ({ searchParams }) => {
                         >
                             Agregar
                         </button>
-                    </form>
+                    </form> */}
 
                     <div className={styles["records-section"]}>
                         {record.observations.length > 0 ? (
