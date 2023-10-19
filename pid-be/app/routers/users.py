@@ -168,7 +168,9 @@ async def register(
     requests.post(
         "http://localhost:9000/emails/send",
         json={
-            "type": "PATIENT_REGISTERED_ACCOUNT",
+            "type": "PATIENT_REGISTERED_ACCOUNT"
+            if register_request.role == "patient"
+            else "PHYSICIAN_REGISTERED_ACCOUNT",
             "data": {
                 "name": register_request.name,
                 "last_name": register_request.last_name,
