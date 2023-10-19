@@ -165,6 +165,17 @@ async def register(
     else:
         physician = Physician(**register_request.dict(exclude_none=True), id=auth_uid)
         physician.create()
+    requests.post(
+        "http://localhost:9000/emails/send",
+        json={
+            "type": "PATIENT_REGISTERED_ACCOUNT",
+            "data": {
+                "name": register_request.name,
+                "last_name": register_request.last_name,
+                "email": register_request.email,
+            },
+        },
+    )
     return {"message": "Successfull registration"}
 
 

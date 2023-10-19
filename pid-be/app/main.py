@@ -52,7 +52,6 @@ for router in routers:
 
 @app.get("/docs", response_class=HTMLResponse)
 async def get_docs(username=Depends(Auth.is_kmk_maintainer)) -> HTMLResponse:
-    print("smth")
     return get_swagger_ui_html(openapi_url="/api/openapi.json", title="docs")
 
 
