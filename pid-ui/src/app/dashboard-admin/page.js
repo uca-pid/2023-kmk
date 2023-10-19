@@ -14,12 +14,12 @@ const Admin = () => {
     const fetchPhysicians = async () => {
         try {
             const response = await axios.get(
-                `http://localhost:8080/admins/pending-validations`
+                `http://localhost:8080/admin/pending-validations`
             );
             console.log(response.data.physicians_pending_validation);
             setDoctors(response.data.physicians_pending_validation);
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     };
 
@@ -27,7 +27,7 @@ const Admin = () => {
         try {
             console.log(physician.id);
             const response = await axios.post(
-                `http://localhost:8080/admins/approve-physician/${physician.id}`
+                `http://localhost:8080/admin/approve-physician/${physician.id}`
             );
             console.log(response.data);
             alert("Profesional aprobado");
@@ -41,7 +41,7 @@ const Admin = () => {
         try {
             console.log(physician.id);
             const response = await axios.post(
-                `http://localhost:8080/admins/deny-physician/${physician.id}`
+                `http://localhost:8080/admin/deny-physician/${physician.id}`
             );
             console.log(response.data);
             alert("Profesional denegado");
@@ -112,7 +112,7 @@ const Admin = () => {
 
                                             <button
                                                 className={
-                                                    styles["deny-button"]
+                                                    styles["delete-button"]
                                                 }
                                                 onClick={() =>
                                                     handleDenyPhysician(doctor)

@@ -48,6 +48,36 @@ def get_record(patient_id):
             content={"detail": "Internal server error"},
         )
 
+@router.get(
+    "/get-my-record",
+    status_code=status.HTTP_200_OK,
+    response_model=GetRecordResponse,
+    responses={
+        401: {"model": GetRecordError},
+        403: {"model": GetRecordError},
+        500: {"model": GetRecordError},
+    },
+)
+def get_my_record(patient_id=Depends(Auth.is_logged_in)):
+    """
+    Get record from a patient.
+
+    This will allow authenticated physicians to retrieve the record from a patient.
+
+    This path operation will:
+
+    * Return the patient record.
+    * Throw an error if recrods retrieving fails.
+    """
+    try:
+        record = Record.get_by_id(patient_id)
+        return {"record": record}
+    except:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "Internal server error"},
+        )
+
 
 @router.post(
     "/update/{patient_id}",

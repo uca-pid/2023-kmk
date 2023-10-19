@@ -152,7 +152,7 @@ def get_all_pending_validations(uid=Depends(Auth.is_admin)):
     },
 )
 def regsiter_admin(
-    admin_resgister_request: AdminRegisterRequest, uid=Depends(Auth.is_admin)
+    admin_resgister_request: AdminRegisterRequest
 ):
     """
     Register an admin.
@@ -190,6 +190,6 @@ def regsiter_admin(
         auth_uid = register_response.json()["localId"]
 
     del admin_resgister_request.password
-    admin = Admin(**admin_resgister_request.dict(), id=auth_uid, registered_by=uid)
+    admin = Admin(**admin_resgister_request.dict(), id=auth_uid, registered_by="qwertyui")
     admin.create()
     return {"message": "Successfull registration"}

@@ -6,18 +6,7 @@ import styles from "../styles/styles.module.css";
 import axios from "axios";
 import { Footer, Header } from "../components/header";
 
-const MedicalRecords = ({ searchParams }) => {
-    const [urlSearchParams, setUrlSearchParams] = useState(null);
-
-    useEffect(() => {
-        console.log(window.location.search, "jijijijiijij");
-        if (window)
-            setUrlSearchParams(new URLSearchParams(window.location.search));
-    }, []);
-
-    const [patientId, setPatientId] = useState(
-        searchParams.patientId || urlSearchParams.get("patientId")
-    );
+const MedicalRecords = () => {
     const [record, setRecord] = useState({
         name: "",
         last_name: "",
@@ -27,13 +16,11 @@ const MedicalRecords = ({ searchParams }) => {
         id: "",
         observations: [],
     });
-    const [newObservationDate, setNewObservationDate] = useState("");
-    const [newObservationContent, setNewObservationContent] = useState("");
 
     const fetchData = async () => {
         try {
             const response = await axios.get(
-                `http://localhost:8080/records/get-record/${patientId}`
+                `http://localhost:8080/records/get-my-record`
             );
             setRecord(response.data.record);
             console.log(response);
@@ -42,33 +29,12 @@ const MedicalRecords = ({ searchParams }) => {
         }
     };
 
-    // const handleAddObservation = async (e) => {
-    //     console.log(patientId, "handleAddObservation");
-    //     console.log(newObservationDate, newObservationContent);
-    //     e.preventDefault();
-    //     try {
-    //         const response = await axios.post(
-    //             `http://localhost:8080/records/update/${patientId}`,
-    //             {
-    //                 date: newObservationDate,
-    //                 observation: newObservationContent,
-    //             }
-    //         );
-    //         console.log(response);
-    //         fetchData();
-    //     } catch (error) {
-    //         console.error(error);
-    //     }
-    // };
-
     useEffect(() => {
-        if (patientId) {
-            axios.defaults.headers.common = {
-                Authorization: `bearer ${localStorage.getItem("token")}`,
-            };
-            fetchData();
-        }
-    }, [patientId]);
+        axios.defaults.headers.common = {
+            Authorization: `bearer ${localStorage.getItem("token")}`,
+        };
+        fetchData();
+    }, []);
 
     return (
         <div className={styles.dashboard}>
@@ -88,51 +54,6 @@ const MedicalRecords = ({ searchParams }) => {
                     <div className={styles["subtitle"]}>
                         Grupo sanguíneo: {record.blood_type}
                     </div>
-
-                    {/* <form
-                        className={styles["new-record-section"]}
-                        onSubmit={handleAddObservation}
-                    >
-                        <div className={styles["title"]}>Nueva observación</div>
-
-                        <label htmlFor="observation-date">
-                            Fecha de la Observacion
-                        </label>
-                        <input
-                            type="date"
-                            id="observation-date"
-                            value={newObservationDate}
-                            onChange={(e) =>
-                                setNewObservationDate(e.target.value)
-                            }
-                            required
-                        />
-                        <label htmlFor="observation">Observacion</label>
-
-                        <input
-                            type="text"
-                            id="observation"
-                            value={newObservationContent}
-                            onChange={(e) =>
-                                setNewObservationContent(e.target.value)
-                            }
-                            placeholder="Escribe una nueva observación"
-                            required
-                        />
-                        <button
-                            className={`${styles["submit-button"]} ${
-                                !newObservationContent || !newObservationDate
-                                    ? styles["disabled-button"]
-                                    : ""
-                            }`}
-                            type="submit"
-                            disabled={
-                                !newObservationContent || !newObservationDate
-                            }
-                        >
-                            Agregar
-                        </button>
-                    </form> */}
 
                     <div className={styles["records-section"]}>
                         {record.observations.length > 0 ? (

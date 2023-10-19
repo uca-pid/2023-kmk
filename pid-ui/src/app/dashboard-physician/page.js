@@ -11,6 +11,7 @@ import Modal from "react-modal";
 import axios from "axios";
 import { Header, Footer, TabBar } from "../components/header";
 import userCheck from "../components/userCheck";
+import { set } from "date-fns";
 
 registerLocale("es", es);
 
@@ -20,6 +21,11 @@ const Dashboard = () => {
     const [date, setDate] = useState(new Date());
     const [dateToEdit, setDateToEdit] = useState(new Date());
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isAddObservationModalOpen, setIsAddObervationModalOpen] =
+        useState(false);
+    const [patientId, setPatientId] = useState("");
+    const [newObservationDate, setNewObservationDate] = useState("");
+    const [newObservationContent, setNewObservationContent] = useState("");
     const [editingAppointment, setEditingAppointment] = useState({
         id: null,
         specialty: "",
@@ -42,33 +48,49 @@ const Dashboard = () => {
         }
     };
 
-    const handleEditAppointment = (appointment) => {
-        console.log(appointment);
-        console.log(editingAppointment);
-        setIsEditModalOpen(true);
-        setEditingAppointment({
-            id: appointment.id,
-            specialty: appointment.physician.specialty,
-            doctor: appointment.physician,
-            date: appointment.date,
-            patient: appointment.patient,
-            agenda: appointment.physician.agenda,
-        });
-        console.log(editingAppointment);
-    };
+    // const handleEditAppointment = (appointment) => {
+    //     console.log(appointment);
+    //     console.log(editingAppointment);
+    //     setIsEditModalOpen(true);
+    //     setEditingAppointment({
+    //         id: appointment.id,
+    //         specialty: appointment.physician.specialty,
+    //         doctor: appointment.physician,
+    //         date: appointment.date,
+    //         patient: appointment.patient,
+    //         agenda: appointment.physician.agenda,
+    //     });
+    //     console.log(editingAppointment);
+    // };
 
     const handleCloseEditModal = () => {
         setIsEditModalOpen(false);
+        setIsAddObervationModalOpen(false);
     };
 
-    const handleSaveAppointment = () => {
-        // Lógica para guardar los cambios de la cita en tu sistema
-        // Esto puede variar según cómo esté implementada tu lógica de backend
-        // Una vez guardados los cambios, cierra el modal
-        // y actualiza la lista de citas o realiza cualquier otra acción necesaria
-        setIsEditModalOpen(false);
-        alert("Turno modificado exitosamente");
-        fetchAppointments();
+    // const handleSaveAppointment = () => {
+    //     setIsEditModalOpen(false);
+    //     alert("Turno modificado exitosamente");
+    //     fetchAppointments();
+    // };
+
+    const handleAddObservation = async (e) => {
+        console.log(patientId, "handleAddObservation");
+        console.log(newObservationDate, newObservationContent);
+        e.preventDefault();
+        try {
+            const response = await axios.post(
+                `http://localhost:8080/records/update/${patientId}`,
+                {
+                    date: newObservationDate,
+                    observation: newObservationContent,
+                }
+            );
+            console.log(response);
+            // fetchData();
+        } catch (error) {
+            console.error(error);
+        }
     };
 
     const handleDeleteAppointment = async (appointmentId) => {
@@ -92,6 +114,7 @@ const Dashboard = () => {
             bottom: "auto",
             marginRight: "-50%",
             transform: "translate(-50%, -50%)",
+            width: "80%",
         },
     };
 
@@ -196,8 +219,49 @@ const Dashboard = () => {
                 </Modal>
             )}
 
+            {isAddObservationModalOpen && (
+                <Modal
+                    ariaHideApp={false}
+                    isOpen={isAddObservationModalOpen}
+                    onRequestClose={handleCloseEditModal}
+                    style={customStyles}
+                >
+                    <form
+                        className={styles["new-record-section"]}
+                        onSubmit={handleAddObservation}
+                    >
+                        <div className={styles["title"]}>Nueva observación</div>
+
+                        <input
+                            type="text"
+                            id="observation"
+                            value={newObservationContent}
+                            onChange={(e) =>
+                                setNewObservationContent(e.target.value)
+                            }
+                            placeholder="Escribe una nueva observación"
+                            required
+                            className={styles.observationInput}
+                        />
+                        <button
+                            className={`${styles["submit-button"]} ${
+                                !newObservationContent || !newObservationDate
+                                    ? styles["disabled-button"]
+                                    : ""
+                            }`}
+                            type="submit"
+                            disabled={
+                                !newObservationContent || !newObservationDate
+                            }
+                        >
+                            Agregar
+                        </button>
+                    </form>
+                </Modal>
+            )}
+
             <Header />
-            <TabBar />
+            {/* <TabBar /> */}
 
             <div className={styles["tab-content"]}>
                 <div className={styles.form}>
@@ -230,6 +294,26 @@ const Dashboard = () => {
                                                 ]
                                             }
                                         >
+                                            <button
+                                                className={
+                                                    styles["standard-button"]
+                                                }
+                                                onClick={() => {
+                                                    setIsAddObervationModalOpen(
+                                                        true
+                                                    );
+                                                    setPatientId(
+                                                        appointment.patient.id
+                                                    );
+                                                    setNewObservationDate(
+                                                        appointment.date.toLocaleString(
+                                                            "es-AR"
+                                                        )
+                                                    );
+                                                }}
+                                            >
+                                                Agregar Observacion{" "}
+                                            </button>
                                             <Link
                                                 href={{
                                                     pathname:
@@ -249,7 +333,7 @@ const Dashboard = () => {
                                                     Ver Historia Clinica
                                                 </button>
                                             </Link>
-                                            <button
+                                            {/* <button
                                                 className={
                                                     styles["edit-button"]
                                                 }
@@ -260,7 +344,7 @@ const Dashboard = () => {
                                                 }
                                             >
                                                 Modificar
-                                            </button>
+                                            </button> */}
 
                                             <button
                                                 className={
