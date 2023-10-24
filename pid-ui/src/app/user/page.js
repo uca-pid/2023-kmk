@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react";
 import styles from "../styles/styles.module.css";
 import axios from "axios";
-import { Footer, Header } from "../components/header";
+import { Footer, Header, TabBar } from "../components/header";
+import { toast } from "react-toastify";
 
 const UserProfile = () => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
@@ -39,6 +40,7 @@ const UserProfile = () => {
             setUser(user);
         } catch (error) {
             console.error(error);
+            toast.error("Error al obtener los datos del usuario");
         }
     };
 
@@ -61,7 +63,7 @@ const UserProfile = () => {
             setConfirmNewPassword("");
             setError("");
         } catch (error) {
-            setError(
+            toast.error(
                 "Error al cambiar la contraseña: " + error.response.data.detail
             );
         }
@@ -70,6 +72,7 @@ const UserProfile = () => {
     return (
         <div className={styles.dashboard}>
             <Header />
+            <TabBar />
 
             <div className={styles["tab-content"]}>
                 <div className={styles.form}>

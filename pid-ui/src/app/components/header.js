@@ -4,12 +4,22 @@ import styles from "../styles/Header.module.css";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import userCheck from "../components/userCheck";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Header = () => {
     const router = useRouter();
 
     return (
         <div className={styles.header}>
+            <ToastContainer
+                limit={1}
+                position={"top-right"}
+                autoClose={5000}
+                hideProgressBar={false}
+                closeOnClick={true}
+                pauseOnHover={true}
+            />
             <Image
                 src="/logo.png"
                 alt="Logo de la empresa"
@@ -35,6 +45,14 @@ const Header = () => {
                 }}
             />
             <Image
+                src="/bell_icon.png"
+                alt="Notificaciones"
+                className={styles["bell-icon"]}
+                width={200}
+                height={200}
+                onClick={() => {}}
+            />
+            <Image
                 src="/user-icon.png"
                 alt="Usuario"
                 className={styles["user-icon"]}
@@ -53,6 +71,14 @@ const HeaderSlim = () => {
 
     return (
         <div className={styles.header}>
+            <ToastContainer
+                limit={1}
+                position={"top-right"}
+                autoClose={5000}
+                hideProgressBar={false}
+                closeOnClick={true}
+                pauseOnHover={true}
+            />
             <Image
                 src="/logo.png"
                 alt="Logo de la empresa"
@@ -64,7 +90,7 @@ const HeaderSlim = () => {
     );
 };
 
-const TabBar = () => {
+const TabBar = (props) => {
     const router = useRouter();
     const handleLogoClick = () => {
         userCheck(router);
@@ -72,11 +98,18 @@ const TabBar = () => {
 
     return (
         <div className={styles["tab-bar"]}>
-            <div className={styles.tab} onClick={handleLogoClick}>
+            <div
+                className={`${styles["tab"]} ${
+                    props.highlight === "Turnos" ? styles["selected-tab"] : ""
+                }`}
+                onClick={handleLogoClick}
+            >
                 Turnos
             </div>
             <div
-                className={styles.tab}
+                className={`${styles["tab"]} ${
+                    props.highlight === "Ficha" ? styles["selected-tab"] : ""
+                }`}
                 onClick={() => router.push("/my-record")}
             >
                 Mi Ficha

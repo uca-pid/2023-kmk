@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import validator from "validator";
 import { HeaderSlim, Footer } from "../components/header";
+import { toast } from "react-toastify";
 
 const Registro = () => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
@@ -114,7 +115,7 @@ const Registro = () => {
             console.log(response.data);
             if (response.data) {
                 console.log("Registro exitoso");
-                alert("Se ha registrado exitosamente");
+                toast.success("Se ha registrado exitosamente");
                 router.push("/");
             }
         } catch (error) {

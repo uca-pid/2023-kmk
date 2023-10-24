@@ -11,11 +11,11 @@ import Modal from "react-modal";
 import axios from "axios";
 import { Header, Footer, TabBar } from "../components/header";
 import userCheck from "../components/userCheck";
-import { set } from "date-fns";
+import { toast } from "react-toastify";
 
 registerLocale("es", es);
 
-const Dashboard = () => {
+const DashboardPhysician = () => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
     const router = useRouter();
     const [appointments, setAppointments] = useState([]);
@@ -69,7 +69,7 @@ const Dashboard = () => {
 
     // const handleSaveAppointment = () => {
     //     setIsEditModalOpen(false);
-    //     alert("Turno modificado exitosamente");
+    //     toast.info("Turno modificado exitosamente");
     //     fetchAppointments();
     // };
 
@@ -96,7 +96,7 @@ const Dashboard = () => {
         console.log(appointmentId);
         try {
             await axios.delete(`${apiURL}appointments/${appointmentId}`);
-            alert("Turno eliminado exitosamente");
+            toast.info("Turno eliminado exitosamente");
             fetchAppointments();
         } catch (error) {
             console.log(error);
@@ -374,4 +374,4 @@ const Dashboard = () => {
     );
 };
 
-export default Dashboard;
+export default DashboardPhysician;

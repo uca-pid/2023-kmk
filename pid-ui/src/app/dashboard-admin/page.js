@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Header, Footer } from "../components/header";
 import userCheck from "../components/userCheck";
+import { toast } from "react-toastify";
 
 const Admin = () => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
@@ -31,7 +32,7 @@ const Admin = () => {
                 `${apiURL}admin/approve-physician/${physician.id}`
             );
             console.log(response.data);
-            alert("Profesional aprobado");
+            toast.info("Profesional aprobado");
             fetchPhysicians();
         } catch (error) {
             console.log(error);
@@ -45,7 +46,7 @@ const Admin = () => {
                 `${apiURL}admin/deny-physician/${physician.id}`
             );
             console.log(response.data);
-            alert("Profesional denegado");
+            toast.info("Profesional denegado");
             fetchPhysicians();
             router.refresh("/dashboard-admin");
         } catch (error) {

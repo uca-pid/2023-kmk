@@ -94,7 +94,6 @@
     appearance: none;
     outline: none;
     cursor: pointer;
-    margin-bottom: 2rem;
 }
 
 /* Estilos para la sección de "Mis Proximos Turnos" */
@@ -184,7 +183,7 @@
 
 .submit-button {
     padding: 0.5rem 1rem;
-    background-color: #007bff;
+    background-color: rgb(38, 60, 132);
     color: #fff;
     text-decoration: none;
     border: none;
@@ -196,7 +195,7 @@
     margin-top: 1rem;
 }
 .submit-button:hover {
-    background-color: #0056b3;
+    background-color: rgb(17, 38, 106);
 }
 
 .approve-button {
@@ -208,22 +207,33 @@
 }
 
 .delete-button {
-    background-color: #ff3333; /* Cambia el color para el botón de eliminar */
+    background-color: #ca1a1a; /* Cambia el color para el botón de eliminar */
     color: #fff;
 }
 .delete-button:hover {
-    background-color: #cc0000; /* Cambia el color al pasar el mouse */
+    background-color: #a00000; /* Cambia el color al pasar el mouse */
 }
 
 .edit-button {
-    background-color: #007bff; /* Cambia el color para el botón de editar */
+    background-color: rgb(38, 60, 132);
     color: #fff;
 }
 .edit-button:hover {
-    background-color: #0056b3; /* Cambia el color al pasar el mouse */
+    background-color: rgb(17, 38, 106);
 }
 
 .disabled-button {
     background-color: #ccc;
     cursor: not-allowed;
+}
+
+.refresh-icon {
+    width: 35px;
+    height: auto;
+    cursor: pointer;
+    position: absolute;
+    right: 6rem;
+}
+.refresh-icon:hover {
+    filter: brightness(0.8);
 }

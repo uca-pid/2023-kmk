@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import styles from "../styles/styles.module.css";
 import { useRouter } from "next/navigation";
 import DatePicker, { registerLocale } from "react-datepicker";
@@ -10,10 +11,11 @@ import Modal from "react-modal";
 import axios from "axios";
 import { Footer, Header, TabBar } from "../components/header";
 import userCheck from "../components/userCheck";
+import { toast } from "react-toastify";
 
 registerLocale("es", es);
 
-const Dashboard = () => {
+const DashboardPatient = () => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
     const router = useRouter();
     const [appointments, setAppointments] = useState([]);
@@ -115,13 +117,13 @@ const Dashboard = () => {
             console.error(error);
         }
         setIsEditModalOpen(false);
-        alert("Turno modificado exitosamente");
+        toast.info("Turno modificado exitosamente");
     };
 
     const handleDeleteAppointment = async (appointmentId) => {
         try {
             await axios.delete(`${apiURL}appointments/${appointmentId}`);
-            alert("Turno eliminado exitosamente");
+            toast.info("Turno eliminado exitosamente");
             fetchAppointments();
         } catch (error) {
             console.error(error);
@@ -135,7 +137,7 @@ const Dashboard = () => {
                 physician_id: selectedDoctor,
                 date: Math.round(date.getTime() / 1000),
             });
-            alert("Turno solicitado exitosamente");
+            toast.info("Turno solicitado exitosamente");
             fetchAppointments();
         } catch (error) {
             console.error(error);
@@ -161,10 +163,10 @@ const Dashboard = () => {
         userCheck(router);
         fetchSpecialties();
         fetchAppointments();
-        const intervalId = setInterval(() => {
-            fetchAppointments();
-        }, 5 * 1000);
-        return () => clearInterval(intervalId);
+        // const intervalId = setInterval(() => {
+        //     fetchAppointments();
+        // }, 5 * 1000);
+        // return () => clearInterval(intervalId);
     }, []);
 
     return (
@@ -256,12 +258,23 @@ const Dashboard = () => {
             )}
 
             <Header />
-            <TabBar />
+            <TabBar highlight="Turnos" />
 
             {/* </header> */}
             <div className={styles["tab-content"]}>
                 <div className={styles.form}>
                     <div className={styles["title"]}>Mis Proximos Turnos</div>
+                    <Image
+                        src="/refresh_icon.png"
+                        alt="Notificaciones"
+                        className={styles["refresh-icon"]}
+                        width={200}
+                        height={200}
+                        onClick={() => {
+                            fetchAppointments();
+                            toast.info("Turnos actualizados");
+                        }}
+                    />
                     <div className={styles["appointments-section"]}>
                         {appointments.length > 0 ? (
                             // If there are appointments, map through them and display each appointment
@@ -271,6 +284,9 @@ const Dashboard = () => {
                                         key={appointment.id}
                                         className={styles["appointment"]}
                                     >
+                                        <div className={styles["subtitle"]}>
+                                            {appointment.physician.specialty}
+                                        </div>
                                         <p>
                                             Profesional:{" "}
                                             {appointment.physician.first_name +
@@ -442,4 +458,4 @@ const Dashboard = () => {
     );
 };
 
-export default Dashboard;
+export default DashboardPatient;

@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Footer, HeaderSlim } from "../components/header";
 import userCheck from "../components/userCheck";
+import { toast } from "react-toastify";
 
 const Landing = () => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
@@ -38,7 +39,9 @@ const Landing = () => {
             userCheck(router);
         } catch (error) {
             console.error(error);
-            setError("Error al iniciar sesión: " + error.response.data.detail);
+            toast.error(
+                "Error al iniciar sesión: " + error.response.data.detail
+            );
 
             // Verificar si el elemento .error-message está presente en el DOM
             const errorMessageElement =

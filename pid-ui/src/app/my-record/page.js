@@ -4,9 +4,9 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import styles from "../styles/styles.module.css";
 import axios from "axios";
-import { Footer, Header } from "../components/header";
+import { Footer, Header, TabBar } from "../components/header";
 
-const MedicalRecords = () => {
+const MyRecord = () => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
 
     const [record, setRecord] = useState({
@@ -39,14 +39,15 @@ const MedicalRecords = () => {
     return (
         <div className={styles.dashboard}>
             <Header />
+            <TabBar highlight="Ficha" />
             {/* <div className={styles["title"]}>Patient ID: {patient_id}</div> */}
             <div className={styles["tab-content"]}>
                 <div className={styles.form}>
                     <div className={styles["title"]}>
-                        Paciente: {record.name} {record.last_name}
+                        {record.name} {record.last_name}
                     </div>
                     <div className={styles["subtitle"]}>
-                        Fecha de nacimiento: {record.birth_date}
+                        Nac.: {record.birth_date}
                     </div>
                     <div className={styles["subtitle"]}>
                         Genero: {record.gender}
@@ -104,4 +105,4 @@ const MedicalRecords = () => {
     );
 };
 
-export default MedicalRecords;
+export default MyRecord;
