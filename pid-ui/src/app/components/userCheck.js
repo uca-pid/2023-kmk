@@ -1,11 +1,12 @@
 import axios from "axios";
 
 const userCheck = async (router) => {
+    const apiURL = process.env.NEXT_PUBLIC_API_URL;
     try {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
-        const response = await axios.get(`http://localhost:8080/users/role`);
+        const response = await axios.get(`${apiURL}users/role`);
         if (response.status == 200) {
             if (response.data.roles.includes("admin")) {
                 router.replace("/dashboard-admin");

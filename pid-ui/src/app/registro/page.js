@@ -9,6 +9,7 @@ import validator from "validator";
 import { HeaderSlim, Footer } from "../components/header";
 
 const Registro = () => {
+    const apiURL = process.env.NEXT_PUBLIC_API_URL;
     const [nombre, setNombre] = useState("");
     const [apellido, setApellido] = useState("");
     const [specialties, setSpecialties] = useState([]);
@@ -46,9 +47,7 @@ const Registro = () => {
 
     useEffect(() => {
         const fetchSpecialties = async () => {
-            const response = await axios.get(
-                `http://localhost:8080/specialties`
-            );
+            const response = await axios.get(`${apiURL}specialties`);
             console.log(response.data.specialties);
             response.data.specialties == undefined
                 ? setSpecialties([])
@@ -60,7 +59,7 @@ const Registro = () => {
 
     useEffect(() => {
         const fetchGenders = async () => {
-            const response = await axios.get(`http://localhost:8080/genders`);
+            const response = await axios.get(`${apiURL}genders`);
             console.log(response.data.genders);
             response.data.genders == undefined
                 ? setGenders([])
@@ -72,9 +71,7 @@ const Registro = () => {
 
     useEffect(() => {
         const fetchBloodTypes = async () => {
-            const response = await axios.get(
-                `http://localhost:8080/blood-types`
-            );
+            const response = await axios.get(`${apiURL}blood-types`);
             console.log(response.data.blood_types);
             response.data.blood_types == undefined
                 ? setBloodTypes([])
@@ -111,7 +108,7 @@ const Registro = () => {
 
         try {
             const response = await axios.post(
-                `http://localhost:8080/users/register`,
+                `${apiURL}users/register`,
                 userData
             );
             console.log(response.data);

@@ -14,6 +14,7 @@ import userCheck from "../components/userCheck";
 registerLocale("es", es);
 
 const Dashboard = () => {
+    const apiURL = process.env.NEXT_PUBLIC_API_URL;
     const router = useRouter();
     const [appointments, setAppointments] = useState([]);
     const [doctors, setDoctors] = useState([]);
@@ -35,9 +36,7 @@ const Dashboard = () => {
 
     const fetchAppointments = async () => {
         try {
-            const response = await axios.get(
-                `http://localhost:8080/appointments/`
-            );
+            const response = await axios.get(`${apiURL}appointments/`);
             response.data.appointments == undefined
                 ? setAppointments([])
                 : setAppointments(response.data.appointments);
@@ -48,9 +47,7 @@ const Dashboard = () => {
 
     const fetchSpecialties = async () => {
         try {
-            const response = await axios.get(
-                `http://localhost:8080/specialties`
-            );
+            const response = await axios.get(`${apiURL}specialties`);
             response.data.specialties == undefined
                 ? setSpecialties([])
                 : setSpecialties(response.data.specialties);
@@ -63,7 +60,7 @@ const Dashboard = () => {
         try {
             if (specialty) {
                 const response = await axios.get(
-                    `http://localhost:8080/physicians/specialty/${specialty}`
+                    `${apiURL}physicians/specialty/${specialty}`
                 );
                 response.data.physicians == undefined
                     ? setDoctors([])
@@ -110,10 +107,9 @@ const Dashboard = () => {
 
     const handleSaveAppointment = async () => {
         try {
-            await axios.put(
-                `http://localhost:8080/appointments/${editingAppointment.id}`,
-                { date: Math.round(dateToEdit.getTime() / 1000) }
-            );
+            await axios.put(`${apiURL}appointments/${editingAppointment.id}`, {
+                date: Math.round(dateToEdit.getTime() / 1000),
+            });
             fetchAppointments();
         } catch (error) {
             console.error(error);
@@ -124,9 +120,7 @@ const Dashboard = () => {
 
     const handleDeleteAppointment = async (appointmentId) => {
         try {
-            await axios.delete(
-                `http://localhost:8080/appointments/${appointmentId}`
-            );
+            await axios.delete(`${apiURL}appointments/${appointmentId}`);
             alert("Turno eliminado exitosamente");
             fetchAppointments();
         } catch (error) {
@@ -137,13 +131,10 @@ const Dashboard = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post(
-                `http://localhost:8080/appointments/`,
-                {
-                    physician_id: selectedDoctor,
-                    date: Math.round(date.getTime() / 1000),
-                }
-            );
+            const response = await axios.post(`${apiURL}appointments/`, {
+                physician_id: selectedDoctor,
+                date: Math.round(date.getTime() / 1000),
+            });
             alert("Turno solicitado exitosamente");
             fetchAppointments();
         } catch (error) {

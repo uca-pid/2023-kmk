@@ -7,6 +7,8 @@ import axios from "axios";
 import { Footer, Header } from "../components/header";
 
 const MedicalRecords = () => {
+    const apiURL = process.env.NEXT_PUBLIC_API_URL;
+
     const [record, setRecord] = useState({
         name: "",
         last_name: "",
@@ -19,9 +21,7 @@ const MedicalRecords = () => {
 
     const fetchData = async () => {
         try {
-            const response = await axios.get(
-                `http://localhost:8080/records/get-my-record`
-            );
+            const response = await axios.get(`${apiURL}records/get-my-record`);
             setRecord(response.data.record);
             console.log(response);
         } catch (error) {

@@ -16,6 +16,7 @@ import { set } from "date-fns";
 registerLocale("es", es);
 
 const Dashboard = () => {
+    const apiURL = process.env.NEXT_PUBLIC_API_URL;
     const router = useRouter();
     const [appointments, setAppointments] = useState([]);
     const [date, setDate] = useState(new Date());
@@ -37,9 +38,7 @@ const Dashboard = () => {
 
     const fetchAppointments = async () => {
         try {
-            const response = await axios.get(
-                `http://localhost:8080/appointments`
-            );
+            const response = await axios.get(`${apiURL}appointments`);
             response.data.appointments == undefined
                 ? setAppointments([])
                 : setAppointments(response.data.appointments);
@@ -80,7 +79,7 @@ const Dashboard = () => {
         e.preventDefault();
         try {
             const response = await axios.post(
-                `http://localhost:8080/records/update/${patientId}`,
+                `${apiURL}records/update/${patientId}`,
                 {
                     date: newObservationDate,
                     observation: newObservationContent,
@@ -96,9 +95,7 @@ const Dashboard = () => {
     const handleDeleteAppointment = async (appointmentId) => {
         console.log(appointmentId);
         try {
-            await axios.delete(
-                `http://localhost:8080/appointments/${appointmentId}`
-            );
+            await axios.delete(`${apiURL}appointments/${appointmentId}`);
             alert("Turno eliminado exitosamente");
             fetchAppointments();
         } catch (error) {

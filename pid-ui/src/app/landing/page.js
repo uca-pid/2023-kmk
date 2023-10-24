@@ -9,6 +9,7 @@ import { Footer, HeaderSlim } from "../components/header";
 import userCheck from "../components/userCheck";
 
 const Landing = () => {
+    const apiURL = process.env.NEXT_PUBLIC_API_URL;
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
@@ -30,7 +31,7 @@ const Landing = () => {
 
         try {
             const response = await axios.post(
-                `http://localhost:8080/users/login/`,
+                `${apiURL}users/login/`,
                 userData
             );
             localStorage.setItem("token", response.data.token);
