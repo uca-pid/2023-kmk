@@ -29,6 +29,7 @@ const Header = () => {
                 onClick={() => {
                     userCheck(router);
                 }}
+                priority={true}
             />
             <Image
                 src="/logout-icon.png"
@@ -74,7 +75,6 @@ const HeaderSlim = () => {
             <ToastContainer
                 limit={1}
                 position={"top-right"}
-                autoClose={5000}
                 hideProgressBar={false}
                 closeOnClick={true}
                 pauseOnHover={true}
@@ -118,6 +118,42 @@ const TabBar = (props) => {
     );
 };
 
+const PhysicianTabBar = (props) => {
+    const router = useRouter();
+    return (
+        <div className={styles["tab-bar"]}>
+            <div
+                className={`${styles["tab"]} ${
+                    props.highlight === "TurnosDelDia"
+                        ? styles["selected-tab"]
+                        : ""
+                }`}
+                onClick={() => router.push("/physician-agenda")}
+            >
+                Turnos del día
+            </div>
+            <div
+                className={`${styles["tab"]} ${
+                    props.highlight === "TurnosPorAprobar"
+                        ? styles["selected-tab"]
+                        : ""
+                }`}
+                onClick={() => router.push("/physician-peding-appointments")}
+            >
+                Turnos por aprobar
+            </div>
+            <div
+                className={`${styles["tab"]} ${
+                    props.highlight === "Metricas" ? styles["selected-tab"] : ""
+                }`}
+                onClick={() => router.push("/physician-metrics")}
+            >
+                Mis metricas
+            </div>
+        </div>
+    );
+};
+
 const Footer = () => {
     return (
         <footer className={styles["page-footer"]}>
@@ -126,4 +162,4 @@ const Footer = () => {
     );
 };
 
-export { Header, HeaderSlim, TabBar, Footer };
+export { Header, HeaderSlim, TabBar, PhysicianTabBar, Footer };

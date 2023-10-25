@@ -11,7 +11,7 @@ const userCheck = async (router) => {
             if (response.data.roles.includes("admin")) {
                 router.replace("/dashboard-admin");
             } else if (response.data.roles.includes("physician")) {
-                router.replace("/dashboard-physician");
+                router.replace("/physician-agenda");
             } else if (response.data.roles.includes("patient")) {
                 router.replace("/dashboard-patient");
             } else {

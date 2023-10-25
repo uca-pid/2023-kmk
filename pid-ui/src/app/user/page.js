@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import styles from "../styles/styles.module.css";
 import axios from "axios";
+import validator from "validator";
 import { Footer, Header, TabBar } from "../components/header";
 import { toast } from "react-toastify";
 
@@ -20,14 +21,27 @@ const UserProfile = () => {
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
 
-    useEffect(() => {
-        getUserData();
-    }, []);
+    const validate = (value) => {
+        if (
+            validator.isStrongPassword(value, {
+                minLength: 8,
+                minLowercase: 1,
+                minUppercase: 1,
+                minNumbers: 1,
+                minSymbols: 0,
+            })
+        ) {
+            setError("");
+        } else {
+            toast.error(
+                "La contraseña no es lo suficientemente fuerte: debe incluir al menos 8 caracteres, 1 minúscula, 1 mayúscula y 1 número"
+            );
+        }
+    };
 
     const getUserData = async () => {
-        console.log("getUserData");
         try {
-            const response = await axios.get(`${apiURL}users/user-info/`);
+            const response = await axios.get(`${apiURL}users/user-info`);
 
             console.log(response);
 
@@ -46,22 +60,28 @@ const UserProfile = () => {
 
     const handleChangePassword = async () => {
         if (newPassword !== confirmNewPassword) {
-            setError("Las contraseñas no coinciden.");
+            toast.error("Las contraseñas no coinciden.");
             return;
         }
 
+        validate(newPassword);
+
         try {
             // Realiza una solicitud a la API para cambiar la contraseña
-            await axios.post("${apiURL}users/change-password", {
-                current_password: password,
-                new_password: newPassword,
-            });
+            const response = await axios.post(
+                `${apiURL}users/change-password`,
+                {
+                    current_password: password,
+                    new_password: newPassword,
+                }
+            );
 
-            setSuccessMessage("Contraseña cambiada exitosamente.");
+            console.log(response);
+
+            toast.success("Contraseña cambiada exitosamente.");
             setPassword("");
             setNewPassword("");
             setConfirmNewPassword("");
-            setError("");
         } catch (error) {
             toast.error(
                 "Error al cambiar la contraseña: " + error.response.data.detail
@@ -69,10 +89,13 @@ const UserProfile = () => {
         }
     };
 
+    useEffect(() => {
+        getUserData();
+    }, []);
+
     return (
         <div className={styles.dashboard}>
             <Header />
-            <TabBar />
 
             <div className={styles["tab-content"]}>
                 <div className={styles.form}>
@@ -116,58 +139,68 @@ const UserProfile = () => {
                     </div>
 
                     {/* Cambio de Contraseña */}
-                    <div className={styles["title"]}>Cambiar Contraseña</div>
-                    <div className={styles["form-group"]}>
-                        <label htmlFor="currentPassword">
-                            Contraseña Actual:
-                        </label>
-                        <input
-                            type="password"
-                            id="currentPassword"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div className={styles["form-group"]}>
-                        <label htmlFor="newPassword">Nueva Contraseña:</label>
-                        <input
-                            type="password"
-                            id="newPassword"
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div className={styles["form-group"]}>
-                        <label htmlFor="confirmNewPassword">
-                            Confirmar Nueva Contraseña:
-                        </label>
-                        <input
-                            type="password"
-                            id="confirmNewPassword"
-                            value={confirmNewPassword}
-                            onChange={(e) =>
-                                setConfirmNewPassword(e.target.value)
-                            }
-                            required
-                        />
-                    </div>
-                    {error && (
-                        <div className={styles["error-message"]}>{error}</div>
-                    )}
-                    {successMessage && (
-                        <div className={styles["success-message"]}>
-                            {successMessage}
-                        </div>
-                    )}
-                    <button
-                        type="button"
-                        className={`${styles["standard-button"]}`}
-                        onClick={handleChangePassword}
+                    <form
+                        className={styles["form"]}
+                        onSubmit={handleChangePassword}
                     >
-                        Cambiar Contraseña
-                    </button>
+                        <div className={styles["title"]}>
+                            Cambiar Contraseña
+                        </div>
+                        <div className={styles["form-group"]}>
+                            <label htmlFor="currentPassword">
+                                Contraseña Actual:
+                            </label>
+                            <input
+                                type="password"
+                                id="currentPassword"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                                autoComplete="current-password"
+                            />
+                        </div>
+                        <div className={styles["form-group"]}>
+                            <label htmlFor="newPassword">
+                                Nueva Contraseña:
+                            </label>
+                            <input
+                                type="password"
+                                id="newPassword"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                required
+                                autoComplete="new-password"
+                            />
+                        </div>
+                        <div className={styles["form-group"]}>
+                            <label htmlFor="confirmNewPassword">
+                                Confirmar Nueva Contraseña:
+                            </label>
+                            <input
+                                type="password"
+                                id="confirmNewPassword"
+                                value={confirmNewPassword}
+                                onChange={(e) =>
+                                    setConfirmNewPassword(e.target.value)
+                                }
+                                required
+                                autoComplete="new-password"
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            className={`${styles["standard-button"]} ${
+                                newPassword !== confirmNewPassword || error
+                                    ? styles["disabled-button"]
+                                    : ""
+                            }`}
+                            disabled={
+                                newPassword !== confirmNewPassword || error
+                            }
+                        >
+                            Cambiar Contraseña
+                        </button>
+                    </form>
                 </div>
             </div>
             <Footer />
