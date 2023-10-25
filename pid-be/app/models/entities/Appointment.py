@@ -3,32 +3,57 @@ from firebase_admin import firestore
 from fastapi import HTTPException, status
 
 from .Physician import Physician
+from .Patient import Patient
 
 db = firestore.client()
 
 
 class Appointment:
+    id: str = None
     date: int
     physician_id: str
     patient_id: str
+    created_at: int = None
+    updated_at: int = None
 
-    def __init__(self, date: int, physician_id: str, patient_id: str):
-        if not Physician.has_availability(id=physician_id, date=date):
+    def __init__(
+        self,
+        date: int,
+        physician_id: str,
+        patient_id: str,
+        id: str = None,
+        created_at: int = None,
+        updated_at: int = None,
+    ):
+        if not Patient.is_patient(patient_id):
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Can only set appointment at physicians available hours",
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only patients can create appointments",
             )
 
         self.physician_id = physician_id
         self.date = date
         self.patient_id = patient_id
+        self.id = id
+        self.created_at = created_at
+        self.updated_at = updated_at
 
     @staticmethod
     def get_all_appointments_for_user_with(uid):
-        appointments = (
-            db.collection("appointments").where("patient_id", "==", uid).get()
-        )
-
+        if Patient.is_patient(uid):
+            appointments = (
+                db.collection("appointments")
+                .where("patient_id", "==", uid)
+                .order_by("date")
+                .get()
+            )
+        else:
+            appointments = (
+                db.collection("appointments")
+                .where("physician_id", "==", uid)
+                .order_by("date")
+                .get()
+            )
         return [appointment.to_dict() for appointment in appointments]
 
     @staticmethod
@@ -41,11 +66,29 @@ class Appointment:
 
     @staticmethod
     def get_by_id(id):
-        return db.collection("appointments").document(id).get().to_dict()
+        appointment_document = db.collection("appointments").document(id).get()
+        if appointment_document.exists:
+            return Appointment(**appointment_document.to_dict())
+        return None
 
-    @staticmethod
-    def delete_by_id(id):
-        db.collection("appointments").document(id).delete()
+    def delete(self):
+        db.collection("appointments").document(self.id).delete()
+        Physician.free_agenda(self.physician_id, self.date)
+
+    def update(self, updated_values):
+        if not Physician.has_availability(
+            id=self.physician_id, date=updated_values["date"]
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Can only set appointment at physicians available hours",
+            )
+        Physician.free_agenda(self.physician_id, self.date)
+        db.collection("appointments").document(self.id).update(
+            {**updated_values, "updated_at": round(time.time())}
+        )
+        self.date = updated_values["date"]
+        Physician.schedule_appointment(id=self.physician_id, date=self.date)
 
     def create(self):
         id = db.collection("appointments").document().id

@@ -12,7 +12,14 @@ a_KMK_user_information = {
 
 
 @pytest.fixture(scope="session", autouse=True)
-def create_test_user():
+def clean_firestore():
+    requests.delete(
+        "http://localhost:8081/emulator/v1/projects/pid-kmk/databases/(default)/documents"
+    )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def create_test_user(clean_firestore):
     created_user = auth.create_user(**a_KMK_user_information)
     a_KMK_user_information["uid"] = created_user.uid
     yield
@@ -93,7 +100,7 @@ def test_Invalid_Email_Format_For_Login_Returns_A_422_Code():
     assert response_to_login_endpoint.status_code == 422
 
 
-def test_Loggin_Endpoint_Returns_A_401_Code_And_Message_If_User_Is_Logged_In():
+def test_Loggin_Endpoint_Returns_A_403_Code_And_Message_If_User_Is_Logged_In():
     response_to_login_endpoint = requests.post(
         "http://localhost:8080/users/login",
         json={
@@ -113,7 +120,7 @@ def test_Loggin_Endpoint_Returns_A_401_Code_And_Message_If_User_Is_Logged_In():
         },
     )
 
-    assert response_to_second_request_to_login_endpoint.status_code == 401
+    assert response_to_second_request_to_login_endpoint.status_code == 403
     assert (
         response_to_second_request_to_login_endpoint.json()["detail"]
         == "User has already logged in"

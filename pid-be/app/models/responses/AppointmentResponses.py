@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Union
 
 from .PhysicianResponses import PhysicianResponse
 from .PatientResponses import PatientResponse
@@ -10,11 +11,27 @@ class SuccessfulAppointmentCreationResponse(BaseModel):
     appointment_id: str
 
 
+class SuccessfulAppointmentDeletionResponse(BaseModel):
+    message: str
+
+
+class SuccessfulAppointmentUpdateResponse(BaseModel):
+    message: str
+
+
 class AppointmentCreationError(BaseModel):
     detail: str
 
 
 class GetAppointmentError(BaseModel):
+    detail: str
+
+
+class DeleteAppointmentError(BaseModel):
+    detail: str
+
+
+class UpdateAppointmentError(BaseModel):
     detail: str
 
 
@@ -35,4 +52,4 @@ class BasicAppointmentResponse(BaseModel):
 
 
 class AllAppointmentsResponse(BaseModel):
-    appointments: list[BasicAppointmentResponse]
+    appointments: list[Union[BasicAppointmentResponse, None]]

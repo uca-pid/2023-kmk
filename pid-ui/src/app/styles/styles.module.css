@@ -1,0 +1,229 @@
+/* Estilos para la página de Dashboard */
+.dashboard {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    background-color: #fff;
+    padding: 0;
+    margin-top: 150px;
+}
+
+/* Estilos para los mensajes de error */
+.error-message {
+    color: red;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Estilos para el título de la página de inicio de sesión */
+.title {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+.subtitle {
+    font-size: 1.5rem; /* Tamaño del subtítulo */
+    color: #333;
+}
+.subtitle:disabled {
+    color: #5d5d5d;
+}
+
+/* Estilos para el contenido de la pestaña activa */
+.tab-content {
+    flex: 1;
+    padding: 2rem;
+    width: 100%;
+}
+
+/* Estilos para el formulario de selección de especialidad y doctor */
+.form {
+    flex: 1;
+    align-self: flex-start;
+    display: flex;
+    width: 60rem;
+    max-width: 100%;
+    margin: 0 auto;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: left;
+    width: 100%;
+    padding: 2rem;
+    margin-bottom: 1rem;
+    flex-direction: column;
+}
+
+.form label {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.form select {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    color: #000;
+    background-color: #fff;
+    appearance: none;
+    outline: none;
+    cursor: pointer;
+    margin-bottom: 2rem;
+}
+
+.form option {
+    color: #000;
+}
+
+.form input {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    color: #000;
+    background-color: #fff;
+    appearance: none;
+    outline: none;
+    cursor: pointer;
+    margin-bottom: 2rem;
+}
+
+/* Estilos para la sección de "Mis Proximos Turnos" */
+.appointments-section {
+    margin-top: 2rem;
+    background-color: #f5f5f5; /* Fondo gris claro */
+    padding: 1rem;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra suave */
+}
+
+.appointment-buttons-container {
+    display: flex; /* Activa el diseño flexible */
+    justify-content: flex-end; /* Alinea los elementos al final (derecha) del contenedor */
+}
+
+.appointment {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background-color: #fff; /* Fondo blanco */
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.appointment p {
+    margin: 0.1rem;
+    font-size: 1.2rem;
+    color: #333;
+}
+
+.new-record-section {
+    background-color: #f5f5f5; /* Fondo gris claro */
+    padding: 1rem;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra suave */
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.observationInput {
+    height: 100px;
+}
+
+/* Estilos para la sección de "Fichas Medicas" */
+.records-section {
+    margin-top: 2rem;
+    background-color: #f5f5f5; /* Fondo gris claro */
+    padding: 1rem;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra suave */
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.record-card {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background-color: #fff; /* Fondo blanco */
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.record-date {
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    background-color: #73b9ff; /* Fondo blanco */
+    border-radius: 5px;
+    color: #fff;
+}
+
+.record-observations {
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background-color: #fff; /* Fondo blanco */
+    border-radius: 5px;
+}
+
+/* Estilos para BOTONES */
+.standard-button {
+    background-color: #909090;
+    color: #fff;
+}
+.standard-button:hover {
+    background-color: #707070;
+}
+
+.submit-button {
+    padding: 0.5rem 1rem;
+    background-color: #007bff;
+    color: #fff;
+    text-decoration: none;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+    text-align: center;
+    margin-top: 1rem;
+}
+.submit-button:hover {
+    background-color: #0056b3;
+}
+
+.approve-button {
+    background-color: #28a745; /* Cambia el color para el botón de aprobar */
+    color: #fff;
+}
+.approve-button:hover {
+    background-color: #1e7e34; /* Cambia el color al pasar el mouse */
+}
+
+.delete-button {
+    background-color: #ff3333; /* Cambia el color para el botón de eliminar */
+    color: #fff;
+}
+.delete-button:hover {
+    background-color: #cc0000; /* Cambia el color al pasar el mouse */
+}
+
+.edit-button {
+    background-color: #007bff; /* Cambia el color para el botón de editar */
+    color: #fff;
+}
+.edit-button:hover {
+    background-color: #0056b3; /* Cambia el color al pasar el mouse */
+}
+
+.disabled-button {
+    background-color: #ccc;
+    cursor: not-allowed;
+}

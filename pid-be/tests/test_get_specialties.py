@@ -28,7 +28,14 @@ a_KMK_user_information = {
 
 
 @pytest.fixture(scope="session", autouse=True)
-def create_test_user():
+def clean_firestore():
+    requests.delete(
+        "http://localhost:8081/emulator/v1/projects/pid-kmk/databases/(default)/documents"
+    )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def create_test_user(clean_firestore):
     created_user = auth.create_user(**a_KMK_user_information)
     a_KMK_user_information["uid"] = created_user.uid
     yield
@@ -81,7 +88,7 @@ def test_get_specialties_endpoint_returns_a_list():
     assert type(response_from_get_specialties_endpoint.json()["specialties"]) == list
 
 
-def test_get_specialties_endpoint_returns_the_list_of_all_specialties():
+def test_get_specialties_endpoint_returns_the_list_of_all_specialties_ordered_alphabetically():
     response_from_login_endpoint = requests.post(
         "http://localhost:8080/users/login",
         json={
@@ -95,10 +102,8 @@ def test_get_specialties_endpoint_returns_the_list_of_all_specialties():
             "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
         },
     )
-
-    assert set(response_from_get_specialties_endpoint.json()["specialties"]) == set(
-        specialties
-    )
+    specialties.sort()
+    assert response_from_get_specialties_endpoint.json()["specialties"] == specialties
 
 
 def test_get_specialties_with_no_authorization_header_returns_200_code():
@@ -107,3 +112,13 @@ def test_get_specialties_with_no_authorization_header_returns_200_code():
     )
 
     assert response_to_get_specialties_endpoint.status_code == 200
+
+
+def test_get_specialties_with_no_specialties_created_returns_an_empty_list():
+    specilaties_doc = db.collection("specialties").list_documents()
+    for specialty_doc in specilaties_doc:
+        specialty_doc.delete()
+    response_to_get_specialties_endpoint = requests.get(
+        "http://localhost:8080/specialties"
+    )
+    assert response_to_get_specialties_endpoint.json()["specialties"] == []

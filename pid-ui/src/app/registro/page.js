@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import styles from "./registro.module.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import validator from "validator";
+import { HeaderSlim, Footer } from "../components/header";
 
 const Registro = () => {
     const [nombre, setNombre] = useState("");
@@ -18,7 +18,12 @@ const Registro = () => {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
-    const [role, setRole] = useState("paciente");
+    const [role, setRole] = useState("patient");
+    const [birth_date, setBirthDate] = useState("");
+    const [genders, setGenders] = useState([]);
+    const [gender, setGender] = useState("");
+    const [blood_types, setBloodTypes] = useState([]);
+    const [blood_type, setBloodType] = useState("");
     const router = useRouter();
 
     const validate = (value) => {
@@ -53,6 +58,32 @@ const Registro = () => {
         fetchSpecialties();
     }, []);
 
+    useEffect(() => {
+        const fetchGenders = async () => {
+            const response = await axios.get(`http://localhost:8080/genders`);
+            console.log(response.data.genders);
+            response.data.genders == undefined
+                ? setGenders([])
+                : setGenders(response.data.genders);
+        };
+
+        fetchGenders();
+    }, []);
+
+    useEffect(() => {
+        const fetchBloodTypes = async () => {
+            const response = await axios.get(
+                `http://localhost:8080/blood-types`
+            );
+            console.log(response.data.blood_types);
+            response.data.blood_types == undefined
+                ? setBloodTypes([])
+                : setBloodTypes(response.data.blood_types);
+        };
+
+        fetchBloodTypes();
+    }, []);
+
     const handleLogoClick = () => {
         router.push("/");
     };
@@ -66,22 +97,21 @@ const Registro = () => {
             email,
             password,
             role,
+            gender,
+            blood_type,
+            birth_date,
         };
 
-        if (role === "medico")
+        if (role === "physician")
             userData = {
                 ...userData,
-                matricula: numeroMatricula,
+                tuition: numeroMatricula,
                 specialty: especialidad,
             };
 
         try {
             const response = await axios.post(
-                `http://localhost:8080/users/${
-                    role === "paciente"
-                        ? "register-patient"
-                        : "register-physician"
-                }`,
+                `http://localhost:8080/users/register`,
                 userData
             );
             console.log(response.data);
@@ -91,11 +121,8 @@ const Registro = () => {
                 router.push("/");
             }
         } catch (error) {
+            console.error(error);
             setError("Error al registrarse: " + error.response.data.detail);
-
-            if (error.response.data.detail == "User has already logged in") {
-                router.push("/dashboard-redirect");
-            }
 
             // Verificar si el elemento .error-message está presente en el DOM
             const errorMessageElement =
@@ -109,15 +136,8 @@ const Registro = () => {
 
     return (
         <div className={styles["registro"]}>
-            <header className={styles["header"]} onClick={handleLogoClick}>
-                <Image
-                    src="/logo.png"
-                    alt="Logo de la empresa"
-                    className={styles["logo"]}
-                    width={200}
-                    height={200}
-                />
-            </header>
+            <HeaderSlim />
+
             <form className={styles["form"]} onSubmit={handleSubmit}>
                 <div className={styles["title"]}>Registro</div>
                 <div className={styles["subtitle"]}>
@@ -131,8 +151,8 @@ const Registro = () => {
                         onChange={(e) => setRole(e.target.value)}
                         required
                     >
-                        <option value="paciente">Paciente</option>
-                        <option value="medico">Médico</option>
+                        <option value="patient">Paciente</option>
+                        <option value="physician">Médico</option>
                     </select>
                 </div>
                 <div className={styles["form-group"]}>
@@ -155,7 +175,7 @@ const Registro = () => {
                         required
                     />
                 </div>
-                {role === "medico" && (
+                {role === "physician" && (
                     <>
                         <div className={styles["form-group"]}>
                             <label htmlFor="numeroMatricula">
@@ -176,6 +196,7 @@ const Registro = () => {
                             <select
                                 id="specialty"
                                 value={especialidad}
+                                required
                                 onChange={(e) => {
                                     setEspecialidad(e.target.value);
                                 }}
@@ -192,6 +213,52 @@ const Registro = () => {
                         </div>
                     </>
                 )}
+                <div className={styles["form-group"]}>
+                    <label htmlFor="birth_date">Fecha de Nacimiento</label>
+                    <input
+                        type="date"
+                        id="birth_date"
+                        value={birth_date}
+                        onChange={(e) => setBirthDate(e.target.value)}
+                        required
+                    />
+                </div>
+                <div className={styles["form-group"]}>
+                    <label htmlFor="gender">Género:</label>
+                    <select
+                        id="gender"
+                        value={gender}
+                        required
+                        onChange={(e) => {
+                            setGender(e.target.value);
+                        }}
+                    >
+                        <option value="">Selecciona tu género</option>
+                        {genders.map((gender) => (
+                            <option key={gender} value={gender}>
+                                {gender}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div className={styles["form-group"]}>
+                    <label htmlFor="blood_type">Grupo sanguíneo:</label>
+                    <select
+                        id="blood_type"
+                        value={blood_type}
+                        required
+                        onChange={(e) => {
+                            setBloodType(e.target.value);
+                        }}
+                    >
+                        <option value="">Selecciona tu grupo sanguíneo</option>
+                        {blood_types.map((blood_type) => (
+                            <option key={blood_type} value={blood_type}>
+                                {blood_type}
+                            </option>
+                        ))}
+                    </select>
+                </div>
                 <div className={styles["form-group"]}>
                     <label htmlFor="email">Correo Electrónico</label>
                     <input
@@ -249,14 +316,11 @@ const Registro = () => {
                 </button>
             </form>
             <div className={styles["sign-in-link"]}>
-                ¿Ya tienes una cuenta?{" "}
                 <Link legacyBehavior href="/">
-                    <a>Inicia Sesión</a>
+                    <a>¿Ya tienes una cuenta? Inicia Sesión</a>
                 </Link>
             </div>
-            <footer className={styles["page-footer"]}>
-                <p>Derechos de autor © 2023 KMK</p>
-            </footer>
+            <Footer />
         </div>
     );
 };

@@ -1,14 +1,17 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
-import styles from "./dashboard-physician.module.css";
+import Link from "next/link";
+import styles from "../styles/styles.module.css";
 import { useRouter } from "next/navigation";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import es from "date-fns/locale/es";
 import Modal from "react-modal";
 import axios from "axios";
+import { Header, Footer, TabBar } from "../components/header";
+import userCheck from "../components/userCheck";
+import { set } from "date-fns";
 
 registerLocale("es", es);
 
@@ -16,57 +19,26 @@ const Dashboard = () => {
     const router = useRouter();
     const [appointments, setAppointments] = useState([]);
     const [date, setDate] = useState(new Date());
+    const [dateToEdit, setDateToEdit] = useState(new Date());
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isAddObservationModalOpen, setIsAddObervationModalOpen] =
+        useState(false);
+    const [patientId, setPatientId] = useState("");
+    const [newObservationDate, setNewObservationDate] = useState("");
+    const [newObservationContent, setNewObservationContent] = useState("");
     const [editingAppointment, setEditingAppointment] = useState({
         id: null,
         specialty: "",
-        doctor: "",
+        doctor: {},
         date: new Date(),
+        patient: "",
+        agenda: {},
     });
-
-    const userCheck = async () => {
-        console.log("Checking user profile");
-
-        try {
-            const response = await axios.get(
-                `http://localhost:8080/users/profile/`
-            );
-
-            console.log(response.data.profile);
-            switch (response.data.profile) {
-                case "Admin":
-                    console.log("Checking if admin");
-                    router.push("/dashboard-admin");
-                    break;
-                case "Physician":
-                    console.log("Checking if physician");
-                    router.push("/dashboard-physician");
-                    break;
-                case "Patient":
-                    console.log("Checking if patient");
-                    router.push("/dashboard-patient");
-                    break;
-                default:
-                    console.log("Error");
-                    break;
-            }
-        } catch (error) {
-            console.log(error.response.data.detail);
-            switch (error.response.data.detail) {
-                case "User must be logged in":
-                    router.push("/");
-                    break;
-                case "User has already logged in":
-                    router.push("/dashboard-redirect");
-                    break;
-            }
-        }
-    };
 
     const fetchAppointments = async () => {
         try {
             const response = await axios.get(
-                `http://localhost:8080/appointments/physician/`
+                `http://localhost:8080/appointments`
             );
             response.data.appointments == undefined
                 ? setAppointments([])
@@ -76,30 +48,49 @@ const Dashboard = () => {
         }
     };
 
-    const handleEditAppointment = (appointment) => {
-        console.log(isEditModalOpen);
-        setIsEditModalOpen(true);
-        setEditingAppointment({
-            id: appointment.id,
-            specialty: appointment.specialty,
-            doctor: appointment.doctor,
-            date: new Date(appointment.date),
-        });
-        fetchAppointments();
-    };
+    // const handleEditAppointment = (appointment) => {
+    //     console.log(appointment);
+    //     console.log(editingAppointment);
+    //     setIsEditModalOpen(true);
+    //     setEditingAppointment({
+    //         id: appointment.id,
+    //         specialty: appointment.physician.specialty,
+    //         doctor: appointment.physician,
+    //         date: appointment.date,
+    //         patient: appointment.patient,
+    //         agenda: appointment.physician.agenda,
+    //     });
+    //     console.log(editingAppointment);
+    // };
 
     const handleCloseEditModal = () => {
         setIsEditModalOpen(false);
+        setIsAddObervationModalOpen(false);
     };
 
-    const handleSaveAppointment = () => {
-        // Lógica para guardar los cambios de la cita en tu sistema
-        // Esto puede variar según cómo esté implementada tu lógica de backend
-        // Una vez guardados los cambios, cierra el modal
-        // y actualiza la lista de citas o realiza cualquier otra acción necesaria
-        setIsEditModalOpen(false);
-        alert("Turno modificado exitosamente");
-        fetchAppointments();
+    // const handleSaveAppointment = () => {
+    //     setIsEditModalOpen(false);
+    //     alert("Turno modificado exitosamente");
+    //     fetchAppointments();
+    // };
+
+    const handleAddObservation = async (e) => {
+        console.log(patientId, "handleAddObservation");
+        console.log(newObservationDate, newObservationContent);
+        e.preventDefault();
+        try {
+            const response = await axios.post(
+                `http://localhost:8080/records/update/${patientId}`,
+                {
+                    date: newObservationDate,
+                    observation: newObservationContent,
+                }
+            );
+            console.log(response);
+            // fetchData();
+        } catch (error) {
+            console.error(error);
+        }
     };
 
     const handleDeleteAppointment = async (appointmentId) => {
@@ -115,9 +106,6 @@ const Dashboard = () => {
         }
     };
 
-    const handleLogoClick = () => {
-        router.push("/dashboard");
-    };
     const customStyles = {
         content: {
             top: "50%",
@@ -126,6 +114,7 @@ const Dashboard = () => {
             bottom: "auto",
             marginRight: "-50%",
             transform: "translate(-50%, -50%)",
+            width: "80%",
         },
     };
 
@@ -134,7 +123,7 @@ const Dashboard = () => {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
 
-        userCheck();
+        userCheck(router);
         fetchAppointments();
         const intervalId = setInterval(() => {
             fetchAppointments();
@@ -147,6 +136,7 @@ const Dashboard = () => {
             {/* Modal de edición */}
             {isEditModalOpen && (
                 <Modal
+                    ariaHideApp={false}
                     isOpen={isEditModalOpen}
                     onRequestClose={handleCloseEditModal}
                     style={customStyles}
@@ -162,64 +152,116 @@ const Dashboard = () => {
 
                         <DatePicker
                             locale="es"
-                            //dateFormat="dd-MM-yyyy HH:mm"
-                            selected={date}
+                            selected={dateToEdit}
                             onChange={(date) => {
-                                setDate(date);
-                                console.log(date);
+                                setDateToEdit(date);
                             }}
                             timeCaption="Hora"
                             timeIntervals={30}
                             showPopperArrow={false}
                             showTimeSelect
                             inline
+                            filterDate={(date) => {
+                                if (
+                                    editingAppointment.doctor.agenda
+                                        .working_days
+                                ) {
+                                    return editingAppointment.doctor.agenda.working_days.includes(
+                                        date.getDay()
+                                    );
+                                }
+                                return false;
+                            }}
+                            minDate={new Date()}
+                            filterTime={(time) => {
+                                if (
+                                    editingAppointment.doctor.agenda
+                                        .appointments &&
+                                    !editingAppointment.doctor.agenda.appointments.includes(
+                                        Math.round(time.getTime() / 1000)
+                                    ) &&
+                                    editingAppointment.doctor.agenda
+                                        .working_hours &&
+                                    time >= new Date()
+                                ) {
+                                    let workingHour =
+                                        editingAppointment.doctor.agenda.working_hours.filter(
+                                            (workingHour) =>
+                                                workingHour.day_of_week ===
+                                                date.getDay()
+                                        )[0];
+                                    let parsedTime =
+                                        time.getHours() +
+                                        time.getMinutes() / 60;
+                                    return (
+                                        workingHour.start_time <= parsedTime &&
+                                        workingHour.finish_time > parsedTime
+                                    );
+                                }
+                                return false;
+                            }}
                         />
                     </div>
 
                     {/* Botones de Guardar y Cerrar */}
                     <button
-                        className={styles["stantard-button"]}
+                        className={styles["standard-button"]}
                         onClick={handleSaveAppointment}
                     >
                         Guardar
                     </button>
                     <button
-                        className={styles["stantard-button"]}
+                        className={styles["standard-button"]}
                         onClick={handleCloseEditModal}
                     >
                         Cerrar
                     </button>
                 </Modal>
             )}
-            <header className={styles.header}>
-                <Image
-                    src="/logo.png"
-                    alt="Logo de la empresa"
-                    className={styles.logo}
-                    width={200}
-                    height={200}
-                    onClick={handleLogoClick}
-                />
-                <Image
-                    src="/logout-icon.png"
-                    alt="CerrarSesion"
-                    className={styles["logout-icon"]}
-                    width={200}
-                    height={200}
-                    onClick={() => {
-                        localStorage.removeItem("token");
-                        axios.delete;
-                        router.push("/");
-                    }}
-                />
 
-                <div className={styles["tab-bar"]}>
-                    <div className={styles.tab} onClick={handleLogoClick}>
-                        Turnos
-                    </div>
-                    <div className={styles.tab_disabled}>Mi Ficha</div>
-                </div>
-            </header>
+            {isAddObservationModalOpen && (
+                <Modal
+                    ariaHideApp={false}
+                    isOpen={isAddObservationModalOpen}
+                    onRequestClose={handleCloseEditModal}
+                    style={customStyles}
+                >
+                    <form
+                        className={styles["new-record-section"]}
+                        onSubmit={handleAddObservation}
+                    >
+                        <div className={styles["title"]}>Nueva observación</div>
+
+                        <input
+                            type="text"
+                            id="observation"
+                            value={newObservationContent}
+                            onChange={(e) =>
+                                setNewObservationContent(e.target.value)
+                            }
+                            placeholder="Escribe una nueva observación"
+                            required
+                            className={styles.observationInput}
+                        />
+                        <button
+                            className={`${styles["submit-button"]} ${
+                                !newObservationContent || !newObservationDate
+                                    ? styles["disabled-button"]
+                                    : ""
+                            }`}
+                            type="submit"
+                            disabled={
+                                !newObservationContent || !newObservationDate
+                            }
+                        >
+                            Agregar
+                        </button>
+                    </form>
+                </Modal>
+            )}
+
+            <Header />
+            {/* <TabBar /> */}
 
             <div className={styles["tab-content"]}>
                 <div className={styles.form}>
@@ -254,16 +296,55 @@ const Dashboard = () => {
                                         >
                                             <button
                                                 className={
+                                                    styles["standard-button"]
+                                                }
+                                                onClick={() => {
+                                                    setIsAddObervationModalOpen(
+                                                        true
+                                                    );
+                                                    setPatientId(
+                                                        appointment.patient.id
+                                                    );
+                                                    setNewObservationDate(
+                                                        appointment.date.toLocaleString(
+                                                            "es-AR"
+                                                        )
+                                                    );
+                                                }}
+                                            >
+                                                Agregar Observacion{" "}
+                                            </button>
+                                            <Link
+                                                href={{
+                                                    pathname:
+                                                        "/medical-records?patientId",
+                                                    query: appointment.patient
+                                                        .id,
+                                                }}
+                                                as={`medical-records?patientId=${appointment.patient.id}`}
+                                            >
+                                                <button
+                                                    className={
+                                                        styles[
+                                                            "standard-button"
+                                                        ]
+                                                    }
+                                                >
+                                                    Ver Historia Clinica
+                                                </button>
+                                            </Link>
+                                            {/* <button
+                                                className={
                                                     styles["edit-button"]
                                                 }
                                                 onClick={() =>
                                                     handleEditAppointment(
-                                                        appointment.id
+                                                        appointment
                                                     )
                                                 }
                                             >
                                                 Modificar
-                                            </button>
+                                            </button> */}
 
                                             <button
                                                 className={
@@ -291,9 +372,7 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            <footer className={styles["page-footer"]}>
-                <p>Derechos de autor © 2023 KMK</p>
-            </footer>
+            <Footer />
         </div>
     );
 };

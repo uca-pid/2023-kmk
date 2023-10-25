@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Union
 
 from .AgendaResponses import AgendaResponse
 
@@ -8,6 +9,8 @@ class PhysicianResponse(BaseModel):
     first_name: str
     last_name: str
     specialty: str
+    email: str
+    tuition: int
     agenda: AgendaResponse
 
     def __init__(self, **data):
@@ -23,7 +26,7 @@ class PhysicianResponse(BaseModel):
 
 
 class GetPhysiciansResponse(BaseModel):
-    physicians: list[PhysicianResponse]
+    physicians: list[Union[PhysicianResponse, None]]
 
 
 class GetPhysiciansError(BaseModel):

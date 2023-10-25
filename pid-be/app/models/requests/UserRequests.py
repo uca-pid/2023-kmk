@@ -1,6 +1,9 @@
-from pydantic import BaseModel
-from typing import Annotated
+import re
+from pydantic import BaseModel, Field, validator
+from typing import Annotated, Literal
 from fastapi import Query
+
+from app.models.entities.Specialty import Specialty
 
 
 class UserLoginRequest(BaseModel):
@@ -8,26 +11,60 @@ class UserLoginRequest(BaseModel):
     password: str
 
 
-class PhysicianRegisterRequest(BaseModel):
-    role: str
-    name: str
-    last_name: str
-    matricula: str
-    specialty: str
-    email: Annotated[str, Query(regex="^[-\w\.]+@([-\w]+\.)+[-\w]{2,4}$")]
-    password: str
-
-
 class PatientRegisterRequest(BaseModel):
-    role: str
-    name: str
-    last_name: str
+    role: Literal["patient"] = "patient"
+    name: str = Field(min_length=1)
+    last_name: str = Field(min_length=1)
     email: Annotated[str, Query(regex="^[-\w\.]+@([-\w]+\.)+[-\w]{2,4}$")]
-    password: str
+    birth_date: str
+    gender: str
+    blood_type: str
+    password: str = Field(
+        min_length=8,
+        description="Must contain at least one uppercase, at least one lowercase and at least one number",
+    )
+
+    @validator("password")
+    def validate_password(cls, password_to_validate):
+        if not re.search(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)", password_to_validate):
+            raise ValueError("Invalid password format")
+        return password_to_validate
 
 
-class AdminRegisterRequest(BaseModel):
-    name: str
-    last_name: str
+class PhysicianRegisterRequest(BaseModel):
+    role: Literal["physician"] = "physician"
+    name: str = Field(min_length=1)
+    last_name: str = Field(min_length=1)
     email: Annotated[str, Query(regex="^[-\w\.]+@([-\w]+\.)+[-\w]{2,4}$")]
-    password: str
+    password: str = Field(
+        min_length=8,
+        description="Must contain at least one uppercase, at least one lowercase and at least one number",
+    )
+    tuition: str
+    specialty: str
+
+    @validator("specialty")
+    def validate_specialty(cls, specialty_to_validate):
+        if not Specialty.exists_with_name(specialty_to_validate):
+            raise ValueError("Specilaty doesnt exist")
+        return specialty_to_validate
+
+    @validator("password")
+    def validate_password(cls, password_to_validate):
+        if not re.search(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)", password_to_validate):
+            raise ValueError("Invalid password format")
+        return password_to_validate
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str = Field(
+        min_length=8,
+        description="Must contain at least one uppercase, at least one lowercase and at least one number",
+    )
+
+    @validator("new_password")
+    def validate_password(cls, password_to_validate):
+        if not re.search(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)", password_to_validate):
+            raise ValueError("Invalid password format")
+        return password_to_validate

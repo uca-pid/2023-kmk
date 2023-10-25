@@ -5,20 +5,31 @@ from .config import initialize_firebase_app
 
 initialize_firebase_app()
 
-from fastapi import FastAPI, status
+from fastapi import FastAPI, status, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.openapi.utils import get_openapi
+from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 
 
 load_dotenv()
 
-from app.routers import users, appointments, specialties, physicians, admins
+from app.routers import (
+    users,
+    appointments,
+    specialties,
+    physicians,
+    admin,
+    records,
+    genders,
+    bloodTypes,
+)
+from app.models.entities.Auth import Auth
 
 
 CTX_PORT: int = int(os.environ.get("PORT")) if os.environ.get("PORT") else 8080
 
-app = FastAPI()
+app = FastAPI(docs_url=None, redoc_url=None, openapi_url="/api/openapi.json")
 
 app.add_middleware(
     CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"]
@@ -29,11 +40,25 @@ routers = [
     appointments.router,
     specialties.router,
     physicians.router,
-    admins.router,
+    admin.router,
+    records.router,
+    genders.router,
+    bloodTypes.router,
 ]
 
 for router in routers:
     app.include_router(router)
+
+
+@app.get("/docs", response_class=HTMLResponse)
+async def get_docs(username=Depends(Auth.is_kmk_maintainer)) -> HTMLResponse:
+    print("smth")
+    return get_swagger_ui_html(openapi_url="/api/openapi.json", title="docs")
+
+
+@app.get("/redoc", response_class=HTMLResponse)
+async def get_redoc(username: str = Depends(Auth.is_kmk_maintainer)) -> HTMLResponse:
+    return get_redoc_html(openapi_url="/api/openapi.json", title="redoc")
 
 
 @app.get("/")
@@ -44,25 +69,6 @@ async def root() -> RedirectResponse:
     It returns the OPENAPI docs for the KMK API
     """
     return RedirectResponse(url="/redoc", status_code=status.HTTP_303_SEE_OTHER)
-
-
-# @app.post("/api/register")
-# async def register_user(request: Request):
-#     data = await request.json()
-#     print(data)  # Esto imprimirá los datos en la consola del servidor
-#     # Utiliza Firebase Authentication para crear una cuenta de usuario
-#     try:
-#         user = auth.create_user(
-#             email=data["email"],
-#             password=data["password"],
-#             display_name=data["role"],
-#             email_verified=False,  # Cambia a True si deseas que el email esté verificado
-#         )
-#         print(f"Usuario registrado: {user.uid}")
-#         return {"message": "Registro exitoso"}
-#     except Exception as e:
-#         print(f"Error en el registro: {str(e)}")
-#         return {"message": "Error en el registro"}
 
 
 def start():
@@ -106,6 +112,8 @@ def custom_openapi():
     openapi_schema["info"]["x-logo"] = {
         "url": "https://firebasestorage.googleapis.com/v0/b/pid-kmk.appspot.com/o/appResources%2FmediSyncLogo.png?alt=media&token=5fa730e3-a5cb-4a65-ad71-88af0c72b65a"
     }
+    openapi_schema["paths"]["/users/login"]["post"].pop("security")
+    openapi_schema["paths"]["/users/register"]["post"].pop("security")
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 

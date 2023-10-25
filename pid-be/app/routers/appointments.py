@@ -3,13 +3,19 @@ from fastapi.responses import JSONResponse
 
 from app.models.entities.Auth import Auth
 from app.models.entities.Appointment import Appointment
-from app.models.requests.AppointmentRequests import AppointmentCreationRequest
+from app.models.requests.AppointmentRequests import (
+    AppointmentCreationRequest,
+    UpdateAppointmentRequest,
+)
 from app.models.responses.AppointmentResponses import (
     SuccessfulAppointmentCreationResponse,
     AppointmentCreationError,
     GetAppointmentError,
     AllAppointmentsResponse,
-    BasicAppointmentResponse,
+    SuccessfulAppointmentDeletionResponse,
+    DeleteAppointmentError,
+    SuccessfulAppointmentUpdateResponse,
+    UpdateAppointmentError,
 )
 
 router = APIRouter(
@@ -24,6 +30,7 @@ router = APIRouter(
     status_code=status.HTTP_201_CREATED,
     response_model=SuccessfulAppointmentCreationResponse,
     responses={
+        400: {"model": AppointmentCreationError},
         401: {"model": AppointmentCreationError},
         500: {"model": AppointmentCreationError},
     },
@@ -49,7 +56,7 @@ async def create_appointment(
     try:
         appointment_id = appointment.create()
         return {"appointment_id": appointment_id}
-    except:
+    except Exception:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal server error"},
@@ -62,6 +69,7 @@ async def create_appointment(
     response_model=AllAppointmentsResponse,
     responses={
         401: {"model": GetAppointmentError},
+        403: {"model": GetAppointmentError},
         500: {"model": GetAppointmentError},
     },
 )
@@ -73,7 +81,7 @@ def get_all_appointments(uid=Depends(Auth.is_logged_in)):
 
     This path operation will:
 
-    * Return all of users appointments.
+    * Return all of users appointments ordered by date.
     * Throw an error if appointment retrieving fails.
     """
     try:
@@ -86,63 +94,41 @@ def get_all_appointments(uid=Depends(Auth.is_logged_in)):
         )
 
 
-@router.get(
-    "/physician/",
-    status_code=status.HTTP_200_OK,
-    response_model=AllAppointmentsResponse,
-    responses={
-        401: {"model": GetAppointmentError},
-        500: {"model": GetAppointmentError},
-    },
-)
-def get_all_physicians_appointments(uid=Depends(Auth.is_logged_in)):
-    """ 
-    Get all appointments for physician.
-
-    This will allow authenticated physicians to retrieve all their appointments.
-    
-    """
-    try:
-        appointments = Appointment.get_all_appointments_for_physician_with(uid)
-        return {"appointments": appointments}
-    except:
-        return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"detail": "Internal server error"},
-        )
-
-
-@router.get(
+@router.delete(
     "/{id}",
     status_code=status.HTTP_200_OK,
-    response_model=BasicAppointmentResponse,
+    response_model=SuccessfulAppointmentDeletionResponse,
     responses={
-        400: {"model": GetAppointmentError},
-        401: {"model": GetAppointmentError},
-        500: {"model": GetAppointmentError},
+        400: {"model": DeleteAppointmentError},
+        401: {"model": DeleteAppointmentError},
+        403: {"model": DeleteAppointmentError},
+        500: {"model": DeleteAppointmentError},
     },
 )
-def get_appointment_by_id(id: str, uid=Depends(Auth.is_logged_in)):
+def delete_appointment_by_id(id: str, uid=Depends(Auth.is_logged_in)):
     """
-    Get an appointment.
+    Delete an appointment.
 
-    This will allow authenticated users to retrieve one of their appointments.
+    This will allow authenticated users to delete one of their appointments.
 
     This path operation will:
 
-    * Return an appointments.
+    * Delete an appointment.
     * Throw an error if appointment doesn't exist.
     * Throw an error if appointment doesn't belong to the authenticated user.
     * Throw an error if appointment retrieving fails.
     """
     try:
         appointment = Appointment.get_by_id(id)
-        if not appointment or appointment["patient_id"] != uid:
+        if not appointment or (
+            appointment.physician_id != uid and appointment.patient_id != uid
+        ):
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={"detail": "Invalid appointment id"},
             )
-        return appointment
+        appointment.delete()
+        return {"message": "Appointment cancelled successfully"}
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -150,20 +136,37 @@ def get_appointment_by_id(id: str, uid=Depends(Auth.is_logged_in)):
         )
 
 
-@router.delete("/{id}", status_code=status.HTTP_200_OK)
-def delete_appointment_by_id(id: str, uid=Depends(Auth.is_logged_in)):
-    """ """
-    try:
-        appointment = Appointment.get_by_id(id)
-        if not appointment or (appointment["physician_id"] != uid and appointment["patient_id"] != uid):
-            return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content={"detail": "Invalid appointment id"},
-            )
-        Appointment.delete_by_id(id)
-        return appointment
-    except:
+@router.put(
+    "/{id}",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessfulAppointmentUpdateResponse,
+    responses={
+        400: {"model": UpdateAppointmentError},
+        401: {"model": UpdateAppointmentError},
+    },
+)
+def update_appointment(
+    id: str,
+    update_appointment_request: UpdateAppointmentRequest,
+    uid=Depends(Auth.is_logged_in),
+):
+    """
+    Update an appointment.
+
+    This will allow authenticated users to update one of their appointments.
+
+    This path operation will:
+
+    * Update an appointment.
+    * Throw an error if appointment doesn't exist.
+    * Throw an error if appointment doesn't belong to the authenticated user.
+    * Throw an error if appointment retrieving fails.
+    """
+    appointment = Appointment.get_by_id(id)
+    if not appointment or appointment.patient_id != uid:
         return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"detail": "Internal server error"},
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"detail": "Invalid appointment id"},
         )
+    appointment.update(update_appointment_request.dict())
+    return {"message": "Appointment updated successfully"}

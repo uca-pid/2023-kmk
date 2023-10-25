@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
-import styles from "./dashboard-admin.module.css";
+import styles from "../styles/styles.module.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { Header, Footer } from "../components/header";
+import userCheck from "../components/userCheck";
 
 const Admin = () => {
     const router = useRouter();
@@ -13,68 +14,20 @@ const Admin = () => {
     const fetchPhysicians = async () => {
         try {
             const response = await axios.get(
-                `http://localhost:8080/admins/pending-validations`
+                `http://localhost:8080/admin/pending-validations`
             );
             console.log(response.data.physicians_pending_validation);
             setDoctors(response.data.physicians_pending_validation);
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     };
-
-    useEffect(() => {
-        axios.defaults.headers.common = {
-            Authorization: `bearer ${localStorage.getItem("token")}`,
-        };
-
-        const userCheck = async () => {
-            console.log("Checking user profile");
-
-            try {
-                const response = await axios.get(
-                    `http://localhost:8080/users/profile/`
-                );
-
-                console.log(response.data.profile);
-                switch (response.data.profile) {
-                    case "Admin":
-                        console.log("Checking if admin");
-                        router.push("/dashboard-admin");
-                        break;
-                    case "Physician":
-                        console.log("Checking if physician");
-                        router.push("/dashboard-physician");
-                        break;
-                    case "Patient":
-                        console.log("Checking if patient");
-                        router.push("/dashboard-patient");
-                        break;
-                    default:
-                        console.log("Error");
-                        break;
-                }
-            } catch (error) {
-                console.log(error.response.data.detail);
-                switch (error.response.data.detail) {
-                    case "User must be logged in":
-                        router.push("/");
-                        break;
-                    case "User has already logged in":
-                        router.push("/dashboard-redirect");
-                        break;
-                }
-            }
-        };
-
-        // userCheck();
-        fetchPhysicians();
-    }, []);
 
     const handleApprovePhysician = async (physician) => {
         try {
             console.log(physician.id);
             const response = await axios.post(
-                `http://localhost:8080/admins/approve-physician/${physician.id}`
+                `http://localhost:8080/admin/approve-physician/${physician.id}`
             );
             console.log(response.data);
             alert("Profesional aprobado");
@@ -88,7 +41,7 @@ const Admin = () => {
         try {
             console.log(physician.id);
             const response = await axios.post(
-                `http://localhost:8080/admins/deny-physician/${physician.id}`
+                `http://localhost:8080/admin/deny-physician/${physician.id}`
             );
             console.log(response.data);
             alert("Profesional denegado");
@@ -99,34 +52,18 @@ const Admin = () => {
         }
     };
 
-    const handleLogoClick = () => {
-        router.push("/dashboard-admin");
-    };
+    useEffect(() => {
+        axios.defaults.headers.common = {
+            Authorization: `bearer ${localStorage.getItem("token")}`,
+        };
+
+        // userCheck(router);
+        fetchPhysicians();
+    }, []);
 
     return (
-        <div className={styles.admin}>
-            <header className={styles.header}>
-                <Image
-                    src="/logo.png"
-                    alt="Logo de la empresa"
-                    className={styles.logo}
-                    width={200}
-                    height={200}
-                    onClick={handleLogoClick}
-                />
-                <Image
-                    src="/logout-icon.png"
-                    alt="CerrarSesion"
-                    className={styles["logout-icon"]}
-                    width={200}
-                    height={200}
-                    onClick={() => {
-                        localStorage.removeItem("token");
-                        axios.delete;
-                        router.push("/");
-                    }}
-                />
-            </header>
+        <div className={styles.dashboard}>
+            <Header />
 
             <div className={styles["tab-content"]}>
                 <div className={styles.form}>
@@ -152,7 +89,7 @@ const Admin = () => {
                                         <p>
                                             Correo electrónico: {doctor.email}
                                         </p>
-                                        <p>Matricula: {doctor.matricula}</p>
+                                        <p>Matricula: {doctor.tuition}</p>
                                         <div
                                             className={
                                                 styles[
@@ -175,7 +112,7 @@ const Admin = () => {
 
                                             <button
                                                 className={
-                                                    styles["deny-button"]
+                                                    styles["delete-button"]
                                                 }
                                                 onClick={() =>
                                                     handleDenyPhysician(doctor)
@@ -196,10 +133,7 @@ const Admin = () => {
                     </div>
                 </div>
             </div>
-
-            <footer className={styles["page-footer"]}>
-                <p>Derechos de autor © 2023 KMK</p>
-            </footer>
+            <Footer />
         </div>
     );
 };

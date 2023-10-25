@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import styles from "./landing.module.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { Footer, HeaderSlim } from "../components/header";
+import userCheck from "../components/userCheck";
 
 const Landing = () => {
     const [email, setEmail] = useState("");
@@ -29,17 +30,14 @@ const Landing = () => {
 
         try {
             const response = await axios.post(
-                `http://localhost:8080/users/login`,
+                `http://localhost:8080/users/login/`,
                 userData
             );
             localStorage.setItem("token", response.data.token);
-            router.push("/dashboard-redirect");
+            userCheck(router);
         } catch (error) {
+            console.error(error);
             setError("Error al iniciar sesión: " + error.response.data.detail);
-
-            if (error.response.data.detail == "User has already logged in") {
-                router.push("/dashboard-redirect");
-            }
 
             // Verificar si el elemento .error-message está presente en el DOM
             const errorMessageElement =
@@ -52,15 +50,7 @@ const Landing = () => {
 
     return (
         <div className={styles["login-page"]}>
-            <header className={styles["header"]}>
-                <Link href="/">
-                    <img
-                        src="/logo.png"
-                        alt="logo"
-                        className={styles["logo"]}
-                    />
-                </Link>
-            </header>
+            <HeaderSlim />
             <form className={styles["form"]} onSubmit={handleLogin}>
                 <div className={styles["title"]}>¡Bienvenido!</div>
                 <div className={styles["subtitle"]}>Iniciar Sesion</div>
@@ -91,16 +81,13 @@ const Landing = () => {
                     Iniciar Sesión
                 </button>
                 <div className={styles["register-link"]}>
-                    ¿No tienes una cuenta?{" "}
+                    {" "}
                     <Link legacyBehavior href="/registro">
-                        <a>Registrarse</a>
+                        <a>¿No tienes una cuenta? Registrarse</a>
                     </Link>
                 </div>
             </form>
-
-            <footer>
-                <p>Derechos de autor © 2023 KMK</p>
-            </footer>
+            <Footer />
         </div>
     );
 };
