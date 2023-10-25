@@ -6,15 +6,17 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Header, Footer } from "../components/header";
 import userCheck from "../components/userCheck";
+import { toast } from "react-toastify";
 
 const Admin = () => {
+    const apiURL = process.env.NEXT_PUBLIC_API_URL;
     const router = useRouter();
     const [doctors, setDoctors] = useState([]);
 
     const fetchPhysicians = async () => {
         try {
             const response = await axios.get(
-                `http://localhost:8080/admin/pending-validations`
+                `${apiURL}admin/pending-validations`
             );
             console.log(response.data.physicians_pending_validation);
             setDoctors(response.data.physicians_pending_validation);
@@ -27,10 +29,10 @@ const Admin = () => {
         try {
             console.log(physician.id);
             const response = await axios.post(
-                `http://localhost:8080/admin/approve-physician/${physician.id}`
+                `${apiURL}admin/approve-physician/${physician.id}`
             );
             console.log(response.data);
-            alert("Profesional aprobado");
+            toast.info("Profesional aprobado");
             fetchPhysicians();
         } catch (error) {
             console.log(error);
@@ -41,10 +43,10 @@ const Admin = () => {
         try {
             console.log(physician.id);
             const response = await axios.post(
-                `http://localhost:8080/admin/deny-physician/${physician.id}`
+                `${apiURL}admin/deny-physician/${physician.id}`
             );
             console.log(response.data);
-            alert("Profesional denegado");
+            toast.info("Profesional denegado");
             fetchPhysicians();
             router.refresh("/dashboard-admin");
         } catch (error) {

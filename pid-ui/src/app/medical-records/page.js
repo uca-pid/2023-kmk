@@ -7,10 +7,11 @@ import axios from "axios";
 import { Footer, Header } from "../components/header";
 
 const MedicalRecords = ({ searchParams }) => {
+    const apiURL = process.env.NEXT_PUBLIC_API_URL;
+
     const [urlSearchParams, setUrlSearchParams] = useState(null);
 
     useEffect(() => {
-        console.log(window.location.search, "jijijijiijij");
         if (window)
             setUrlSearchParams(new URLSearchParams(window.location.search));
     }, []);
@@ -33,7 +34,7 @@ const MedicalRecords = ({ searchParams }) => {
     const fetchData = async () => {
         try {
             const response = await axios.get(
-                `http://localhost:8080/records/get-record/${patientId}`
+                `${apiURL}records/get-record/${patientId}`
             );
             setRecord(response.data.record);
             console.log(response);

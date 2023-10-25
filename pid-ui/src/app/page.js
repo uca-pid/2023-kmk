@@ -1,3 +1,4 @@
+import { ToastContainer } from "react-toastify";
 import Landing from "./landing/page.js";
 
 const HomePage = () => {

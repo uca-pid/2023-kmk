@@ -64,8 +64,8 @@
 .form-group label {
     display: block;
     font-size: 1rem;
-    margin-bottom: 0.5rem;
     color: #333;
+    margin-bottom: 0.5rem;
 }
 
 /* Estilos para los campos de entrada de formulario */
@@ -76,6 +76,8 @@
     border: 1px solid #ccc;
     border-radius: 5px;
     color: #333;
+    margin: 0;
+    margin-bottom: 1rem;
 }
 
 .button {
@@ -120,6 +122,8 @@
     appearance: none; /* Elimina la apariencia nativa del select */
     outline: none; /* Elimina el resaltado del borde al enfocar */
     cursor: pointer;
+    margin: 0;
+    margin-bottom: 1rem;
 }
 
 /* Estilos para el enlace de registro */
