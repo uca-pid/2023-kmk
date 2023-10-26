@@ -74,6 +74,7 @@ jobs:
 
             - name: Run Backend
               env:
+                  ENV: ${{ secrets.ENV }}
                   REGISTER_URL: ${{ secrets.REGISTER_URL }}
                   LOGIN_URL: ${{ secrets.LOGIN_URL }}
                   PROJECT_ID: ${{ secrets.PROJECT_ID }}

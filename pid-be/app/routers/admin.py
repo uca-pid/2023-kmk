@@ -63,6 +63,16 @@ async def approve_physician(physician_id: str, uid=Depends(Auth.is_admin)):
                 content={"detail": "Can only approve physicians"},
             )
         Admin.approve_physician(physician_id)
+        physician = Physician.get_by_id(physician_id)
+        requests.post(
+            "http://localhost:9000/emails/send",
+            json={
+                "type": "PHYSICIAN_APPROVED_ACCOUNT",
+                "data": {
+                    "email": physician["email"],
+                },
+            },
+        )
         return {"message": "Physician validated successfully"}
     except:
         return JSONResponse(
@@ -101,6 +111,16 @@ async def deny_physician(physician_id: str, uid=Depends(Auth.is_admin)):
                 content={"detail": "Can only deny physicians"},
             )
         Admin.deny_physician(physician_id)
+        physician = Physician.get_by_id(physician_id)
+        requests.post(
+            "http://localhost:9000/emails/send",
+            json={
+                "type": "PHYSICIAN_DENIED_ACCOUNT",
+                "data": {
+                    "email": physician["email"],
+                },
+            },
+        )
         return {"message": "Physician denied successfully"}
     except:
         return JSONResponse(
@@ -151,9 +171,7 @@ def get_all_pending_validations(uid=Depends(Auth.is_admin)):
         500: {"model": AdminRegistrationError},
     },
 )
-def regsiter_admin(
-    admin_resgister_request: AdminRegisterRequest
-):
+def regsiter_admin(admin_resgister_request: AdminRegisterRequest):
     """
     Register an admin.
 
@@ -190,6 +208,8 @@ def regsiter_admin(
         auth_uid = register_response.json()["localId"]
 
     del admin_resgister_request.password
-    admin = Admin(**admin_resgister_request.dict(), id=auth_uid, registered_by="qwertyui")
+    admin = Admin(
+        **admin_resgister_request.dict(), id=auth_uid, registered_by="qwertyui"
+    )
     admin.create()
     return {"message": "Successfull registration"}

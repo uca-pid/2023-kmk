@@ -18,6 +18,9 @@ class SuccessfulAppointmentDeletionResponse(BaseModel):
 class SuccessfulAppointmentUpdateResponse(BaseModel):
     message: str
 
+class SuccessfulAppointmentCloseResponse(BaseModel):
+    message: str
+
 
 class AppointmentCreationError(BaseModel):
     detail: str
@@ -34,6 +37,8 @@ class DeleteAppointmentError(BaseModel):
 class UpdateAppointmentError(BaseModel):
     detail: str
 
+class CloseAppointmentError(BaseModel):
+    detail: str
 
 class BasicAppointmentResponse(BaseModel):
     id: str
@@ -41,6 +46,7 @@ class BasicAppointmentResponse(BaseModel):
     physician: PhysicianResponse
     patient: PatientResponse
     created_at: int
+    approved: str = "pending"
 
     def __init__(self, **data):
         physician = Physician.get_by_id(data["physician_id"])

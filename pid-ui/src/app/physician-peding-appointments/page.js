@@ -12,20 +12,33 @@ import { toast } from "react-toastify";
 const PhysicianPendingAppointments = () => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
     const [appointments, setAppointments] = useState([]);
-    useState(false);
 
     const agent = new https.Agent({
         rejectUnauthorized: false,
     });
 
+
     const fetchAppointments = async () => {
         try {
-            const response = await axios.get(`${apiURL}appointments`, {
-                httpsAgent: agent,
-            });
+            const response = await axios.get(
+                `${apiURL}physicians/pending-appointments`
+            );
             response.data.appointments == undefined
                 ? setAppointments([])
                 : setAppointments(response.data.appointments);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    const handleApproveAppointment = async (appointmentId) => {
+        console.log(appointmentId);
+        try {
+            await axios.post(
+                `${apiURL}physicians/approve-appointment/${appointmentId}`
+            );
+            toast.success("Turno aprobado exitosamente");
+            fetchAppointments();
         } catch (error) {
             console.log(error);
         }
@@ -38,6 +51,7 @@ const PhysicianPendingAppointments = () => {
                 httpsAgent: agent,
             });
             toast.info("Turno eliminado exitosamente");
+
             fetchAppointments();
         } catch (error) {
             console.log(error);
@@ -106,7 +120,11 @@ const PhysicianPendingAppointments = () => {
                                                 className={
                                                     styles["approve-button"]
                                                 }
-                                                onClick={() => {}}
+                                                onClick={() =>
+                                                    handleApproveAppointment(
+                                                        appointment.id
+                                                    )
+                                                }
                                             >
                                                 Confirmar{" "}
                                             </button>

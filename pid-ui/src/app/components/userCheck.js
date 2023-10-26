@@ -30,12 +30,12 @@ const userCheck = async (router) => {
     } catch (error) {
         console.error(error);
 
-        switch (error.response.data.detail) {
-            case "User must be logged in":
-                router.replace("/");
-                break;
-        }
+    switch (error.response.data.detail) {
+      case "User must be logged in":
+        router.replace("/");
+        break;
     }
+  }
 };
 
 export default userCheck;

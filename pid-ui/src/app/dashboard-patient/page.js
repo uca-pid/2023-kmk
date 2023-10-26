@@ -163,7 +163,7 @@ const DashboardPatient = () => {
                     httpsAgent: agent,
                 }
             );
-            toast.info("Turno solicitado exitosamente");
+            toast.info("Turno solicitado. Aguarde aprobacion del mismo");
             fetchAppointments();
         } catch (error) {
             console.error(error);
@@ -189,10 +189,6 @@ const DashboardPatient = () => {
         userCheck(router);
         fetchSpecialties();
         fetchAppointments();
-        // const intervalId = setInterval(() => {
-        //     fetchAppointments();
-        // }, 5 * 1000);
-        // return () => clearInterval(intervalId);
     }, []);
 
     return (

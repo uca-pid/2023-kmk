@@ -1,6 +1,8 @@
+import requests
 from fastapi import APIRouter, status, Depends
 from fastapi.responses import JSONResponse
 
+from app.models.entities.Patient import Patient
 from app.models.entities.Auth import Auth
 from app.models.entities.Record import Record
 from app.models.responses.RecordResponses import (
@@ -47,6 +49,7 @@ def get_record(patient_id):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal server error"},
         )
+
 
 @router.get(
     "/get-my-record",
@@ -107,7 +110,16 @@ def update_record(
     """
     try:
         record = Record.add_observation(
-            patient_id, observation_creation_request.dict(), uid
+            patient_id, observation_creation_request.dict(), uid)
+        patient = Patient.get_by_id(patient_id)
+        requests.post(
+            "http://localhost:9000/emails/send",
+            json={
+                "type": "CANCELED_APPOINTMENT",
+                "data": {
+                    "email": patient["email"],
+                },
+            },
         )
         return {"record": record}
     except:
