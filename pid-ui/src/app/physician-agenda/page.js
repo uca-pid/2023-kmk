@@ -23,9 +23,15 @@ const PhysicianAgenda = () => {
     const [patientId, setPatientId] = useState("");
     const [newObservationDate, setNewObservationDate] = useState(new Date());
     const [startDate, setStartDate] = useState(new Date());
-
     const [newObservationContent, setNewObservationContent] = useState("");
     const [appointmentAttended, setAppointmentAttended] = useState("yes");
+
+    const [observationPayload, setObservationPayload] = useState({
+        date: "",
+        physician: "",
+        specialty: "",
+        observation: "",
+    });
 
     const fetchAppointments = async () => {
         try {
@@ -36,6 +42,14 @@ const PhysicianAgenda = () => {
         } catch (error) {
             console.log(error);
         }
+    };
+
+    const handleOpenObservationModal = (appointment) => {
+        console.log(appointment);
+        setIsAddObervationModalOpen(true);
+        setObservationPayload = {};
+        setPatientId(appointment.patient.id);
+        setNewObservationDate(appointment.date.toLocaleString("es-AR"));
     };
 
     const handleAddObservation = async (e) => {
@@ -140,16 +154,17 @@ const PhysicianAgenda = () => {
                                 Observaciones{" "}
                             </div>
 
-                            <textarea
-                                className={styles["textarea"]}
-                                name="observation"
+                            <input
+                                type="text"
                                 id="observation"
-                                cols="30"
-                                rows="10"
+                                value={newObservationContent}
                                 onChange={(e) =>
                                     setNewObservationContent(e.target.value)
                                 }
-                            ></textarea>
+                                placeholder="Escribe una nueva observación"
+                                required
+                                className={styles.observationInput}
+                            />
                         </div>
 
                         <button
@@ -219,16 +234,8 @@ const PhysicianAgenda = () => {
                                                     styles["standard-button"]
                                                 }
                                                 onClick={() => {
-                                                    setIsAddObervationModalOpen(
-                                                        true
-                                                    );
-                                                    setPatientId(
-                                                        appointment.patient.id
-                                                    );
-                                                    setNewObservationDate(
-                                                        appointment.date.toLocaleString(
-                                                            "es-AR"
-                                                        )
+                                                    handleOpenObservationModal(
+                                                        appointment
                                                     );
                                                 }}
                                             >
@@ -253,18 +260,6 @@ const PhysicianAgenda = () => {
                                                     Ver Historia Clinica
                                                 </button>
                                             </Link>
-                                            {/* <button
-                                                className={
-                                                    styles["edit-button"]
-                                                }
-                                                onClick={() =>
-                                                    handleEditAppointment(
-                                                        appointment
-                                                    )
-                                                }
-                                            >
-                                                Modificar
-                                            </button> */}
 
                                             <button
                                                 className={
