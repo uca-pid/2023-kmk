@@ -75,6 +75,7 @@ async def create_appointment(
                     "day": date.day,
                     "month": date.month,
                     "year": date.year,
+                    "hour": date.hour,
                     "minute": date.minute,
                     "second": date.second,
                 },
@@ -215,6 +216,7 @@ def update_appointment(
         )
     appointment.update(update_appointment_request.dict())
     return {"message": "Appointment updated successfully"}
+
 
 @router.put(
     "/close-appointment/{id}",
