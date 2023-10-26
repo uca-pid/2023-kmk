@@ -103,6 +103,10 @@ class Physician:
             {f"appointments.{date}": firestore.DELETE_FIELD}
         )
 
+    @staticmethod
+    def get_dashboard_metrics(id):
+        return db.collection("dashbaord").document(id).get().to_dict()
+
     def create(self):
         if db.collection("physicians").document(self.id).get().exists:
             raise HTTPException(
