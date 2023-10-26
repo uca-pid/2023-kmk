@@ -4,12 +4,22 @@ import styles from "../styles/Header.module.css";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import userCheck from "../components/userCheck";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Header = () => {
     const router = useRouter();
 
     return (
         <div className={styles.header}>
+            <ToastContainer
+                limit={1}
+                position={"top-right"}
+                autoClose={5000}
+                hideProgressBar={false}
+                closeOnClick={true}
+                pauseOnHover={true}
+            />
             <Image
                 src="/logo.png"
                 alt="Logo de la empresa"
@@ -19,6 +29,7 @@ const Header = () => {
                 onClick={() => {
                     userCheck(router);
                 }}
+                priority={true}
             />
             <Image
                 src="/logout-icon.png"
@@ -33,6 +44,14 @@ const Header = () => {
                     };
                     router.push("/");
                 }}
+            />
+            <Image
+                src="/bell_icon.png"
+                alt="Notificaciones"
+                className={styles["bell-icon"]}
+                width={200}
+                height={200}
+                onClick={() => {}}
             />
             <Image
                 src="/user-icon.png"
@@ -53,6 +72,13 @@ const HeaderSlim = () => {
 
     return (
         <div className={styles.header}>
+            <ToastContainer
+                limit={1}
+                position={"top-right"}
+                hideProgressBar={false}
+                closeOnClick={true}
+                pauseOnHover={true}
+            />
             <Image
                 src="/logo.png"
                 alt="Logo de la empresa"
@@ -64,7 +90,7 @@ const HeaderSlim = () => {
     );
 };
 
-const TabBar = () => {
+const TabBar = (props) => {
     const router = useRouter();
     const handleLogoClick = () => {
         userCheck(router);
@@ -72,10 +98,58 @@ const TabBar = () => {
 
     return (
         <div className={styles["tab-bar"]}>
-            <div className={styles.tab} onClick={handleLogoClick}>
+            <div
+                className={`${styles["tab"]} ${
+                    props.highlight === "Turnos" ? styles["selected-tab"] : ""
+                }`}
+                onClick={handleLogoClick}
+            >
                 Turnos
             </div>
-            <div className={styles.tab_disabled}>Mi Ficha</div>
+            <div
+                className={`${styles["tab"]} ${
+                    props.highlight === "Ficha" ? styles["selected-tab"] : ""
+                }`}
+                onClick={() => router.push("/my-record")}
+            >
+                Mi Ficha
+            </div>
+        </div>
+    );
+};
+
+const PhysicianTabBar = (props) => {
+    const router = useRouter();
+    return (
+        <div className={styles["tab-bar"]}>
+            <div
+                className={`${styles["tab"]} ${
+                    props.highlight === "TurnosDelDia"
+                        ? styles["selected-tab"]
+                        : ""
+                }`}
+                onClick={() => router.push("/physician-agenda")}
+            >
+                Turnos del día
+            </div>
+            <div
+                className={`${styles["tab"]} ${
+                    props.highlight === "TurnosPorAprobar"
+                        ? styles["selected-tab"]
+                        : ""
+                }`}
+                onClick={() => router.push("/physician-peding-appointments")}
+            >
+                Turnos por aprobar
+            </div>
+            <div
+                className={`${styles["tab"]} ${
+                    props.highlight === "Metricas" ? styles["selected-tab"] : ""
+                }`}
+                onClick={() => router.push("/physician-metrics")}
+            >
+                Mis metricas
+            </div>
         </div>
     );
 };
@@ -88,4 +162,4 @@ const Footer = () => {
     );
 };
 
-export { Header, HeaderSlim, TabBar, Footer };
+export { Header, HeaderSlim, TabBar, PhysicianTabBar, Footer };
