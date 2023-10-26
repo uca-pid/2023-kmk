@@ -68,6 +68,28 @@ class Appointment:
         )
 
         return [appointment.to_dict() for appointment in appointments]
+    
+    @staticmethod
+    def get_all_appointments():
+        appointments = (
+            db.collection("appointments").get()
+        )
+
+        return [appointment.to_dict() for appointment in appointments]
+    
+    @staticmethod
+    def get_all_appointments_updtated_for_physician(uid):
+        updated_appointments = (
+            db.collection("appointments").where("physician_id", "==", uid).where("updated_at", "!=", None).get()
+        )
+        return [appointment.to_dict() for appointment in updated_appointments]
+    
+    @staticmethod
+    def get_all_appointments_updtated(uid):
+        updated_appointments = (
+            db.collection("appointments").where("updated_at", "!=", None).get()
+        )
+        return [appointment.to_dict() for appointment in updated_appointments]
 
     @staticmethod
     def get_by_id(id):
