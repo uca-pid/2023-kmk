@@ -47,7 +47,7 @@ const PhysicianAgenda = () => {
     const handleOpenObservationModal = (appointment) => {
         console.log(appointment);
         setIsAddObervationModalOpen(true);
-        setObservationPayload = {};
+        setObservationPayload({});
         setPatientId(appointment.patient.id);
         setNewObservationDate(appointment.date.toLocaleString("es-AR"));
     };
