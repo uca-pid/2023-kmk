@@ -50,6 +50,7 @@ def get_record(patient_id):
             content={"detail": "Internal server error"},
         )
 
+
 @router.get(
     "/get-my-record",
     status_code=status.HTTP_200_OK,
@@ -116,7 +117,7 @@ def update_record(
             json={
                 "type": "CANCELED_APPOINTMENT",
                 "data": {
-                    "email": patient.email,
+                    "email": patient["email"],
                 },
             },
         )

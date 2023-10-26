@@ -69,9 +69,9 @@ async def create_appointment(
             json={
                 "type": "PENDING_APPOINTMENT",
                 "data": {
-                    "email": physician.email,
-                    "name": physician.name,
-                    "last_name": physician.last_name,
+                    "email": physician["email"],
+                    "name": physician["first_name"],
+                    "last_name": physician["last_name"],
                     "day": date.day,
                     "month": date.month,
                     "year": date.year,
@@ -81,7 +81,7 @@ async def create_appointment(
             },
         )
         return {"appointment_id": appointment_id}
-    except Exception:
+    except Exception as e:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal server error"},
@@ -159,7 +159,7 @@ def delete_appointment_by_id(id: str, uid=Depends(Auth.is_logged_in)):
             json={
                 "type": "CANCELED_APPOINTMENT",
                 "data": {
-                    "email": physician.email,
+                    "email": physician["email"],
                 },
             },
         )
@@ -169,7 +169,7 @@ def delete_appointment_by_id(id: str, uid=Depends(Auth.is_logged_in)):
             json={
                 "type": "CANCELED_APPOINTMENT",
                 "data": {
-                    "email": patient.email,
+                    "email": patient["email"],
                 },
             },
         )

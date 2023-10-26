@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation";
 import styles from "../styles/styles.module.css";
 import axios from "axios";
 import { Footer, Header, TabBar } from "../components/header";
+import Image from "next/image";
 
 const MyRecord = () => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
-
+    const [file, setFile] = useState([]); // File to be uploaded
     const [record, setRecord] = useState({
         name: "",
         last_name: "",
@@ -18,6 +19,8 @@ const MyRecord = () => {
         id: "",
         observations: [],
     });
+
+    const [analysis, setAnalysis] = useState([]);
 
     const fetchData = async () => {
         try {
@@ -29,18 +32,43 @@ const MyRecord = () => {
         }
     };
 
+    const fetchMyAnalysis = async () => {
+        try {
+            const response = await axios.get(`${apiURL}analysis`);
+            setAnalysis(response.data);
+            console.log(response);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    const onSubmit = async (e) => {
+        e.preventDefault();
+        const formData = new FormData();
+        Array.from(file).forEach(file_to_upload => formData.append("analysis", file_to_upload))
+        try {
+            const response = await axios.post(
+                `${apiURL}analysis`,
+                formData
+            );
+            console.log(response);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     useEffect(() => {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
         fetchData();
+        fetchMyAnalysis();
     }, []);
 
     return (
         <div className={styles.dashboard}>
             <Header />
             <TabBar highlight="Ficha" />
-            {/* <div className={styles["title"]}>Patient ID: {patient_id}</div> */}
             <div className={styles["tab-content"]}>
                 <div className={styles.form}>
                     <div className={styles["title"]}>
@@ -54,6 +82,61 @@ const MyRecord = () => {
                     </div>
                     <div className={styles["subtitle"]}>
                         Grupo sanguíneo: {record.blood_type}
+                    </div>
+
+                    <div className={styles["my-estudios-section"]}>
+                        <div className={styles["title"]}>Mis Estudios</div>
+                        <div className={styles["horizontal-scroll"]}>
+                        {Array.isArray(analysis) ? (
+                        analysis.map(uploaded_analysis => {
+                                return (
+                                        <div className={styles["estudio-card"]}>
+                                            <a href={uploaded_analysis.url} target="_blank">
+                                            <div className={styles["estudio-name"]}>
+                                                {uploaded_analysis.file_name}
+                                            </div>
+                                            <Image
+                                                src="/document.png"
+                                                alt=""
+                                                className={styles["document-icon"]}
+                                                width={100}
+                                                height={100}
+                                                onClick={() => {}}
+                                            />
+                                            <div className={styles["estudio-date"]}>
+                                            {new Date(
+                                                uploaded_analysis.uploaded_at * 1000
+                                            ).toLocaleString("es-AR")}
+                                            </div>
+                                            </a>
+                                        </div>
+                                )
+                            })) : (<div className={styles["subtitle"]}>
+                            No hay analisis cargados
+                        </div>)
+                        }
+                        </div>
+                        
+
+                        <form
+                            className={styles["file-upload-form"]}
+                            onSubmit={onSubmit}
+                        >
+                            <input
+                                type="file"
+                                name="file"
+                                accept=".pdf"
+                                multiple={true}
+                                onChange={(e) => setFile(e.target.files)}
+                            />
+                            <button
+                                className={styles["edit-button"]}
+                                type="submit"
+                                value="Upload"
+                            >
+                                Upload
+                            </button>
+                        </form>
                     </div>
 
                     <div className={styles["records-section"]}>
@@ -74,7 +157,8 @@ const MyRecord = () => {
                                                         styles["record-date"]
                                                     }
                                                 >
-                                                    {observation.date}
+                                                    Observacion del{" "}
+                                                    {observation.date.toLocaleString()}
                                                 </div>
                                                 <div
                                                     className={
