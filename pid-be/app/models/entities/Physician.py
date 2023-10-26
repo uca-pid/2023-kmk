@@ -104,8 +104,12 @@ class Physician:
         )
 
     @staticmethod
-    def get_dashboard_metrics(id):
-        return db.collection("dashbaord").document(id).get().to_dict()
+    def approve_appointment(id):
+        db.collection("appointments").document(id).update({"approved": "approved"})
+
+    @staticmethod
+    def deny_appointment(id):
+        db.collection("appointments").document(id).update({"approved": "denied"})
 
     def create(self):
         if db.collection("physicians").document(self.id).get().exists:

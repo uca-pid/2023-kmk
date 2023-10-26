@@ -15,6 +15,7 @@ class Appointment:
     patient_id: str
     created_at: int = None
     updated_at: int = None
+    approved: str
 
     def __init__(
         self,
@@ -24,6 +25,7 @@ class Appointment:
         id: str = None,
         created_at: int = None,
         updated_at: int = None,
+        approved: str = "pending",
     ):
         if not Patient.is_patient(patient_id):
             raise HTTPException(
@@ -37,6 +39,7 @@ class Appointment:
         self.id = id
         self.created_at = created_at
         self.updated_at = updated_at
+        self.approved = approved
 
     @staticmethod
     def get_all_appointments_for_user_with(uid):
@@ -44,6 +47,7 @@ class Appointment:
             appointments = (
                 db.collection("appointments")
                 .where("patient_id", "==", uid)
+                .where("approved", "==", "approved")
                 .order_by("date")
                 .get()
             )
@@ -51,6 +55,7 @@ class Appointment:
             appointments = (
                 db.collection("appointments")
                 .where("physician_id", "==", uid)
+                .where("approved", "==", "approved")
                 .order_by("date")
                 .get()
             )
@@ -93,6 +98,20 @@ class Appointment:
             return Appointment(**appointment_document.to_dict())
         return None
 
+    @staticmethod
+    def is_appointment(id):
+        return db.collection("appointments").document(id).get().exists
+
+    @staticmethod
+    def get_pending_appointments(id):
+        appointments = (
+            db.collection("appointments")
+            .where("physician_id", "==", id)
+            .where("approved", "==", "pending")
+            .get()
+        )
+        return [appointment.to_dict() for appointment in appointments]
+
     def delete(self):
         db.collection("appointments").document(self.id).delete()
         Physician.free_agenda(self.physician_id, self.date)
@@ -107,7 +126,7 @@ class Appointment:
             )
         Physician.free_agenda(self.physician_id, self.date)
         db.collection("appointments").document(self.id).update(
-            {**updated_values, "updated_at": round(time.time())}
+            {**updated_values, "updated_at": round(time.time()), "approved": "pending"}
         )
         self.date = updated_values["date"]
         Physician.schedule_appointment(id=self.physician_id, date=self.date)
@@ -121,6 +140,7 @@ class Appointment:
                 "physician_id": self.physician_id,
                 "patient_id": self.patient_id,
                 "created_at": round(time.time()),
+                "approved": self.approved,
             }
         )
         Physician.schedule_appointment(id=self.physician_id, date=self.date)
