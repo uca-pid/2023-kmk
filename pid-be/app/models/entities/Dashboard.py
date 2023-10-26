@@ -6,25 +6,16 @@ db = firestore.client()
 
 
 class Dashboard:
-    id: str
-    approved: str
+    physcian_id: str
+    turnos_totales: int
+    turnos_modificados: int
 
     def __init__(
         self,
-        role: str,
-        name: str,
-        last_name: str,
-        tuition: int,
-        specialty: str,
-        email: str,
-        id: str,
-        approved: str = "pending",
+        physcian_id: str,
+        turnos_totales: int,
+        turnos_modificados: int,
     ):
-        self.role = role
-        self.name = name
-        self.last_name = last_name
-        self.tuition = tuition
-        self.specialty = specialty
-        self.email = email
-        self.id = id
-        self.approved = approved
+        self.physcian_id = physcian_id,
+        self.turnos_totales = turnos_totales,
+        self.turnos_modificados = turnos_modificados

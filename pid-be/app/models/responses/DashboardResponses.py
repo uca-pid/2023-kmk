@@ -2,14 +2,13 @@ from pydantic import BaseModel
 from typing import Union
 
 
-class BasicRecordResponse(BaseModel):
+class BasicDashboardResponse(BaseModel):
     turnos_totales: int
-    turnos_pendientes: int
-    turnos_cancelados: int
+    turnos_modificados: int
 
 
 class SuccessfullDashboardResponse(BaseModel):
-    dashboard_metrics: BasicRecordResponse
+    dashboard_metrics: BasicDashboardResponse
 
 
 class DashboardErrorResponse(BaseModel):
