@@ -9,6 +9,7 @@ load_dotenv()
 
 class EmailHandler:
     type: str
+    subject: str
     data: object
     configuration = ConnectionConfig(
         MAIL_USERNAME=os.environ.get("MAIL_USERNAME"),
@@ -23,13 +24,25 @@ class EmailHandler:
     )
 
     def __init__(self, type: str, data: object):
+        subject_for_email_type = {
+            "PATIENT_REGISTERED_ACCOUNT": "Bienvenid@!",
+            "PHYSICIAN_REGISTERED_ACCOUNT": "Bienvenid@!",
+            "PHYSICIAN_APPROVED_ACCOUNT": "Cuenta Verificada",
+            "PHYSICIAN_REJECTED_ACCOUNT": "Cuenta Rechazada",
+            "PASSWORD_CHANGED": "Contrase&ntilde;a Modificada",
+            "PENDING_APPOINTMENT": "Nuevo Turno",
+            "APPROVED_APPOINTMENT": "Turno Aprovado",
+            "CANCELED_APPOINTMENT": "Turno Cancelado",
+            "EDITED_RECORDS": "EditedRecords",
+        }
         self.type = type
+        self.subject = subject_for_email_type[self.type]
         self.data = data
 
     async def send_email(self):
         template_handler = TemplateHandler(self.type, self.data)
         message = MessageSchema(
-            subject="Bienvenido",
+            subject=self.subject,
             recipients=[self.data["email"]],
             body=template_handler.generate_template(),
             subtype="html",

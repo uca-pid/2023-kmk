@@ -312,6 +312,15 @@ def change_password(
     )
     if login_response.status_code == 200:
         auth.update_user(uid, **{"password": change_password_request.new_password})
+        requests.post(
+            "http://localhost:9000/emails/send",
+            json={
+                "type": "PASSWORD_CHANGED",
+                "data": {
+                    "email": user.email,
+                },
+            },
+        )
         return {"message": "Password changed successfully"}
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,

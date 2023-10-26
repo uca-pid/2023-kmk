@@ -3,10 +3,17 @@ class TemplateHandler:
     template_name: str
     data: object
 
-    def __init__(self, type: str, data: object):
+    def __init__(self, type: str, data: object = {}):
         template_for_email_type = {
             "PATIENT_REGISTERED_ACCOUNT": "PatientRegisteredAccount",
             "PHYSICIAN_REGISTERED_ACCOUNT": "PhysicianRegisteredAccount",
+            "PHYSICIAN_APPROVED_ACCOUNT": "ApprovedPhysicianAccount",
+            "PHYSICIAN_REJECTED_ACCOUNT": "RejectedPhysicianAccount",
+            "PASSWORD_CHANGED": "PasswordChanged",
+            "PENDING_APPOINTMENT": "PendingAppointment",
+            "APPROVED_APPOINTMENT": "ApprovedAppointment",
+            "CANCELED_APPOINTMENT": "CanceledAppointment",
+            "EDITED_RECORDS": "EditedRecords",
         }
         self.type = type
         self.template_name = template_for_email_type[self.type]
@@ -15,6 +22,4 @@ class TemplateHandler:
     def generate_template(self):
         with open(f"app/models/email_templates/{self.template_name}.html", "r") as fp:
             template_content = fp.read()
-        return template_content.format(
-            name=self.data["name"], last_name=self.data["last_name"]
-        )
+        return template_content.format(**self.data)
