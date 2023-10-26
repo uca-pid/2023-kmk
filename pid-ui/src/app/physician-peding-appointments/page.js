@@ -25,7 +25,9 @@ const PhysicianPendingAppointments = () => {
 
     const fetchAppointments = async () => {
         try {
-            const response = await axios.get(`${apiURL}appointments`);
+            const response = await axios.get(
+                `${apiURL}physicians/pending-appointments`
+            );
             response.data.appointments == undefined
                 ? setAppointments([])
                 : setAppointments(response.data.appointments);
@@ -34,11 +36,26 @@ const PhysicianPendingAppointments = () => {
         }
     };
 
+    const handleApproveAppointment = async (appointmentId) => {
+        console.log(appointmentId);
+        try {
+            await axios.post(
+                `${apiURL}physicians/approve-appointment/${appointmentId}`
+            );
+            toast.success("Turno aprobado exitosamente");
+            fetchAppointments();
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
     const handleDenyAppointment = async (appointmentId) => {
         console.log(appointmentId);
         try {
-            await axios.delete(`${apiURL}appointments/${appointmentId}`);
-            toast.info("Turno eliminado exitosamente");
+            await axios.post(
+                `${apiURL}physicians/deny-appointment/${appointmentId}`
+            );
+            toast.error("Turno eliminado exitosamente");
             fetchAppointments();
         } catch (error) {
             console.log(error);
@@ -107,7 +124,11 @@ const PhysicianPendingAppointments = () => {
                                                 className={
                                                     styles["approve-button"]
                                                 }
-                                                onClick={() => {}}
+                                                onClick={() =>
+                                                    handleApproveAppointment(
+                                                        appointment.id
+                                                    )
+                                                }
                                             >
                                                 Confirmar{" "}
                                             </button>
