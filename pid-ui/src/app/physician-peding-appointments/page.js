@@ -5,12 +5,18 @@ import Image from "next/image";
 import styles from "../styles/styles.module.css";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
+import https from "https";
 import { Header, Footer, PhysicianTabBar } from "../components/header";
 import { toast } from "react-toastify";
 
 const PhysicianPendingAppointments = () => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
     const [appointments, setAppointments] = useState([]);
+
+    const agent = new https.Agent({
+        rejectUnauthorized: false,
+    });
+
 
     const fetchAppointments = async () => {
         try {
@@ -41,10 +47,11 @@ const PhysicianPendingAppointments = () => {
     const handleDenyAppointment = async (appointmentId) => {
         console.log(appointmentId);
         try {
-            await axios.post(
-                `${apiURL}physicians/deny-appointment/${appointmentId}`
-            );
-            toast.error("Turno rechazado exitosamente");
+            await axios.delete(`${apiURL}appointments/${appointmentId}`, {
+                httpsAgent: agent,
+            });
+            toast.info("Turno eliminado exitosamente");
+
             fetchAppointments();
         } catch (error) {
             console.log(error);

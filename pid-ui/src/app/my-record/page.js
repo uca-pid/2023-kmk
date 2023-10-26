@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import styles from "../styles/styles.module.css";
 import axios from "axios";
+import https from "https";
 import { Footer, Header, TabBar } from "../components/header";
 import Image from "next/image";
 
@@ -20,11 +20,16 @@ const MyRecord = () => {
         observations: [],
     });
 
+    const agent = new https.Agent({
+        rejectUnauthorized: false,
+    });
     const [analysis, setAnalysis] = useState([]);
 
     const fetchData = async () => {
         try {
-            const response = await axios.get(`${apiURL}records/get-my-record`);
+            const response = await axios.get(`${apiURL}records/get-my-record`, {
+                httpsAgent: agent,
+            });
             setRecord(response.data.record);
             console.log(response);
         } catch (error) {

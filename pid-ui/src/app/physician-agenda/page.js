@@ -9,6 +9,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Modal from "react-modal";
 import axios from "axios";
+import https from "https";
 import { Header, Footer, PhysicianTabBar } from "../components/header";
 import userCheck from "../components/userCheck";
 import { toast } from "react-toastify";
@@ -26,6 +27,8 @@ const PhysicianAgenda = () => {
     const [newObservationContent, setNewObservationContent] = useState("");
     const [appointmentAttended, setAppointmentAttended] = useState("yes");
 
+    const agent = new https.Agent({
+        rejectUnauthorized: false,
     const [observationPayload, setObservationPayload] = useState({
         date: "",
         physician: "",
@@ -35,7 +38,9 @@ const PhysicianAgenda = () => {
 
     const fetchAppointments = async () => {
         try {
-            const response = await axios.get(`${apiURL}appointments`);
+            const response = await axios.get(`${apiURL}appointments`, {
+                httpsAgent: agent,
+            });
             response.data.appointments == undefined
                 ? setAppointments([])
                 : setAppointments(response.data.appointments);
@@ -62,6 +67,9 @@ const PhysicianAgenda = () => {
                 {
                     date: newObservationDate,
                     observation: newObservationContent,
+                },
+                {
+                    httpsAgent: agent,
                 }
             );
             console.log(response);
@@ -75,7 +83,9 @@ const PhysicianAgenda = () => {
     const handleDeleteAppointment = async (appointmentId) => {
         console.log(appointmentId);
         try {
-            await axios.delete(`${apiURL}appointments/${appointmentId}`);
+            await axios.delete(`${apiURL}appointments/${appointmentId}`, {
+                httpsAgent: agent,
+            });
             toast.info("Turno eliminado exitosamente");
             fetchAppointments();
         } catch (error) {
