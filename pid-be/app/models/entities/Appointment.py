@@ -104,7 +104,7 @@ class Appointment:
             )
         Physician.free_agenda(self.physician_id, self.date)
         db.collection("appointments").document(self.id).update(
-            {**updated_values, "updated_at": round(time.time())}
+            {**updated_values, "updated_at": round(time.time()), "approved": "pending"}
         )
         self.date = updated_values["date"]
         Physician.schedule_appointment(id=self.physician_id, date=self.date)
