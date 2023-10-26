@@ -4,8 +4,8 @@ import React, { useState, useEffect } from "react";
 import styles from "../styles/styles.module.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import https from "https";
 import { Header, Footer } from "../components/header";
-import userCheck from "../components/userCheck";
 import { toast } from "react-toastify";
 
 const Admin = () => {
@@ -13,10 +13,17 @@ const Admin = () => {
     const router = useRouter();
     const [doctors, setDoctors] = useState([]);
 
+    const agent = new https.Agent({
+        rejectUnauthorized: false,
+    });
+
     const fetchPhysicians = async () => {
         try {
             const response = await axios.get(
-                `${apiURL}admin/pending-validations`
+                `${apiURL}admin/pending-validations`,
+                {
+                    httpsAgent: agent,
+                }
             );
             console.log(response.data.physicians_pending_validation);
             setDoctors(response.data.physicians_pending_validation);
@@ -29,7 +36,10 @@ const Admin = () => {
         try {
             console.log(physician.id);
             const response = await axios.post(
-                `${apiURL}admin/approve-physician/${physician.id}`
+                `${apiURL}admin/approve-physician/${physician.id}`,
+                {
+                    httpsAgent: agent,
+                }
             );
             console.log(response.data);
             toast.info("Profesional aprobado");
@@ -43,7 +53,10 @@ const Admin = () => {
         try {
             console.log(physician.id);
             const response = await axios.post(
-                `${apiURL}admin/deny-physician/${physician.id}`
+                `${apiURL}admin/deny-physician/${physician.id}`,
+                {
+                    httpsAgent: agent,
+                }
             );
             console.log(response.data);
             toast.info("Profesional denegado");

@@ -1,4 +1,9 @@
 import axios from "axios";
+import https from "https";
+
+const agent = new https.Agent({
+    rejectUnauthorized: false,
+});
 
 const userCheck = async (router) => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
@@ -6,7 +11,9 @@ const userCheck = async (router) => {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
-        const response = await axios.get(`${apiURL}users/role`);
+        const response = await axios.get(`${apiURL}users/role`, {
+            httpsAgent: agent,
+        });
         if (response.status == 200) {
             if (response.data.roles.includes("admin")) {
                 router.replace("/dashboard-admin");
@@ -23,12 +30,12 @@ const userCheck = async (router) => {
     } catch (error) {
         console.error(error);
 
-        switch (error.response.data.detail) {
-            case "User must be logged in":
-                router.replace("/");
-                break;
-        }
+    switch (error.response.data.detail) {
+      case "User must be logged in":
+        router.replace("/");
+        break;
     }
+  }
 };
 
 export default userCheck;

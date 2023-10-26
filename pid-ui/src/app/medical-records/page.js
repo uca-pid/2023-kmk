@@ -1,23 +1,28 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import styles from "../styles/styles.module.css";
 import axios from "axios";
+import https from "https";
 import { Footer, Header } from "../components/header";
+import Image from "next/image";
+
 
 const MedicalRecords = ({ searchParams }) => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
-
     const [urlSearchParams, setUrlSearchParams] = useState(null);
 
+    const agent = new https.Agent({
+        rejectUnauthorized: false,
+    });
+  
     useEffect(() => {
         if (window)
-            setUrlSearchParams(new URLSearchParams(window.location.search));
-    }, []);
+        setUrlSearchParams(new URLSearchParams(window.location.search));
+}, []);
 
-    const [patientId, setPatientId] = useState(
-        searchParams.patientId || urlSearchParams.get("patientId")
+const [patientId, setPatientId] = useState(
+    searchParams.patientId || urlSearchParams.get("patientId")
     );
     const [record, setRecord] = useState({
         name: "",
@@ -28,13 +33,17 @@ const MedicalRecords = ({ searchParams }) => {
         id: "",
         observations: [],
     });
+    const [analysis, setAnalysis] = useState([]);
     const [newObservationDate, setNewObservationDate] = useState("");
     const [newObservationContent, setNewObservationContent] = useState("");
 
     const fetchData = async () => {
         try {
             const response = await axios.get(
-                `${apiURL}records/get-record/${patientId}`
+                `${apiURL}records/get-record/${patientId}`,
+                {
+                    httpsAgent: agent,
+                }
             );
             setRecord(response.data.record);
             console.log(response);
@@ -43,31 +52,22 @@ const MedicalRecords = ({ searchParams }) => {
         }
     };
 
-    // const handleAddObservation = async (e) => {
-    //     console.log(patientId, "handleAddObservation");
-    //     console.log(newObservationDate, newObservationContent);
-    //     e.preventDefault();
-    //     try {
-    //         const response = await axios.post(
-    //             `http://localhost:8080/records/update/${patientId}`,
-    //             {
-    //                 date: newObservationDate,
-    //                 observation: newObservationContent,
-    //             }
-    //         );
-    //         console.log(response);
-    //         fetchData();
-    //     } catch (error) {
-    //         console.error(error);
-    //     }
-    // };
-
+    const fetchMyAnalysis = async () => {
+        try {
+            const response = await axios.get(`${apiURL}analysis/${patientId}`);
+            setAnalysis(response.data);
+            console.log(response);
+        } catch (error) {
+            console.error(error);
+        }
+    }
     useEffect(() => {
         if (patientId) {
             axios.defaults.headers.common = {
                 Authorization: `bearer ${localStorage.getItem("token")}`,
             };
             fetchData();
+            fetchMyAnalysis()
         }
     }, [patientId]);
 
@@ -88,6 +88,40 @@ const MedicalRecords = ({ searchParams }) => {
                     </div>
                     <div className={styles["subtitle"]}>
                         Grupo sanguíneo: {record.blood_type}
+                    </div>
+
+                    <div className={styles["my-estudios-section"]}>
+                        <div className={styles["title"]}>Estudios del paciente</div>
+                        <div className={styles["horizontal-scroll"]}>
+                        {Array.isArray(analysis) ? (
+                        analysis.map(uploaded_analysis => {
+                                return (
+                                        <div className={styles["estudio-card"]}>
+                                            <a href={uploaded_analysis.url} target="_blank">
+                                            <div className={styles["estudio-name"]}>
+                                                {uploaded_analysis.file_name}
+                                            </div>
+                                            <Image
+                                                src="/document.png"
+                                                alt=""
+                                                className={styles["document-icon"]}
+                                                width={100}
+                                                height={100}
+                                                onClick={() => {}}
+                                            />
+                                            <div className={styles["estudio-date"]}>
+                                            {new Date(
+                                                uploaded_analysis.uploaded_at * 1000
+                                            ).toLocaleString("es-AR")}
+                                            </div>
+                                            </a>
+                                        </div>
+                                )
+                            })) : (<div className={styles["subtitle"]}>
+                            No hay analisis cargados
+                        </div>)
+                        }
+                        </div>
                     </div>
 
                     {/* <form
