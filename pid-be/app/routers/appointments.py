@@ -1,6 +1,10 @@
+import requests
+from datetime import datetime
 from fastapi import APIRouter, status, Depends
 from fastapi.responses import JSONResponse
 
+from app.models.entities.Physician import Physician
+from app.models.entities.Patient import Patient
 from app.models.entities.Auth import Auth
 from app.models.entities.Appointment import Appointment
 from app.models.requests.AppointmentRequests import (
@@ -55,6 +59,24 @@ async def create_appointment(
     )
     try:
         appointment_id = appointment.create()
+        physician = Physician.get_by_id(appointment_creation_request.physician_id)
+        date = datetime.fromtimestamp(appointment_creation_request.date)
+        requests.post(
+            "http://localhost:9000/emails/send",
+            json={
+                "type": "PENDING_APPOINTMENT",
+                "data": {
+                    "email": physician.email,
+                    "name": physician.name,
+                    "last_name": physician.last_name,
+                    "day": date.day,
+                    "month": date.month,
+                    "year": date.year,
+                    "minute": date.minute,
+                    "second": date.second,
+                },
+            },
+        )
         return {"appointment_id": appointment_id}
     except Exception:
         return JSONResponse(
@@ -128,6 +150,26 @@ def delete_appointment_by_id(id: str, uid=Depends(Auth.is_logged_in)):
                 content={"detail": "Invalid appointment id"},
             )
         appointment.delete()
+        physician = Physician.get_by_id(appointment.physician_id)
+        requests.post(
+            "http://localhost:9000/emails/send",
+            json={
+                "type": "CANCELED_APPOINTMENT",
+                "data": {
+                    "email": physician.email,
+                },
+            },
+        )
+        patient = Patient.get_by_id(appointment.patient_id)
+        requests.post(
+            "http://localhost:9000/emails/send",
+            json={
+                "type": "CANCELED_APPOINTMENT",
+                "data": {
+                    "email": patient.email,
+                },
+            },
+        )
         return {"message": "Appointment cancelled successfully"}
     except:
         return JSONResponse(
