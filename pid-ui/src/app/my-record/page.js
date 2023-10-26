@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation";
 import styles from "../styles/styles.module.css";
 import axios from "axios";
 import { Footer, Header, TabBar } from "../components/header";
+import Image from "next/image";
 
 const MyRecord = () => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
-
+    const [file, setFile] = useState(null); // File to be uploaded
     const [record, setRecord] = useState({
         name: "",
         last_name: "",
@@ -29,6 +30,21 @@ const MyRecord = () => {
         }
     };
 
+    const onSubmit = async (e) => {
+        e.preventDefault();
+        const formData = new FormData();
+        formData.append("file", file);
+        try {
+            const response = await axios.post(
+                `${apiURL}records/upload`,
+                formData
+            );
+            console.log(response);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     useEffect(() => {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
@@ -40,7 +56,6 @@ const MyRecord = () => {
         <div className={styles.dashboard}>
             <Header />
             <TabBar highlight="Ficha" />
-            {/* <div className={styles["title"]}>Patient ID: {patient_id}</div> */}
             <div className={styles["tab-content"]}>
                 <div className={styles.form}>
                     <div className={styles["title"]}>
@@ -54,6 +69,49 @@ const MyRecord = () => {
                     </div>
                     <div className={styles["subtitle"]}>
                         Grupo sanguíneo: {record.blood_type}
+                    </div>
+
+                    <div className={styles["my-estudios-section"]}>
+                        <div className={styles["title"]}>Mis Estudios</div>
+
+                        <div className={styles["horizontal-scroll"]}>
+                            <div className={styles["estudio-card"]}>
+                                <div className={styles["estudio-name"]}>
+                                    Estudio 1
+                                </div>
+                                <Image
+                                    src="/document.png"
+                                    alt=""
+                                    className={styles["document-icon"]}
+                                    width={100}
+                                    height={100}
+                                    onClick={() => {}}
+                                />
+                                <div className={styles["estudio-date"]}>
+                                    01/01/2021
+                                </div>
+                            </div>
+                        </div>
+
+                        <form
+                            className={styles["file-upload-form"]}
+                            onSubmit={onSubmit}
+                        >
+                            <input
+                                type="file"
+                                name="file"
+                                accept=".pdf"
+                                multiple={true}
+                                onChange={(e) => setFile(e.target.files?.[0])}
+                            />
+                            <button
+                                className={styles["edit-button"]}
+                                type="submit"
+                                value="Upload"
+                            >
+                                Upload
+                            </button>
+                        </form>
                     </div>
 
                     <div className={styles["records-section"]}>
@@ -74,7 +132,8 @@ const MyRecord = () => {
                                                         styles["record-date"]
                                                     }
                                                 >
-                                                    {observation.date}
+                                                    Observacion del{" "}
+                                                    {observation.date.toLocaleString()}
                                                 </div>
                                                 <div
                                                     className={
