@@ -5,6 +5,7 @@ import Link from "next/link";
 import styles from "./registro.module.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import https from "https";
 import validator from "validator";
 import { HeaderSlim, Footer } from "../components/header";
 import { toast } from "react-toastify";
@@ -28,6 +29,11 @@ const Registro = () => {
     const [blood_type, setBloodType] = useState("");
     const router = useRouter();
 
+    // At request level
+    const agent = new https.Agent({
+        rejectUnauthorized: false,
+    });
+
     const validate = (value) => {
         if (
             validator.isStrongPassword(value, {
@@ -46,44 +52,34 @@ const Registro = () => {
         }
     };
 
-    useEffect(() => {
-        const fetchSpecialties = async () => {
-            const response = await axios.get(`${apiURL}specialties`);
-            console.log(response.data.specialties);
-            response.data.specialties == undefined
-                ? setSpecialties([])
-                : setSpecialties(response.data.specialties);
-        };
+    const fetchSpecialties = async () => {
+        const response = await axios.get(`${apiURL}specialties`, {
+            httpsAgent: agent,
+        });
+        console.log(response.data.specialties);
+        response.data.specialties == undefined
+            ? setSpecialties([])
+            : setSpecialties(response.data.specialties);
+    };
 
-        fetchSpecialties();
-    }, []);
+    const fetchGenders = async () => {
+        const response = await axios.get(`${apiURL}genders`, {
+            httpsAgent: agent,
+        });
+        console.log(response.data.genders);
+        response.data.genders == undefined
+            ? setGenders([])
+            : setGenders(response.data.genders);
+    };
 
-    useEffect(() => {
-        const fetchGenders = async () => {
-            const response = await axios.get(`${apiURL}genders`);
-            console.log(response.data.genders);
-            response.data.genders == undefined
-                ? setGenders([])
-                : setGenders(response.data.genders);
-        };
-
-        fetchGenders();
-    }, []);
-
-    useEffect(() => {
-        const fetchBloodTypes = async () => {
-            const response = await axios.get(`${apiURL}blood-types`);
-            console.log(response.data.blood_types);
-            response.data.blood_types == undefined
-                ? setBloodTypes([])
-                : setBloodTypes(response.data.blood_types);
-        };
-
-        fetchBloodTypes();
-    }, []);
-
-    const handleLogoClick = () => {
-        router.push("/");
+    const fetchBloodTypes = async () => {
+        const response = await axios.get(`${apiURL}blood-types`, {
+            httpsAgent: agent,
+        });
+        console.log(response.data.blood_types);
+        response.data.blood_types == undefined
+            ? setBloodTypes([])
+            : setBloodTypes(response.data.blood_types);
     };
 
     const handleSubmit = async (e) => {
@@ -110,7 +106,8 @@ const Registro = () => {
         try {
             const response = await axios.post(
                 `${apiURL}users/register`,
-                userData
+                userData,
+                { httpsAgent: agent }
             );
             console.log(response.data);
             if (response.data) {
@@ -131,6 +128,14 @@ const Registro = () => {
             console.error(error);
         }
     };
+
+    useEffect(() => {
+        fetchSpecialties();
+
+        fetchGenders();
+
+        fetchBloodTypes();
+    }, []);
 
     return (
         <div className={styles["registro"]}>

@@ -1,15 +1,18 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import styles from "../styles/styles.module.css";
 import axios from "axios";
+import https from "https";
 import { Footer, Header } from "../components/header";
 
 const MedicalRecords = ({ searchParams }) => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
-
     const [urlSearchParams, setUrlSearchParams] = useState(null);
+
+    const agent = new https.Agent({
+        rejectUnauthorized: false,
+    });
 
     useEffect(() => {
         if (window)
@@ -28,13 +31,14 @@ const MedicalRecords = ({ searchParams }) => {
         id: "",
         observations: [],
     });
-    const [newObservationDate, setNewObservationDate] = useState("");
-    const [newObservationContent, setNewObservationContent] = useState("");
 
     const fetchData = async () => {
         try {
             const response = await axios.get(
-                `${apiURL}records/get-record/${patientId}`
+                `${apiURL}records/get-record/${patientId}`,
+                {
+                    httpsAgent: agent,
+                }
             );
             setRecord(response.data.record);
             console.log(response);
@@ -42,25 +46,6 @@ const MedicalRecords = ({ searchParams }) => {
             console.error(error);
         }
     };
-
-    // const handleAddObservation = async (e) => {
-    //     console.log(patientId, "handleAddObservation");
-    //     console.log(newObservationDate, newObservationContent);
-    //     e.preventDefault();
-    //     try {
-    //         const response = await axios.post(
-    //             `http://localhost:8080/records/update/${patientId}`,
-    //             {
-    //                 date: newObservationDate,
-    //                 observation: newObservationContent,
-    //             }
-    //         );
-    //         console.log(response);
-    //         fetchData();
-    //     } catch (error) {
-    //         console.error(error);
-    //     }
-    // };
 
     useEffect(() => {
         if (patientId) {

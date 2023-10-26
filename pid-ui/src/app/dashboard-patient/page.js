@@ -9,6 +9,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import es from "date-fns/locale/es";
 import Modal from "react-modal";
 import axios from "axios";
+import https from "https";
 import { Footer, Header, TabBar } from "../components/header";
 import userCheck from "../components/userCheck";
 import { toast } from "react-toastify";
@@ -36,9 +37,15 @@ const DashboardPatient = () => {
         agenda: {},
     });
 
+    const agent = new https.Agent({
+        rejectUnauthorized: false,
+    });
+
     const fetchAppointments = async () => {
         try {
-            const response = await axios.get(`${apiURL}appointments/`);
+            const response = await axios.get(`${apiURL}appointments/`, {
+                httpsAgent: agent,
+            });
             response.data.appointments == undefined
                 ? setAppointments([])
                 : setAppointments(response.data.appointments);
@@ -49,7 +56,9 @@ const DashboardPatient = () => {
 
     const fetchSpecialties = async () => {
         try {
-            const response = await axios.get(`${apiURL}specialties`);
+            const response = await axios.get(`${apiURL}specialties`, {
+                httpsAgent: agent,
+            });
             response.data.specialties == undefined
                 ? setSpecialties([])
                 : setSpecialties(response.data.specialties);
@@ -62,7 +71,10 @@ const DashboardPatient = () => {
         try {
             if (specialty) {
                 const response = await axios.get(
-                    `${apiURL}physicians/specialty/${specialty}`
+                    `${apiURL}physicians/specialty/${specialty}`,
+                    {
+                        httpsAgent: agent,
+                    }
                 );
                 response.data.physicians == undefined
                     ? setDoctors([])
@@ -109,9 +121,15 @@ const DashboardPatient = () => {
 
     const handleSaveAppointment = async () => {
         try {
-            await axios.put(`${apiURL}appointments/${editingAppointment.id}`, {
-                date: Math.round(dateToEdit.getTime() / 1000),
-            });
+            await axios.put(
+                `${apiURL}appointments/${editingAppointment.id}`,
+                {
+                    date: Math.round(dateToEdit.getTime() / 1000),
+                },
+                {
+                    httpsAgent: agent,
+                }
+            );
             fetchAppointments();
         } catch (error) {
             console.error(error);
@@ -122,7 +140,9 @@ const DashboardPatient = () => {
 
     const handleDeleteAppointment = async (appointmentId) => {
         try {
-            await axios.delete(`${apiURL}appointments/${appointmentId}`);
+            await axios.delete(`${apiURL}appointments/${appointmentId}`, {
+                httpsAgent: agent,
+            });
             toast.info("Turno eliminado exitosamente");
             fetchAppointments();
         } catch (error) {
@@ -133,10 +153,16 @@ const DashboardPatient = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post(`${apiURL}appointments/`, {
-                physician_id: selectedDoctor,
-                date: Math.round(date.getTime() / 1000),
-            });
+            const response = await axios.post(
+                `${apiURL}appointments/`,
+                {
+                    physician_id: selectedDoctor,
+                    date: Math.round(date.getTime() / 1000),
+                },
+                {
+                    httpsAgent: agent,
+                }
+            );
             toast.info("Turno solicitado exitosamente");
             fetchAppointments();
         } catch (error) {

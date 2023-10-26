@@ -5,17 +5,21 @@ import Link from "next/link";
 import styles from "./landing.module.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import https from "https";
 import { Footer, HeaderSlim } from "../components/header";
 import userCheck from "../components/userCheck";
 import { toast } from "react-toastify";
 
 const Landing = () => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
-    console.log(apiURL);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const router = useRouter();
+
+    const agent = new https.Agent({
+        rejectUnauthorized: false,
+    });
 
     useEffect(() => {
         localStorage.removeItem("token");
@@ -34,7 +38,10 @@ const Landing = () => {
         try {
             const response = await axios.post(
                 `${apiURL}users/login/`,
-                userData
+                userData,
+                {
+                    httpsAgent: agent,
+                }
             );
             localStorage.setItem("token", response.data.token);
             userCheck(router);

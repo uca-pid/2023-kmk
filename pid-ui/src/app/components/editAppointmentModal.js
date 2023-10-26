@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import styles from "../styles/styles.module.css";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Modal from "react-modal";
 import axios from "axios";
-import { Footer, Header, TabBar } from "../components/header";
-import userCheck from "../components/userCheck";
+import https from "https";
 import { toast } from "react-toastify";
+
+const agent = new https.Agent({
+    rejectUnauthorized: false,
+});
 
 const customStyles = {
     content: {
@@ -26,6 +29,9 @@ const EditAppointmentModal = (props) => {
                 `${props.apiURL}appointments/${props.editingAppointment.id}`,
                 {
                     date: Math.round(props.dateToEdit.getTime() / 1000),
+                },
+                {
+                    httpsAgent: agent,
                 }
             );
             fetchAppointments();
