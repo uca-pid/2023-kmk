@@ -13,7 +13,7 @@ const Header = () => {
     return (
         <div className={styles.header}>
             <ToastContainer
-                limit={1}
+                limit={3}
                 position={"top-right"}
                 autoClose={5000}
                 hideProgressBar={false}
