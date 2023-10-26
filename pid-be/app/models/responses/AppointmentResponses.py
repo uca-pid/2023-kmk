@@ -41,6 +41,7 @@ class BasicAppointmentResponse(BaseModel):
     physician: PhysicianResponse
     patient: PatientResponse
     created_at: int
+    approved: str = "pending"
 
     def __init__(self, **data):
         physician = Physician.get_by_id(data["physician_id"])

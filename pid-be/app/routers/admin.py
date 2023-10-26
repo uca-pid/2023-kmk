@@ -63,6 +63,16 @@ async def approve_physician(physician_id: str, uid=Depends(Auth.is_admin)):
                 content={"detail": "Can only approve physicians"},
             )
         Admin.approve_physician(physician_id)
+        physician = Physician.get_by_id(physician_id)
+        requests.post(
+            "http://localhost:9000/emails/send",
+            json={
+                "type": "PHYSICIAN_APPROVED_ACCOUNT",
+                "data": {
+                    "email": physician.email,
+                },
+            },
+        )
         return {"message": "Physician validated successfully"}
     except:
         return JSONResponse(
@@ -101,6 +111,16 @@ async def deny_physician(physician_id: str, uid=Depends(Auth.is_admin)):
                 content={"detail": "Can only deny physicians"},
             )
         Admin.deny_physician(physician_id)
+        physician = Physician.get_by_id(physician_id)
+        requests.post(
+            "http://localhost:9000/emails/send",
+            json={
+                "type": "PHYSICIAN_DENIED_ACCOUNT",
+                "data": {
+                    "email": physician.email,
+                },
+            },
+        )
         return {"message": "Physician denied successfully"}
     except:
         return JSONResponse(

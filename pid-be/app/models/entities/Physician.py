@@ -103,6 +103,14 @@ class Physician:
             {f"appointments.{date}": firestore.DELETE_FIELD}
         )
 
+    @staticmethod
+    def approve_appointment(id):
+        db.collection("appointments").document(id).update({"approved": "approved"})
+
+    @staticmethod
+    def deny_appointment(id):
+        db.collection("appointments").document(id).update({"approved": "denied"})
+
     def create(self):
         if db.collection("physicians").document(self.id).get().exists:
             raise HTTPException(
