@@ -11,6 +11,7 @@ import { toast } from "react-toastify";
 
 const Landing = () => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
+    console.log(apiURL);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
