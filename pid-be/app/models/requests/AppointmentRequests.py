@@ -47,3 +47,7 @@ class UpdateAppointmentRequest(BaseModel):
         if date_to_validate < time.time():
             raise ValueError("Date can't be in the past")
         return date_to_validate
+
+class CloseAppointmentRequest(BaseModel):
+    attended: bool
+    start_time: str
