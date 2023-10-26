@@ -7,7 +7,6 @@ import https from "https";
 import { Footer, Header } from "../components/header";
 import Image from "next/image";
 
-
 const MedicalRecords = ({ searchParams }) => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
     const [urlSearchParams, setUrlSearchParams] = useState(null);
@@ -15,14 +14,14 @@ const MedicalRecords = ({ searchParams }) => {
     const agent = new https.Agent({
         rejectUnauthorized: false,
     });
-  
+
     useEffect(() => {
         if (window)
-        setUrlSearchParams(new URLSearchParams(window.location.search));
-}, []);
+            setUrlSearchParams(new URLSearchParams(window.location.search));
+    }, []);
 
-const [patientId, setPatientId] = useState(
-    searchParams.patientId || urlSearchParams.get("patientId")
+    const [patientId, setPatientId] = useState(
+        searchParams.patientId || urlSearchParams.get("patientId")
     );
     const [record, setRecord] = useState({
         name: "",
@@ -60,14 +59,14 @@ const [patientId, setPatientId] = useState(
         } catch (error) {
             console.error(error);
         }
-    }
+    };
     useEffect(() => {
         if (patientId) {
             axios.defaults.headers.common = {
                 Authorization: `bearer ${localStorage.getItem("token")}`,
             };
             fetchData();
-            fetchMyAnalysis()
+            fetchMyAnalysis();
         }
     }, [patientId]);
 
@@ -91,36 +90,59 @@ const [patientId, setPatientId] = useState(
                     </div>
 
                     <div className={styles["my-estudios-section"]}>
-                        <div className={styles["title"]}>Estudios del paciente</div>
+                        <div className={styles["title"]}>
+                            Estudios del paciente
+                        </div>
                         <div className={styles["horizontal-scroll"]}>
-                        {Array.isArray(analysis) ? (
-                        analysis.map(uploaded_analysis => {
-                                return (
-                                        <div className={styles["estudio-card"]}>
-                                            <a href={uploaded_analysis.url} target="_blank">
-                                            <div className={styles["estudio-name"]}>
-                                                {uploaded_analysis.file_name}
-                                            </div>
-                                            <Image
-                                                src="/document.png"
-                                                alt=""
-                                                className={styles["document-icon"]}
-                                                width={100}
-                                                height={100}
-                                                onClick={() => {}}
-                                            />
-                                            <div className={styles["estudio-date"]}>
-                                            {new Date(
-                                                uploaded_analysis.uploaded_at * 1000
-                                            ).toLocaleString("es-AR")}
-                                            </div>
+                            {Array.isArray(analysis) ? (
+                                analysis.map((uploaded_analysis) => {
+                                    return (
+                                        <div
+                                            key={uploaded_analysis.id}
+                                            className={styles["estudio-card"]}
+                                        >
+                                            <a
+                                                href={uploaded_analysis.url}
+                                                target="_blank"
+                                            >
+                                                <div
+                                                    className={
+                                                        styles["estudio-name"]
+                                                    }
+                                                >
+                                                    {
+                                                        uploaded_analysis.file_name
+                                                    }
+                                                </div>
+                                                <Image
+                                                    src="/document.png"
+                                                    alt=""
+                                                    className={
+                                                        styles["document-icon"]
+                                                    }
+                                                    width={100}
+                                                    height={100}
+                                                    onClick={() => {}}
+                                                />
+                                                <div
+                                                    className={
+                                                        styles["estudio-date"]
+                                                    }
+                                                >
+                                                    {new Date(
+                                                        uploaded_analysis.uploaded_at *
+                                                            1000
+                                                    ).toLocaleString("es-AR")}
+                                                </div>
                                             </a>
                                         </div>
-                                )
-                            })) : (<div className={styles["subtitle"]}>
-                            No hay analisis cargados
-                        </div>)
-                        }
+                                    );
+                                })
+                            ) : (
+                                <div className={styles["subtitle"]}>
+                                    No hay analisis cargados
+                                </div>
+                            )}
                         </div>
                     </div>
 
