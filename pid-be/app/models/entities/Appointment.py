@@ -47,6 +47,7 @@ class Appointment:
             appointments = (
                 db.collection("appointments")
                 .where("patient_id", "==", uid)
+                .where("approved", "==", "approved")
                 .order_by("date")
                 .get()
             )
@@ -54,6 +55,7 @@ class Appointment:
             appointments = (
                 db.collection("appointments")
                 .where("physician_id", "==", uid)
+                .where("approved", "==", "approved")
                 .order_by("date")
                 .get()
             )
