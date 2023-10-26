@@ -10,6 +10,7 @@ from app.models.entities.Appointment import Appointment
 from app.models.requests.AppointmentRequests import (
     AppointmentCreationRequest,
     UpdateAppointmentRequest,
+    CloseAppointmentRequest,
 )
 from app.models.responses.AppointmentResponses import (
     SuccessfulAppointmentCreationResponse,
@@ -20,6 +21,8 @@ from app.models.responses.AppointmentResponses import (
     DeleteAppointmentError,
     SuccessfulAppointmentUpdateResponse,
     UpdateAppointmentError,
+    SuccessfulAppointmentCloseResponse,
+    CloseAppointmentError,
 )
 
 router = APIRouter(
@@ -212,3 +215,38 @@ def update_appointment(
         )
     appointment.update(update_appointment_request.dict())
     return {"message": "Appointment updated successfully"}
+
+@router.put(
+    "/close-appointment/{id}",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessfulAppointmentCloseResponse,
+    responses={
+        400: {"model": CloseAppointmentError},
+        401: {"model": CloseAppointmentError},
+    },
+)
+def close_appointment(
+    id: str,
+    close_appointment_request: CloseAppointmentRequest,
+    uid=Depends(Auth.is_logged_in),
+):
+    """
+    Close an appointment.
+
+    This will allow authenticated physicians to close one of their appointments.
+
+    This path operation will:
+
+    * Close an appointment.
+    * Throw an error if appointment doesn't exist.
+    * Throw an error if appointment doesn't belong to the authenticated user.
+    * Throw an error if appointment retrieving fails.
+    """
+    appointment = Appointment.get_by_id(id)
+    if not appointment or appointment.physician_id != uid:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"detail": "Invalid appointment id"},
+        )
+    appointment.close(close_appointment_request.dict())
+    return {"message": "Appointment closed successfully"}

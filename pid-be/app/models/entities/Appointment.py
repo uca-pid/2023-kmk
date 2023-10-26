@@ -16,6 +16,8 @@ class Appointment:
     created_at: int = None
     updated_at: int = None
     approved: str
+    attended: bool
+    start_time: str
 
     def __init__(
         self,
@@ -26,6 +28,8 @@ class Appointment:
         created_at: int = None,
         updated_at: int = None,
         approved: str = "pending",
+        attended: bool = None,
+        start_time: str = None,
     ):
         if not Patient.is_patient(patient_id):
             raise HTTPException(
@@ -40,6 +44,8 @@ class Appointment:
         self.created_at = created_at
         self.updated_at = updated_at
         self.approved = approved
+        self.attended = attended
+        self.start_time = start_time
 
     @staticmethod
     def get_all_appointments_for_user_with(uid):
@@ -131,6 +137,12 @@ class Appointment:
         self.date = updated_values["date"]
         Physician.schedule_appointment(id=self.physician_id, date=self.date)
 
+    def close(self, updated_values):
+        db.collection("appointments").document(self.id).update(
+            {**updated_values, "start_time": updated_values["start_time"], "attended": updated_values["attended"]}
+        )
+        
+
     def create(self):
         id = db.collection("appointments").document().id
         db.collection("appointments").document(id).set(
@@ -141,6 +153,8 @@ class Appointment:
                 "patient_id": self.patient_id,
                 "created_at": round(time.time()),
                 "approved": self.approved,
+                "attended": self.attended,
+                "start_time": self.start_time
             }
         )
         Physician.schedule_appointment(id=self.physician_id, date=self.date)
