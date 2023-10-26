@@ -16,6 +16,7 @@ class Analysis:
     async def save(self):
         response_data = []
         bucket = storage.bucket()
+        print(len(self.analysis))
         for analysis_to_upload in self.analysis:
             id = (
                 db.collection("analysis")
@@ -24,7 +25,7 @@ class Analysis:
                 .document()
                 .id
             )
-            blob = bucket.blob(f"analysis/{self.uid}/{id}")
+            blob = bucket.blob(f"analysis/{self.uid}/{analysis_to_upload.filename}")
             blob.upload_from_file(analysis_to_upload.file)
             blob.make_public()
             document_data_object = {

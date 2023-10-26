@@ -118,7 +118,7 @@ def update_record(
             json={
                 "type": "CANCELED_APPOINTMENT",
                 "data": {
-                    "email": patient.email,
+                    "email": patient["email"],
                 },
             },
         )

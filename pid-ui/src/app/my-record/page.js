@@ -9,7 +9,7 @@ import Image from "next/image";
 
 const MyRecord = () => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
-    const [file, setFile] = useState(null); // File to be uploaded
+    const [file, setFile] = useState([]); // File to be uploaded
     const [record, setRecord] = useState({
         name: "",
         last_name: "",
@@ -19,6 +19,8 @@ const MyRecord = () => {
         id: "",
         observations: [],
     });
+
+    const [analysis, setAnalysis] = useState([]);
 
     const fetchData = async () => {
         try {
@@ -30,13 +32,23 @@ const MyRecord = () => {
         }
     };
 
+    const fetchMyAnalysis = async () => {
+        try {
+            const response = await axios.get(`${apiURL}analysis`);
+            setAnalysis(response.data);
+            console.log(response);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     const onSubmit = async (e) => {
         e.preventDefault();
         const formData = new FormData();
-        formData.append("file", file);
+        Array.from(file).forEach(file_to_upload => formData.append("analysis", file_to_upload))
         try {
             const response = await axios.post(
-                `${apiURL}records/upload`,
+                `${apiURL}analysis`,
                 formData
             );
             console.log(response);
@@ -50,6 +62,7 @@ const MyRecord = () => {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
         fetchData();
+        fetchMyAnalysis();
     }, []);
 
     return (
@@ -73,25 +86,37 @@ const MyRecord = () => {
 
                     <div className={styles["my-estudios-section"]}>
                         <div className={styles["title"]}>Mis Estudios</div>
-
                         <div className={styles["horizontal-scroll"]}>
-                            <div className={styles["estudio-card"]}>
-                                <div className={styles["estudio-name"]}>
-                                    Estudio 1
-                                </div>
-                                <Image
-                                    src="/document.png"
-                                    alt=""
-                                    className={styles["document-icon"]}
-                                    width={100}
-                                    height={100}
-                                    onClick={() => {}}
-                                />
-                                <div className={styles["estudio-date"]}>
-                                    01/01/2021
-                                </div>
-                            </div>
+                        {Array.isArray(analysis) ? (
+                        analysis.map(uploaded_analysis => {
+                                return (
+                                        <div className={styles["estudio-card"]}>
+                                            <a href={uploaded_analysis.url} target="_blank">
+                                            <div className={styles["estudio-name"]}>
+                                                {uploaded_analysis.file_name}
+                                            </div>
+                                            <Image
+                                                src="/document.png"
+                                                alt=""
+                                                className={styles["document-icon"]}
+                                                width={100}
+                                                height={100}
+                                                onClick={() => {}}
+                                            />
+                                            <div className={styles["estudio-date"]}>
+                                            {new Date(
+                                                uploaded_analysis.uploaded_at * 1000
+                                            ).toLocaleString("es-AR")}
+                                            </div>
+                                            </a>
+                                        </div>
+                                )
+                            })) : (<div className={styles["subtitle"]}>
+                            No hay analisis cargados
+                        </div>)
+                        }
                         </div>
+                        
 
                         <form
                             className={styles["file-upload-form"]}
@@ -102,7 +127,7 @@ const MyRecord = () => {
                                 name="file"
                                 accept=".pdf"
                                 multiple={true}
-                                onChange={(e) => setFile(e.target.files?.[0])}
+                                onChange={(e) => setFile(e.target.files)}
                             />
                             <button
                                 className={styles["edit-button"]}

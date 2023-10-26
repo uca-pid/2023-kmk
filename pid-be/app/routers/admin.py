@@ -69,7 +69,7 @@ async def approve_physician(physician_id: str, uid=Depends(Auth.is_admin)):
             json={
                 "type": "PHYSICIAN_APPROVED_ACCOUNT",
                 "data": {
-                    "email": physician.email,
+                    "email": physician["email"],
                 },
             },
         )
@@ -117,7 +117,7 @@ async def deny_physician(physician_id: str, uid=Depends(Auth.is_admin)):
             json={
                 "type": "PHYSICIAN_DENIED_ACCOUNT",
                 "data": {
-                    "email": physician.email,
+                    "email": physician["email"],
                 },
             },
         )
@@ -171,9 +171,7 @@ def get_all_pending_validations(uid=Depends(Auth.is_admin)):
         500: {"model": AdminRegistrationError},
     },
 )
-def regsiter_admin(
-    admin_resgister_request: AdminRegisterRequest
-):
+def regsiter_admin(admin_resgister_request: AdminRegisterRequest):
     """
     Register an admin.
 
@@ -210,6 +208,8 @@ def regsiter_admin(
         auth_uid = register_response.json()["localId"]
 
     del admin_resgister_request.password
-    admin = Admin(**admin_resgister_request.dict(), id=auth_uid, registered_by="qwertyui")
+    admin = Admin(
+        **admin_resgister_request.dict(), id=auth_uid, registered_by="qwertyui"
+    )
     admin.create()
     return {"message": "Successfull registration"}
