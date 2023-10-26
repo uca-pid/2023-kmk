@@ -29,6 +29,7 @@ const PhysicianAgenda = () => {
 
     const agent = new https.Agent({
         rejectUnauthorized: false,
+    });
     const [observationPayload, setObservationPayload] = useState({
         date: "",
         physician: "",
