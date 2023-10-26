@@ -45,14 +45,14 @@ const Header = () => {
                     router.push("/");
                 }}
             />
-            <Image
+            {/* <Image
                 src="/bell_icon.png"
                 alt="Notificaciones"
                 className={styles["bell-icon"]}
                 width={200}
                 height={200}
                 onClick={() => {}}
-            />
+            /> */}
             <Image
                 src="/user-icon.png"
                 alt="Usuario"

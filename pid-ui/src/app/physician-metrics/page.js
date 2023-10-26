@@ -32,7 +32,16 @@ const PhysicianPendingAppointments = () => {
             <Header />
             <PhysicianTabBar highlight={"Metricas"} />
 
-            <div className={styles["tab-content"]}></div>
+            <div className={styles["tab-content"]}>
+                <Image
+                    src="/dogo.png"
+                    alt=""
+                    className={styles["dogo-icon"]}
+                    width={500}
+                    height={500}
+                    onClick={() => {}}
+                />
+            </div>
 
             <Footer />
         </div>

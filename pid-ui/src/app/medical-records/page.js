@@ -79,6 +79,18 @@ const MedicalRecords = ({ searchParams }) => {
                     <div className={styles["title"]}>
                         Paciente: {record.name} {record.last_name}
                     </div>
+                    <Image
+                        src="/refresh_icon.png"
+                        alt="Refrescar"
+                        className={styles["refresh-icon"]}
+                        width={200}
+                        height={200}
+                        onClick={() => {
+                            fetchData();
+                            fetchMyAnalysis();
+                            toast.info("Datos actualizados");
+                        }}
+                    />
                     <div className={styles["subtitle"]}>
                         Fecha de nacimiento: {record.birth_date}
                     </div>

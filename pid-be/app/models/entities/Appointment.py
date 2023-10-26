@@ -153,8 +153,8 @@ class Appointment:
                 "patient_id": self.patient_id,
                 "created_at": round(time.time()),
                 "approved": self.approved,
-                "attended": self.attended,
-                "start_time": self.start_time
+                # "attended": self.attended,
+                # "start_time": self.start_time
             }
         )
         Physician.schedule_appointment(id=self.physician_id, date=self.date)

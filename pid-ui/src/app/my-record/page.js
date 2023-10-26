@@ -6,6 +6,7 @@ import axios from "axios";
 import https from "https";
 import { Footer, Header, TabBar } from "../components/header";
 import Image from "next/image";
+import { toast } from "react-toastify";
 
 const MyRecord = () => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
@@ -56,6 +57,8 @@ const MyRecord = () => {
         try {
             const response = await axios.post(`${apiURL}analysis`, formData);
             console.log(response);
+            toast.success("Analisis subido con exito");
+            fetchMyAnalysis();
         } catch (error) {
             console.error(error);
         }
@@ -78,6 +81,18 @@ const MyRecord = () => {
                     <div className={styles["title"]}>
                         {record.name} {record.last_name}
                     </div>
+                    <Image
+                        src="/refresh_icon.png"
+                        alt="Refrescar"
+                        className={styles["refresh-icon"]}
+                        width={200}
+                        height={200}
+                        onClick={() => {
+                            fetchData();
+                            fetchMyAnalysis();
+                            toast.info("Datos actualizados");
+                        }}
+                    />
                     <div className={styles["subtitle"]}>
                         Nac.: {record.birth_date}
                     </div>
@@ -90,6 +105,7 @@ const MyRecord = () => {
 
                     <div className={styles["my-estudios-section"]}>
                         <div className={styles["title"]}>Mis Estudios</div>
+
                         <div className={styles["horizontal-scroll"]}>
                             {Array.isArray(analysis) ? (
                                 analysis.map((uploaded_analysis) => {
