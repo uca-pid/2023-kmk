@@ -1,8 +1,10 @@
 import pytest
-import requests
-from datetime import datetime, timedelta, time
-from .config import *
+from datetime import datetime, timedelta
 from firebase_admin import auth, firestore
+from app.main import app
+from fastapi.testclient import TestClient
+
+client = TestClient(app)
 
 db = firestore.client()
 
@@ -56,14 +58,7 @@ another_KMK_patient_information = {
 
 
 @pytest.fixture(scope="session", autouse=True)
-def clean_firestore():
-    requests.delete(
-        "http://localhost:8081/emulator/v1/projects/pid-kmk/databases/(default)/documents"
-    )
-
-
-@pytest.fixture(scope="session", autouse=True)
-def load_and_delete_specialties(clean_firestore):
+def load_and_delete_specialties():
     for specialty in specialties:
         db.collection("specialties").document().set({"name": specialty})
     yield
@@ -74,8 +69,8 @@ def load_and_delete_specialties(clean_firestore):
 
 @pytest.fixture(autouse=True)
 def create_patient_and_then_delete_him():
-    requests.post(
-        "http://localhost:8080/users/register",
+    client.post(
+        "/users/register",
         json=a_KMK_patient_information,
     )
     pytest.patient_uid = auth.get_user_by_email(a_KMK_patient_information["email"]).uid
@@ -86,8 +81,8 @@ def create_patient_and_then_delete_him():
 
 @pytest.fixture(autouse=True)
 def create_another_patient_and_then_delete_him(create_patient_and_then_delete_him):
-    requests.post(
-        "http://localhost:8080/users/register",
+    client.post(
+        "/users/register",
         json=another_KMK_patient_information,
     )
     pytest.another_patient_uid = auth.get_user_by_email(
@@ -100,8 +95,8 @@ def create_another_patient_and_then_delete_him(create_patient_and_then_delete_hi
 
 @pytest.fixture(autouse=True)
 def log_in_patient(create_another_patient_and_then_delete_him):
-    pytest.bearer_token = requests.post(
-        "http://localhost:8080/users/login",
+    pytest.bearer_token = client.post(
+        "/users/login",
         json={
             "email": a_KMK_patient_information["email"],
             "password": a_KMK_patient_information["password"],
@@ -111,8 +106,8 @@ def log_in_patient(create_another_patient_and_then_delete_him):
 
 @pytest.fixture(autouse=True)
 def log_in_another_patient(log_in_patient):
-    pytest.another_bearer_token = requests.post(
-        "http://localhost:8080/users/login",
+    pytest.another_bearer_token = client.post(
+        "/users/login",
         json={
             "email": another_KMK_patient_information["email"],
             "password": another_KMK_patient_information["password"],
@@ -122,8 +117,8 @@ def log_in_another_patient(log_in_patient):
 
 @pytest.fixture(scope="session", autouse=True)
 def create_physician_and_then_delete_him(load_and_delete_specialties):
-    requests.post(
-        "http://localhost:8080/users/register",
+    client.post(
+        "/users/register",
         json=a_KMK_physician_information,
     )
     pytest.physician_uid = auth.get_user_by_email(
@@ -154,8 +149,8 @@ def create_appointment(log_in_another_patient):
         hour=9, minute=0, second=0, microsecond=0
     )
 
-    response_to_appointment_creation_endpoint = requests.post(
-        "http://localhost:8080/appointments",
+    response_to_appointment_creation_endpoint = client.post(
+        "/appointments",
         json={
             "physician_id": pytest.physician_uid,
             "date": round(pytest.original_appointment_date.timestamp()),
@@ -167,8 +162,8 @@ def create_appointment(log_in_another_patient):
         "appointment_id"
     ]
     yield
-    requests.delete(
-        f"http://localhost:8080/appointments/{pytest.appointment_id}",
+    client.delete(
+        f"/appointments/{pytest.appointment_id}",
         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
     )
 
@@ -182,8 +177,8 @@ def create_another_appointment(create_appointment):
         hour=13, minute=0, second=0, microsecond=0
     )
 
-    response_to_appointment_creation_endpoint = requests.post(
-        "http://localhost:8080/appointments",
+    response_to_appointment_creation_endpoint = client.post(
+        "/appointments",
         json={
             "physician_id": pytest.physician_uid,
             "date": round(pytest.another_original_appointment_date.timestamp()),
@@ -195,16 +190,16 @@ def create_another_appointment(create_appointment):
         "appointment_id"
     ]
     yield
-    requests.delete(
-        f"http://localhost:8080/appointments/{pytest.another_appointment_id}",
+    client.delete(
+        f"/appointments/{pytest.another_appointment_id}",
         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
     )
 
 
 def test_put_apointment_returns_a_200_code():
     new_date = pytest.original_appointment_date.replace(hour=10)
-    response_from_put_appointment = requests.put(
-        f"http://localhost:8080/appointments/{pytest.appointment_id}",
+    response_from_put_appointment = client.put(
+        f"/appointments/{pytest.appointment_id}",
         json={
             "date": round(new_date.timestamp()),
         },
@@ -216,8 +211,8 @@ def test_put_apointment_returns_a_200_code():
 
 def test_put_apointment_returns_a_message():
     new_date = pytest.original_appointment_date.replace(hour=10)
-    response_from_put_appointment = requests.put(
-        f"http://localhost:8080/appointments/{pytest.appointment_id}",
+    response_from_put_appointment = client.put(
+        f"/appointments/{pytest.appointment_id}",
         json={
             "date": round(new_date.timestamp()),
         },
@@ -235,8 +230,8 @@ def test_put_apointment_updates_the_date_in_firebase_object():
         pytest.appointment_id
     ).get().to_dict()["date"] == round(pytest.original_appointment_date.timestamp())
     new_date = pytest.original_appointment_date.replace(hour=10)
-    requests.put(
-        f"http://localhost:8080/appointments/{pytest.appointment_id}",
+    client.put(
+        f"/appointments/{pytest.appointment_id}",
         json={
             "date": round(new_date.timestamp()),
         },
@@ -253,8 +248,8 @@ def test_put_apointment_doenst_update_the_other_fields_in_firebase_object():
         db.collection("appointments").document(pytest.appointment_id).get().to_dict()
     )
     new_date = pytest.original_appointment_date.replace(hour=10)
-    requests.put(
-        f"http://localhost:8080/appointments/{pytest.appointment_id}",
+    client.put(
+        f"/appointments/{pytest.appointment_id}",
         json={
             "date": round(new_date.timestamp()),
         },
@@ -290,8 +285,8 @@ def test_put_apointment_adds_the_updated_at_property_in_firestore():
         == None
     )
     new_date = pytest.original_appointment_date.replace(hour=10)
-    requests.put(
-        f"http://localhost:8080/appointments/{pytest.appointment_id}",
+    client.put(
+        f"/appointments/{pytest.appointment_id}",
         json={
             "date": round(new_date.timestamp()),
         },
@@ -321,8 +316,8 @@ def test_put_apointment_adds_the_updated_at_property_in_firestore():
 
 def test_update_inexistant_appointment_returns_a_400_code_and_message():
     new_date = pytest.original_appointment_date.replace(hour=10)
-    response_from_put_appointment = requests.put(
-        "http://localhost:8080/appointments/invalidappointmentid",
+    response_from_put_appointment = client.put(
+        "/appointments/invalidappointmentid",
         json={
             "date": round(new_date.timestamp()),
         },
@@ -335,8 +330,8 @@ def test_update_inexistant_appointment_returns_a_400_code_and_message():
 
 def test_update_another_users_appointment_returns_a_400_code_and_message():
     new_date = pytest.original_appointment_date.replace(hour=10)
-    response_from_put_appointment = requests.put(
-        f"http://localhost:8080/appointments/{pytest.appointment_id}",
+    response_from_put_appointment = client.put(
+        f"/appointments/{pytest.appointment_id}",
         json={
             "date": round(new_date.timestamp()),
         },
@@ -348,8 +343,8 @@ def test_update_another_users_appointment_returns_a_400_code_and_message():
 
 
 def test_update_appointment_with_no_authorization_header_returns_401_code():
-    response_from_update_appointment_endpoint = requests.put(
-        f"http://localhost:8080/appointments/{pytest.appointment_id}"
+    response_from_update_appointment_endpoint = client.put(
+        f"/appointments/{pytest.appointment_id}"
     )
 
     assert response_from_update_appointment_endpoint.status_code == 401
@@ -360,8 +355,8 @@ def test_update_appointment_with_no_authorization_header_returns_401_code():
 
 
 def test_update_appointment_with_empty_authorization_header_returns_401_code():
-    response_from_update_appointment_endpoint = requests.put(
-        f"http://localhost:8080/appointments/{pytest.appointment_id}",
+    response_from_update_appointment_endpoint = client.put(
+        f"/appointments/{pytest.appointment_id}",
         headers={"Authorization": ""},
     )
 
@@ -373,8 +368,8 @@ def test_update_appointment_with_empty_authorization_header_returns_401_code():
 
 
 def test_update_appointment_with_empty_bearer_token_returns_401_code():
-    response_from_update_appointment_endpoint = requests.put(
-        f"http://localhost:8080/appointments/{pytest.appointment_id}",
+    response_from_update_appointment_endpoint = client.put(
+        f"/appointments/{pytest.appointment_id}",
         headers={"Authorization": f"Bearer "},
     )
 
@@ -386,8 +381,8 @@ def test_update_appointment_with_empty_bearer_token_returns_401_code():
 
 
 def test_update_appointment_with_non_bearer_token_returns_401_code():
-    response_from_update_appointment_endpoint = requests.put(
-        f"http://localhost:8080/appointments/{pytest.appointment_id}",
+    response_from_update_appointment_endpoint = client.put(
+        f"/appointments/{pytest.appointment_id}",
         headers={"Authorization": pytest.bearer_token},
     )
 
@@ -399,8 +394,8 @@ def test_update_appointment_with_non_bearer_token_returns_401_code():
 
 
 def test_update_appointment_with_invalid_bearer_token_returns_401_code():
-    response_from_update_appointment_endpoint = requests.put(
-        f"http://localhost:8080/appointments/{pytest.appointment_id}",
+    response_from_update_appointment_endpoint = client.put(
+        f"/appointments/{pytest.appointment_id}",
         headers={"Authorization": "Bearer smth"},
     )
 
@@ -412,8 +407,8 @@ def test_update_appointment_with_invalid_bearer_token_returns_401_code():
 
 
 def test_invalid_date_format_in_appointment_update_endpoint_returns_a_422_Code():
-    response_to_appointment_update_endpoint = requests.put(
-        f"http://localhost:8080/appointments/{pytest.appointment_id}",
+    response_to_appointment_update_endpoint = client.put(
+        f"/appointments/{pytest.appointment_id}",
         json={"date": "tomorrow"},
         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
     )
@@ -422,8 +417,8 @@ def test_invalid_date_format_in_appointment_update_endpoint_returns_a_422_Code()
 
 
 def test_past_date_in_appointment_update_endpoint_returns_a_422_code():
-    response_to_appointment_update_endpoint = requests.put(
-        f"http://localhost:8080/appointments/{pytest.appointment_id}",
+    response_to_appointment_update_endpoint = client.put(
+        f"/appointments/{pytest.appointment_id}",
         json={"date": 0},
         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
     )
@@ -436,8 +431,8 @@ def test_updating_appointment_in_a_non_working_day_of_the_physician_returns_a_40
     days_until_next_saturday = (5 - today_at_now.weekday()) % 7
     next_saturday = today_at_now + timedelta(days=days_until_next_saturday)
     non_working_day = next_saturday.replace(hour=9, minute=0, second=0, microsecond=0)
-    response_to_appointment_update_endpoint = requests.put(
-        f"http://localhost:8080/appointments/{pytest.appointment_id}",
+    response_to_appointment_update_endpoint = client.put(
+        f"/appointments/{pytest.appointment_id}",
         json={"date": round(non_working_day.timestamp())},
         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
     )
@@ -451,8 +446,8 @@ def test_updating_appointment_in_a_non_working_day_of_the_physician_returns_a_40
 
 def test_updating_appointment_in_a_non_working_hour_after_agenda_of_the_physician_returns_a_400_code():
     new_date = pytest.original_appointment_date.replace(hour=22)
-    response_to_appointment_update_endpoint = requests.put(
-        f"http://localhost:8080/appointments/{pytest.appointment_id}",
+    response_to_appointment_update_endpoint = client.put(
+        f"/appointments/{pytest.appointment_id}",
         json={"date": round(new_date.timestamp())},
         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
     )
@@ -466,8 +461,8 @@ def test_updating_appointment_in_a_non_working_hour_after_agenda_of_the_physicia
 
 def test_updating_appointment_in_a_non_working_hour_before_agenda_of_the_physician_returns_a_400_code():
     new_date = pytest.original_appointment_date.replace(hour=3)
-    response_to_appointment_update_endpoint = requests.put(
-        f"http://localhost:8080/appointments/{pytest.appointment_id}",
+    response_to_appointment_update_endpoint = client.put(
+        f"/appointments/{pytest.appointment_id}",
         json={"date": round(new_date.timestamp())},
         headers={"Authorization": f"Bearer {pytest.bearer_token}"},
     )
@@ -485,8 +480,8 @@ def test_valid_appointment_update_saves_slot_in_physicians_agenda():
         db.collection("physicians").document(pytest.physician_uid).get().to_dict()
     )
     assert physician_doc["appointments"].get(str(round(new_date.timestamp()))) == None
-    requests.put(
-        f"http://localhost:8080/appointments/{pytest.appointment_id}",
+    client.put(
+        f"/appointments/{pytest.appointment_id}",
         json={
             "date": round(new_date.timestamp()),
         },
@@ -510,8 +505,8 @@ def test_valid_appointment_update_removes_previously_saved_time_slot_in_physicia
         != None
     )
     new_date = pytest.original_appointment_date.replace(hour=10)
-    requests.put(
-        f"http://localhost:8080/appointments/{pytest.appointment_id}",
+    client.put(
+        f"/appointments/{pytest.appointment_id}",
         json={
             "date": round(new_date.timestamp()),
         },
@@ -530,8 +525,8 @@ def test_valid_appointment_update_removes_previously_saved_time_slot_in_physicia
 
 
 def test_updating_an_appointment_for_an_occupied_slot_of_a_physician_returns_a_400_code():
-    response_to_appointment_update_endpoint = requests.put(
-        f"http://localhost:8080/appointments/{pytest.appointment_id}",
+    response_to_appointment_update_endpoint = client.put(
+        f"/appointments/{pytest.appointment_id}",
         json={
             "date": round(pytest.another_original_appointment_date.timestamp()),
         },
