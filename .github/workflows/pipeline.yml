@@ -68,6 +68,10 @@ jobs:
               working-directory: pid-be
               run: poetry install
 
+            - name: Build notifications api
+              working-directory: pid-notifications-api
+              run: poetry install
+
             - name: Install firebase
               working-directory: pid-be
               run: npm install -g firebase-tools
@@ -92,6 +96,18 @@ jobs:
               working-directory: pid-be
               run: poetry run start &
 
+            - name: Run notifications api
+              env:
+                  ENV: ${{ secrets.ENV }}
+                  MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+                  MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+                  MAIL_FROM: ${{ secrets.MAIL_FROM }}
+                  MAIL_PORT: ${{ secrets.MAIL_PORT }}
+                  MAIL_SERVER: ${{ secrets.MAIL_SERVER }}
+                  MAIL_FROM_NAME: ${{ secrets.MAIL_FROM_NAME }}
+              working-directory: pid-notifications-api
+              run: poetry run start &
+
             - name: Run emualtors and backend tests
               env:
                   PROJECT_ID: ${{ secrets.PROJECT_ID }}
@@ -108,3 +124,7 @@ jobs:
                   FIRESTORE_EMULATOR_HOST: ${{ secrets.FIRESTORE_EMULATOR_HOST }}
               working-directory: pid-be
               run: firebase emulators:exec "poetry run pytest"
+
+            - name: Run notifications tests
+              working-directory: pid-notifications-api
+              run: poetry run pytest
