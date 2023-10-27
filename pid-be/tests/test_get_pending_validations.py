@@ -1,7 +1,10 @@
 import pytest
-import requests
-from .config import *
 from firebase_admin import firestore, auth
+
+from app.main import app
+from fastapi.testclient import TestClient
+
+client = TestClient(app)
 
 db = firestore.client()
 
@@ -68,7 +71,7 @@ initial_admin_information = {
 
 @pytest.fixture(scope="session", autouse=True)
 def clean_firestore():
-    requests.delete(
+    client.delete(
         "http://localhost:8081/emulator/v1/projects/pid-kmk/databases/(default)/documents"
     )
 
@@ -85,8 +88,8 @@ def load_and_delete_specialties(clean_firestore):
 
 @pytest.fixture(scope="session", autouse=True)
 def create_patient_and_then_delete_him(load_and_delete_specialties):
-    requests.post(
-        "http://localhost:8080/users/register",
+    client.post(
+        "/users/register",
         json=a_KMK_patient_information,
     )
     yield
@@ -99,8 +102,8 @@ def create_patient_and_then_delete_him(load_and_delete_specialties):
 
 @pytest.fixture(scope="session", autouse=True)
 def create_validated_physician_and_then_delete_him(create_patient_and_then_delete_him):
-    requests.post(
-        "http://localhost:8080/users/register",
+    client.post(
+        "/users/register",
         json=a_KMK_physician_information,
     )
     created_test_physician_uid = auth.get_user_by_email(
@@ -124,8 +127,8 @@ def create_validated_physician_and_then_delete_him(create_patient_and_then_delet
 def create_denied_physician_and_then_delete_him(
     create_validated_physician_and_then_delete_him,
 ):
-    requests.post(
-        "http://localhost:8080/users/register",
+    client.post(
+        "/users/register",
         json=another_KMK_physician_information,
     )
     created_test_physician_uid = auth.get_user_by_email(
@@ -149,8 +152,8 @@ def create_denied_physician_and_then_delete_him(
 def create_pending_physician_and_then_delete_him(
     create_denied_physician_and_then_delete_him,
 ):
-    requests.post(
-        "http://localhost:8080/users/register",
+    client.post(
+        "/users/register",
         json=other_KMK_physician_information,
     )
     yield
@@ -179,8 +182,8 @@ def create_initial_admin_and_then_delete_him(
 
 @pytest.fixture(scope="session", autouse=True)
 def log_in_initial_admin_user(create_initial_admin_and_then_delete_him):
-    pytest.initial_admin_bearer = requests.post(
-        "http://localhost:8080/users/login",
+    pytest.initial_admin_bearer = client.post(
+        "/users/login",
         json={
             "email": initial_admin_information["email"],
             "password": initial_admin_information["password"],
@@ -190,8 +193,8 @@ def log_in_initial_admin_user(create_initial_admin_and_then_delete_him):
 
 
 def test_get_pending_validations_returns_a_200_code():
-    response_to_get_pending_validations_endpoint = requests.get(
-        "http://localhost:8080/admin/pending-validations",
+    response_to_get_pending_validations_endpoint = client.get(
+        "/admin/pending-validations",
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
 
@@ -199,8 +202,8 @@ def test_get_pending_validations_returns_a_200_code():
 
 
 def test_get_pending_validations_returns_a_list():
-    response_to_get_pending_validations_endpoint = requests.get(
-        "http://localhost:8080/admin/pending-validations",
+    response_to_get_pending_validations_endpoint = client.get(
+        "/admin/pending-validations",
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
 
@@ -215,8 +218,8 @@ def test_get_pending_validations_returns_a_list():
 
 
 def test_get_pending_validations_returns_a_list_of_one_element():
-    response_to_get_pending_validations_endpoint = requests.get(
-        "http://localhost:8080/admin/pending-validations",
+    response_to_get_pending_validations_endpoint = client.get(
+        "/admin/pending-validations",
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
 
@@ -231,8 +234,8 @@ def test_get_pending_validations_returns_a_list_of_one_element():
 
 
 def test_get_pending_validations_returns_a_list_of_a_populated_physician():
-    response_to_get_pending_validations_endpoint = requests.get(
-        "http://localhost:8080/admin/pending-validations",
+    response_to_get_pending_validations_endpoint = client.get(
+        "/admin/pending-validations",
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
 
@@ -292,8 +295,8 @@ def test_get_pending_validations_returns_a_list_of_a_populated_physician():
 
 
 def test_get_pending_validations_with_no_authorization_header_returns_401_code():
-    response_from_admin_registration_endpoint = requests.get(
-        "http://localhost:8080/admin/pending-validations",
+    response_from_admin_registration_endpoint = client.get(
+        "/admin/pending-validations",
     )
 
     assert response_from_admin_registration_endpoint.status_code == 401
@@ -304,8 +307,8 @@ def test_get_pending_validations_with_no_authorization_header_returns_401_code()
 
 
 def test_get_pending_validations_with_empty_authorization_header_returns_401_code():
-    response_from_admin_registration_endpoint = requests.get(
-        "http://localhost:8080/admin/pending-validations",
+    response_from_admin_registration_endpoint = client.get(
+        "/admin/pending-validations",
         headers={"Authorization": ""},
     )
 
@@ -317,8 +320,8 @@ def test_get_pending_validations_with_empty_authorization_header_returns_401_cod
 
 
 def test_get_pending_validations_with_empty_bearer_token_returns_401_code():
-    response_from_admin_registration_endpoint = requests.get(
-        "http://localhost:8080/admin/pending-validations",
+    response_from_admin_registration_endpoint = client.get(
+        "/admin/pending-validations",
         headers={"Authorization": f"Bearer "},
     )
 
@@ -330,8 +333,8 @@ def test_get_pending_validations_with_empty_bearer_token_returns_401_code():
 
 
 def test_get_pending_validations_with_non_bearer_token_returns_401_code():
-    response_from_admin_registration_endpoint = requests.get(
-        "http://localhost:8080/admin/pending-validations",
+    response_from_admin_registration_endpoint = client.get(
+        "/admin/pending-validations",
         headers={"Authorization": pytest.initial_admin_bearer},
     )
 
@@ -343,8 +346,8 @@ def test_get_pending_validations_with_non_bearer_token_returns_401_code():
 
 
 def test_get_pending_validations_with_invalid_bearer_token_returns_401_code():
-    response_from_admin_registration_endpoint = requests.get(
-        "http://localhost:8080/admin/pending-validations",
+    response_from_admin_registration_endpoint = client.get(
+        "/admin/pending-validations",
         headers={"Authorization": "Bearer smth"},
     )
 
@@ -356,16 +359,16 @@ def test_get_pending_validations_with_invalid_bearer_token_returns_401_code():
 
 
 def test_get_pending_validations_by_non_admin_returns_403_code_and_message():
-    non_admin_bearer = requests.post(
-        "http://localhost:8080/users/login",
+    non_admin_bearer = client.post(
+        "/users/login",
         json={
             "email": a_KMK_patient_information["email"],
             "password": a_KMK_patient_information["password"],
         },
     ).json()["token"]
 
-    response_from_admin_registration_endpoint = requests.get(
-        "http://localhost:8080/admin/pending-validations",
+    response_from_admin_registration_endpoint = client.get(
+        "/admin/pending-validations",
         headers={"Authorization": f"Bearer {non_admin_bearer}"},
     )
 
@@ -383,8 +386,8 @@ def test_get_pending_validations_if_none_exists_returns_an_empty_list():
     db.collection("physicians").document(created_test_physician_uid).update(
         {"approved": "approved"}
     )
-    response_to_get_pending_validations_endpoint = requests.get(
-        "http://localhost:8080/admin/pending-validations",
+    response_to_get_pending_validations_endpoint = client.get(
+        "/admin/pending-validations",
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
 

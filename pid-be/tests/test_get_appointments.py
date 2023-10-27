@@ -1,9 +1,11 @@
 import pytest
 import time
 from datetime import datetime, timedelta
-import requests
-from .config import *
 from firebase_admin import auth, firestore
+from app.main import app
+from fastapi.testclient import TestClient
+
+client = TestClient(app)
 
 db = firestore.client()
 
@@ -63,14 +65,7 @@ other_appointment_data = {
 
 
 @pytest.fixture(scope="session", autouse=True)
-def clean_firestore():
-    requests.delete(
-        "http://localhost:8081/emulator/v1/projects/pid-kmk/databases/(default)/documents"
-    )
-
-
-@pytest.fixture(scope="session", autouse=True)
-def create_test_users(clean_firestore):
+def create_test_users():
     first_created_user = auth.create_user(**a_KMK_user_information)
     second_created_user = auth.create_user(**another_KMK_user_information)
     third_created_user = auth.create_user(**other_KMK_user_information)
@@ -142,8 +137,8 @@ def create_test_physicians(create_test_users):
 
 @pytest.fixture(scope="session", autouse=True)
 def create_login_tokens(create_test_physicians):
-    response_from_login_endpoint_for_first_user = requests.post(
-        "http://localhost:8080/users/login",
+    response_from_login_endpoint_for_first_user = client.post(
+        "/users/login",
         json={
             "email": a_KMK_user_information["email"],
             "password": a_KMK_user_information["password"],
@@ -152,8 +147,8 @@ def create_login_tokens(create_test_physicians):
 
     pytest.first_bearer = response_from_login_endpoint_for_first_user.json()["token"]
 
-    response_from_login_endpoint_for_second_user = requests.post(
-        "http://localhost:8080/users/login",
+    response_from_login_endpoint_for_second_user = client.post(
+        "/users/login",
         json={
             "email": another_KMK_user_information["email"],
             "password": another_KMK_user_information["password"],
@@ -162,8 +157,8 @@ def create_login_tokens(create_test_physicians):
 
     pytest.second_bearer = response_from_login_endpoint_for_second_user.json()["token"]
 
-    response_from_login_endpoint_for_third_user = requests.post(
-        "http://localhost:8080/users/login",
+    response_from_login_endpoint_for_third_user = client.post(
+        "/users/login",
         json={
             "email": other_KMK_user_information["email"],
             "password": other_KMK_user_information["password"],
@@ -172,8 +167,8 @@ def create_login_tokens(create_test_physicians):
 
     pytest.third_bearer = response_from_login_endpoint_for_third_user.json()["token"]
 
-    response_from_login_endpoint_for_first_physician = requests.post(
-        "http://localhost:8080/users/login",
+    response_from_login_endpoint_for_first_physician = client.post(
+        "/users/login",
         json={
             "email": a_KMK_physician_information["email"],
             "password": a_KMK_physician_information["password"],
@@ -184,8 +179,8 @@ def create_login_tokens(create_test_physicians):
         response_from_login_endpoint_for_first_physician.json()["token"]
     )
 
-    response_from_login_endpoint_for_second_physician = requests.post(
-        "http://localhost:8080/users/login",
+    response_from_login_endpoint_for_second_physician = client.post(
+        "/users/login",
         json={
             "email": another_KMK_physician_information["email"],
             "password": another_KMK_physician_information["password"],
@@ -203,8 +198,8 @@ def create_test_appointments(create_login_tokens):
     another_appointment_data["physician_id"] = another_KMK_physician_information["uid"]
     other_appointment_data["physician_id"] = another_KMK_physician_information["uid"]
 
-    first_appointment_creation_response = requests.post(
-        "http://localhost:8080/appointments",
+    first_appointment_creation_response = client.post(
+        "/appointments",
         json=an_appointment_data,
         headers={"Authorization": f"Bearer {pytest.first_bearer}"},
     )
@@ -213,8 +208,8 @@ def create_test_appointments(create_login_tokens):
         "appointment_id"
     ]
 
-    second_appointment_creation_response = requests.post(
-        "http://localhost:8080/appointments",
+    second_appointment_creation_response = client.post(
+        "/appointments",
         json=another_appointment_data,
         headers={"Authorization": f"Bearer {pytest.first_bearer}"},
     )
@@ -223,8 +218,8 @@ def create_test_appointments(create_login_tokens):
         "appointment_id"
     ]
 
-    third_appointment_creation_response = requests.post(
-        "http://localhost:8080/appointments",
+    third_appointment_creation_response = client.post(
+        "/appointments",
         json=other_appointment_data,
         headers={"Authorization": f"Bearer {pytest.second_bearer}"},
     )
@@ -235,8 +230,8 @@ def create_test_appointments(create_login_tokens):
 
 
 def test_valid_request_to_get_endpoint_returns_200_code():
-    response_to_get_endpoint = requests.get(
-        "http://localhost:8080/appointments",
+    response_to_get_endpoint = client.get(
+        "/appointments",
         headers={"Authorization": f"Bearer {pytest.first_bearer}"},
     )
 
@@ -244,8 +239,8 @@ def test_valid_request_to_get_endpoint_returns_200_code():
 
 
 def test_valid_request_to_get_endpoint_returns_a_list_of_two_elements_for_the_first_user():
-    response_to_get_endpoint = requests.get(
-        "http://localhost:8080/appointments",
+    response_to_get_endpoint = client.get(
+        "/appointments",
         headers={"Authorization": f"Bearer {pytest.first_bearer}"},
     )
 
@@ -254,8 +249,8 @@ def test_valid_request_to_get_endpoint_returns_a_list_of_two_elements_for_the_fi
 
 
 def test_valid_request_to_get_endpoint_returns_a_list_of_one_element_for_the_second_user():
-    response_to_get_endpoint = requests.get(
-        "http://localhost:8080/appointments",
+    response_to_get_endpoint = client.get(
+        "/appointments",
         headers={"Authorization": f"Bearer {pytest.second_bearer}"},
     )
 
@@ -264,8 +259,8 @@ def test_valid_request_to_get_endpoint_returns_a_list_of_one_element_for_the_sec
 
 
 def test_valid_request_to_get_endpoint_returns_an_empty_list_for_the_second_user():
-    response_to_get_endpoint = requests.get(
-        "http://localhost:8080/appointments",
+    response_to_get_endpoint = client.get(
+        "/appointments",
         headers={"Authorization": f"Bearer {pytest.third_bearer}"},
     )
 
@@ -274,8 +269,8 @@ def test_valid_request_to_get_endpoint_returns_an_empty_list_for_the_second_user
 
 
 def test_valid_request_to_get_endpoint_returns_populated_appointment_objects():
-    response_to_get_endpoint = requests.get(
-        "http://localhost:8080/appointments",
+    response_to_get_endpoint = client.get(
+        "/appointments",
         headers={"Authorization": f"Bearer {pytest.first_bearer}"},
     )
 
@@ -347,9 +342,7 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects():
 
 
 def test_get_appointments_with_no_authorization_header_returns_401_code():
-    response_to_appointment_get_endpoint = requests.get(
-        "http://localhost:8080/appointments"
-    )
+    response_to_appointment_get_endpoint = client.get("/appointments")
 
     assert response_to_appointment_get_endpoint.status_code == 401
     assert (
@@ -359,8 +352,8 @@ def test_get_appointments_with_no_authorization_header_returns_401_code():
 
 
 def test_get_appointments_with_empty_authorization_header_returns_401_code():
-    response_to_appointment_get_endpoint = requests.get(
-        "http://localhost:8080/appointments",
+    response_to_appointment_get_endpoint = client.get(
+        "/appointments",
         headers={"Authorization": ""},
     )
 
@@ -372,8 +365,8 @@ def test_get_appointments_with_empty_authorization_header_returns_401_code():
 
 
 def test_get_appointments_with_empty_bearer_token_returns_401_code():
-    response_to_appointment_get_endpoint = requests.get(
-        "http://localhost:8080/appointments",
+    response_to_appointment_get_endpoint = client.get(
+        "/appointments",
         headers={"Authorization": f"Bearer "},
     )
 
@@ -385,8 +378,8 @@ def test_get_appointments_with_empty_bearer_token_returns_401_code():
 
 
 def test_get_appointments_with_non_bearer_token_returns_401_code():
-    response_to_appointment_get_endpoint = requests.get(
-        "http://localhost:8080/appointments",
+    response_to_appointment_get_endpoint = client.get(
+        "/appointments",
         headers={"Authorization": pytest.first_bearer},
     )
 
@@ -398,8 +391,8 @@ def test_get_appointments_with_non_bearer_token_returns_401_code():
 
 
 def test_get_appointments_with_invalid_bearer_token_returns_401_code():
-    response_to_appointment_get_endpoint = requests.get(
-        "http://localhost:8080/appointments",
+    response_to_appointment_get_endpoint = client.get(
+        "/appointments",
         headers={"Authorization": "Bearer smth"},
     )
 
@@ -411,8 +404,8 @@ def test_get_appointments_with_invalid_bearer_token_returns_401_code():
 
 
 def test_get_appointments_for_second_physician_return_a_200_code():
-    response_to_appointment_get_endpoint = requests.get(
-        f"http://localhost:8080/appointments",
+    response_to_appointment_get_endpoint = client.get(
+        f"/appointments",
         headers={"Authorization": f"Bearer {pytest.second_physician_bearer}"},
     )
 
@@ -420,8 +413,8 @@ def test_get_appointments_for_second_physician_return_a_200_code():
 
 
 def test_get_appointments_for_second_physician_returns_a_list():
-    response_to_appointment_get_endpoint = requests.get(
-        f"http://localhost:8080/appointments",
+    response_to_appointment_get_endpoint = client.get(
+        f"/appointments",
         headers={"Authorization": f"Bearer {pytest.second_physician_bearer}"},
     )
 
@@ -429,8 +422,8 @@ def test_get_appointments_for_second_physician_returns_a_list():
 
 
 def test_get_appointments_for_second_physician_returns_a_list_of_two_elements():
-    response_to_appointment_get_endpoint = requests.get(
-        f"http://localhost:8080/appointments",
+    response_to_appointment_get_endpoint = client.get(
+        f"/appointments",
         headers={"Authorization": f"Bearer {pytest.second_physician_bearer}"},
     )
 
@@ -438,8 +431,8 @@ def test_get_appointments_for_second_physician_returns_a_list_of_two_elements():
 
 
 def test_valid_request_to_get_endpoint_returns_populated_appointment_objects_for_physician():
-    response_to_get_endpoint = requests.get(
-        "http://localhost:8080/appointments",
+    response_to_get_endpoint = client.get(
+        "/appointments",
         headers={"Authorization": f"Bearer {pytest.second_physician_bearer}"},
     )
 

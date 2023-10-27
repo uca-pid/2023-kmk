@@ -1,7 +1,9 @@
 import pytest
-import requests
-from .config import *
 from firebase_admin import auth, firestore
+from app.main import app
+from fastapi.testclient import TestClient
+
+client = TestClient(app)
 
 db = firestore.client()
 
@@ -53,14 +55,7 @@ a_KMK_admin_information = {
 
 
 @pytest.fixture(scope="session", autouse=True)
-def clean_firestore():
-    requests.delete(
-        "http://localhost:8081/emulator/v1/projects/pid-kmk/databases/(default)/documents"
-    )
-
-
-@pytest.fixture(scope="session", autouse=True)
-def load_and_delete_specialties(clean_firestore):
+def load_and_delete_specialties():
     for specialty in specialties:
         db.collection("specialties").document().set({"name": specialty})
     yield
@@ -71,8 +66,8 @@ def load_and_delete_specialties(clean_firestore):
 
 @pytest.fixture(scope="session", autouse=True)
 def create_patient_and_then_delete_him(load_and_delete_specialties):
-    requests.post(
-        "http://localhost:8080/users/register",
+    client.post(
+        "/users/register",
         json=a_KMK_patient_information,
     )
     yield
@@ -110,8 +105,8 @@ def create_initial_admin_and_then_delete_him(delete_physician):
 
 @pytest.fixture(scope="session", autouse=True)
 def log_in_initial_admin_user(create_initial_admin_and_then_delete_him):
-    pytest.initial_admin_bearer = requests.post(
-        "http://localhost:8080/users/login",
+    pytest.initial_admin_bearer = client.post(
+        "/users/login",
         json={
             "email": initial_admin_information["email"],
             "password": initial_admin_information["password"],
@@ -133,8 +128,8 @@ def delete_test_admin():
 
 
 def test_register_admin_endpoint_returns_a_201_if_valid():
-    response_from_register_admin_endpoint = requests.post(
-        "http://localhost:8080/admin/register",
+    response_from_register_admin_endpoint = client.post(
+        "/admin/register",
         json=a_KMK_admin_information,
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
@@ -143,8 +138,8 @@ def test_register_admin_endpoint_returns_a_201_if_valid():
 
 
 def test_register_admin_returns_a_message():
-    response_from_register_admin_endpoint = requests.post(
-        "http://localhost:8080/admin/register",
+    response_from_register_admin_endpoint = client.post(
+        "/admin/register",
         json=a_KMK_admin_information,
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
@@ -158,8 +153,8 @@ def test_register_admin_returns_a_message():
 def test_register_admin_creates_record_in_authentication():
     with pytest.raises(Exception):
         auth.get_user_by_email(a_KMK_admin_information["email"])
-    requests.post(
-        "http://localhost:8080/admin/register",
+    client.post(
+        "/admin/register",
         json=a_KMK_admin_information,
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
@@ -167,8 +162,8 @@ def test_register_admin_creates_record_in_authentication():
 
 
 def test_register_admin_creates_record_in_firestore():
-    requests.post(
-        "http://localhost:8080/admin/register",
+    client.post(
+        "/admin/register",
         json=a_KMK_admin_information,
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
@@ -177,8 +172,8 @@ def test_register_admin_creates_record_in_firestore():
 
 
 def test_register_admin_sets_information_object_in_firestore():
-    requests.post(
-        "http://localhost:8080/admin/register",
+    client.post(
+        "/admin/register",
         json=a_KMK_admin_information,
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
@@ -196,14 +191,14 @@ def test_register_admin_sets_information_object_in_firestore():
 
 
 def test_register_admin_twice_returns_a_400_code():
-    first_register_admin = requests.post(
-        "http://localhost:8080/admin/register",
+    first_register_admin = client.post(
+        "/admin/register",
         json=a_KMK_admin_information,
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
 
-    second_register_admin = requests.post(
-        "http://localhost:8080/admin/register",
+    second_register_admin = client.post(
+        "/admin/register",
         json=a_KMK_admin_information,
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
@@ -214,8 +209,8 @@ def test_register_admin_twice_returns_a_400_code():
 
 
 def test_register_admin_with_empty_name_returns_a_422_code():
-    register_admin_response = requests.post(
-        "http://localhost:8080/admin/register",
+    register_admin_response = client.post(
+        "/admin/register",
         json={
             "name": "",
             "last_name": a_KMK_admin_information["last_name"],
@@ -229,8 +224,8 @@ def test_register_admin_with_empty_name_returns_a_422_code():
 
 
 def test_register_admin_with_invalid_name_format_returns_a_422_code():
-    register_admin_response = requests.post(
-        "http://localhost:8080/admin/register",
+    register_admin_response = client.post(
+        "/admin/register",
         json={
             "name": 123456879,
             "last_name": a_KMK_admin_information["last_name"],
@@ -244,8 +239,8 @@ def test_register_admin_with_invalid_name_format_returns_a_422_code():
 
 
 def test_register_admin_with_empty_last_name_returns_a_422_code():
-    register_admin_response = requests.post(
-        "http://localhost:8080/admin/register",
+    register_admin_response = client.post(
+        "/admin/register",
         json={
             "name": a_KMK_admin_information["name"],
             "last_name": "",
@@ -259,8 +254,8 @@ def test_register_admin_with_empty_last_name_returns_a_422_code():
 
 
 def test_register_admin_with_invalid_last_name_format_returns_a_422_code():
-    register_admin_response = requests.post(
-        "http://localhost:8080/admin/register",
+    register_admin_response = client.post(
+        "/admin/register",
         json={
             "name": a_KMK_admin_information["name"],
             "last_name": 123456789,
@@ -274,8 +269,8 @@ def test_register_admin_with_invalid_last_name_format_returns_a_422_code():
 
 
 def test_register_admin_with_invalid_email_returns_a_422_code():
-    register_admin_response = requests.post(
-        "http://localhost:8080/admin/register",
+    register_admin_response = client.post(
+        "/admin/register",
         json={
             "name": a_KMK_admin_information["name"],
             "last_name": a_KMK_admin_information["email"],
@@ -289,8 +284,8 @@ def test_register_admin_with_invalid_email_returns_a_422_code():
 
 
 def test_register_admin_with_no_authorization_header_returns_401_code():
-    response_from_admin_registration_endpoint = requests.post(
-        "http://localhost:8080/admin/register", json=a_KMK_admin_information
+    response_from_admin_registration_endpoint = client.post(
+        "/admin/register", json=a_KMK_admin_information
     )
 
     assert response_from_admin_registration_endpoint.status_code == 401
@@ -301,8 +296,8 @@ def test_register_admin_with_no_authorization_header_returns_401_code():
 
 
 def test_register_admin_with_empty_authorization_header_returns_401_code():
-    response_from_admin_registration_endpoint = requests.post(
-        "http://localhost:8080/admin/register",
+    response_from_admin_registration_endpoint = client.post(
+        "/admin/register",
         json=a_KMK_admin_information,
         headers={"Authorization": ""},
     )
@@ -315,8 +310,8 @@ def test_register_admin_with_empty_authorization_header_returns_401_code():
 
 
 def test_register_admin_with_empty_bearer_token_returns_401_code():
-    response_from_admin_registration_endpoint = requests.post(
-        "http://localhost:8080/admin/register",
+    response_from_admin_registration_endpoint = client.post(
+        "/admin/register",
         json=a_KMK_admin_information,
         headers={"Authorization": f"Bearer "},
     )
@@ -329,8 +324,8 @@ def test_register_admin_with_empty_bearer_token_returns_401_code():
 
 
 def test_register_admin_with_non_bearer_token_returns_401_code():
-    response_from_admin_registration_endpoint = requests.post(
-        "http://localhost:8080/admin/register",
+    response_from_admin_registration_endpoint = client.post(
+        "/admin/register",
         json=a_KMK_admin_information,
         headers={"Authorization": pytest.initial_admin_bearer},
     )
@@ -343,8 +338,8 @@ def test_register_admin_with_non_bearer_token_returns_401_code():
 
 
 def test_register_admin_with_invalid_bearer_token_returns_401_code():
-    response_from_admin_registration_endpoint = requests.post(
-        "http://localhost:8080/admin/register",
+    response_from_admin_registration_endpoint = client.post(
+        "/admin/register",
         json=a_KMK_admin_information,
         headers={"Authorization": "Bearer smth"},
     )
@@ -357,16 +352,16 @@ def test_register_admin_with_invalid_bearer_token_returns_401_code():
 
 
 def test_register_admin_by_non_admin_returns_403_code_and_message():
-    non_admin_bearer = requests.post(
-        "http://localhost:8080/users/login",
+    non_admin_bearer = client.post(
+        "/users/login",
         json={
             "email": a_KMK_patient_information["email"],
             "password": a_KMK_patient_information["password"],
         },
     ).json()["token"]
 
-    response_from_admin_registration_endpoint = requests.post(
-        "http://localhost:8080/admin/register",
+    response_from_admin_registration_endpoint = client.post(
+        "/admin/register",
         json=a_KMK_admin_information,
         headers={"Authorization": f"Bearer {non_admin_bearer}"},
     )
@@ -379,15 +374,15 @@ def test_register_admin_by_non_admin_returns_403_code_and_message():
 
 
 def test_a_previously_created_user_as_non_admin_can_be_registered_as_admin():
-    response_from_resgistration_endpoint = requests.post(
-        "http://localhost:8080/users/register",
+    response_from_resgistration_endpoint = client.post(
+        "/users/register",
         json=a_KMK_physician_information,
     )
 
     assert response_from_resgistration_endpoint.status_code == 201
 
-    response_from_admin_registration_endpoint = requests.post(
-        "http://localhost:8080/admin/register",
+    response_from_admin_registration_endpoint = client.post(
+        "/admin/register",
         json={
             "name": a_KMK_physician_information["name"],
             "last_name": a_KMK_physician_information["last_name"],
