@@ -209,7 +209,7 @@ def regsiter_admin(admin_resgister_request: AdminRegisterRequest):
 
     del admin_resgister_request.password
     admin = Admin(
-        **admin_resgister_request.dict(), id=auth_uid, registered_by="qwertyui"
+        **admin_resgister_request.model_dump(), id=auth_uid, registered_by="qwertyui"
     )
     admin.create()
     return {"message": "Successfull registration"}

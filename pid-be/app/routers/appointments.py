@@ -58,7 +58,7 @@ async def create_appointment(
     * Throw an error if appointment creation fails.
     """
     appointment = Appointment(
-        **{**appointment_creation_request.dict(), "patient_id": patient_id}
+        **{**appointment_creation_request.model_dump(), "patient_id": patient_id}
     )
     try:
         appointment_id = appointment.create()
@@ -178,7 +178,8 @@ def delete_appointment_by_id(id: str, uid=Depends(Auth.is_logged_in)):
             },
         )
         return {"message": "Appointment cancelled successfully"}
-    except:
+    except Exception as e:
+        print(e)
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal server error"},
@@ -218,7 +219,7 @@ def update_appointment(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"detail": "Invalid appointment id"},
         )
-    appointment.update(update_appointment_request.dict())
+    appointment.update(update_appointment_request.model_dump())
     return {"message": "Appointment updated successfully"}
 
 
@@ -254,5 +255,5 @@ def close_appointment(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"detail": "Invalid appointment id"},
         )
-    appointment.close(close_appointment_request.dict())
+    appointment.close(close_appointment_request.model_dump())
     return {"message": "Appointment closed successfully"}

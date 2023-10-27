@@ -150,14 +150,14 @@ async def register(
     if register_request.role == "patient":
         patient_data = {
             key: value
-            for key, value in register_request.dict().items()
+            for key, value in register_request.model_dump().items()
             if key not in ["birth_date", "gender", "blood_type"]
         }
         patient = Patient(**patient_data, id=auth_uid)
         patient.create()
         record_data = {
             key: value
-            for key, value in register_request.dict().items()
+            for key, value in register_request.model_dump().items()
             if key not in ["role", "email"]
         }
         record = Record(**record_data, id=auth_uid)
