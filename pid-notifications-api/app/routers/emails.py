@@ -10,5 +10,5 @@ router = APIRouter(
 
 @router.post("/send", status_code=status.HTTP_200_OK)
 async def send_email_template(send_email_template_request: SendEmailTemplateRequest):
-    email_handler = EmailHandler(**send_email_template_request.dict())
+    email_handler = EmailHandler(**send_email_template_request.model_dump())
     await email_handler.send_email()

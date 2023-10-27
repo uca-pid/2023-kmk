@@ -1,8 +1,9 @@
-import os
 import pytest
-import requests
-from .config import *
 from firebase_admin import firestore, auth
+from app.main import app
+from fastapi.testclient import TestClient
+
+client = TestClient(app)
 
 db = firestore.client()
 
@@ -58,14 +59,7 @@ initial_admin_information = {
 
 
 @pytest.fixture(scope="session", autouse=True)
-def clean_firestore():
-    requests.delete(
-        "http://localhost:8081/emulator/v1/projects/pid-kmk/databases/(default)/documents"
-    )
-
-
-@pytest.fixture(scope="session", autouse=True)
-def load_and_delete_specialties(clean_firestore):
+def load_and_delete_specialties():
     for specialty in specialties:
         db.collection("specialties").document().set({"name": specialty})
     yield
@@ -76,8 +70,8 @@ def load_and_delete_specialties(clean_firestore):
 
 @pytest.fixture(scope="session", autouse=True)
 def create_patient_and_then_delete_him(load_and_delete_specialties):
-    requests.post(
-        "http://localhost:8080/users/register",
+    client.post(
+        "/users/register",
         json=a_KMK_patient_information,
     )
     pytest.a_patient_uid = auth.get_user_by_email(
@@ -90,8 +84,8 @@ def create_patient_and_then_delete_him(load_and_delete_specialties):
 
 @pytest.fixture(autouse=True)
 def create_a_physician_and_then_delete_him():
-    requests.post(
-        "http://localhost:8080/users/register",
+    client.post(
+        "/users/register",
         json=a_KMK_physician_information,
     )
     pytest.a_physician_uid = auth.get_user_by_email(
@@ -107,8 +101,8 @@ def create_a_physician_and_then_delete_him():
 
 @pytest.fixture(autouse=True)
 def create_another_physician_and_then_delete_him():
-    requests.post(
-        "http://localhost:8080/users/register",
+    client.post(
+        "/users/register",
         json=another_KMK_physician_information,
     )
     pytest.another_physician_uid = auth.get_user_by_email(
@@ -137,8 +131,8 @@ def create_initial_admin_and_then_delete_him(
 
 @pytest.fixture(scope="session", autouse=True)
 def log_in_initial_admin_user(create_initial_admin_and_then_delete_him):
-    pytest.initial_admin_bearer = requests.post(
-        "http://localhost:8080/users/login",
+    pytest.initial_admin_bearer = client.post(
+        "/users/login",
         json={
             "email": initial_admin_information["email"],
             "password": initial_admin_information["password"],
@@ -148,8 +142,8 @@ def log_in_initial_admin_user(create_initial_admin_and_then_delete_him):
 
 
 def test_approve_physician_endpoint_returns_a_200_code():
-    response_from_approve_phician_endpoint = requests.post(
-        f"http://localhost:8080/admin/approve-physician/{pytest.a_physician_uid}",
+    response_from_approve_phician_endpoint = client.post(
+        f"/admin/approve-physician/{pytest.a_physician_uid}",
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
 
@@ -157,8 +151,8 @@ def test_approve_physician_endpoint_returns_a_200_code():
 
 
 def test_approve_physician_endpoint_returns_message():
-    response_from_approve_phician_endpoint = requests.post(
-        f"http://localhost:8080/admin/approve-physician/{pytest.a_physician_uid}",
+    response_from_approve_phician_endpoint = client.post(
+        f"/admin/approve-physician/{pytest.a_physician_uid}",
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
 
@@ -176,8 +170,8 @@ def test_approve_physician_endpoint_updates_approved_field_in_firestore():
         .to_dict()["approved"]
         == "pending"
     )
-    requests.post(
-        f"http://localhost:8080/admin/approve-physician/{pytest.a_physician_uid}",
+    client.post(
+        f"/admin/approve-physician/{pytest.a_physician_uid}",
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
 
@@ -191,8 +185,8 @@ def test_approve_physician_endpoint_updates_approved_field_in_firestore():
 
 
 def test_approve_physician_endpoint_for_a_non_physician_returns_a_400_code_and_message():
-    response_from_approve_phician_endpoint = requests.post(
-        f"http://localhost:8080/admin/approve-physician/{pytest.a_patient_uid}",
+    response_from_approve_phician_endpoint = client.post(
+        f"/admin/approve-physician/{pytest.a_patient_uid}",
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
 
@@ -204,8 +198,8 @@ def test_approve_physician_endpoint_for_a_non_physician_returns_a_400_code_and_m
 
 
 def test_approve_physician_with_no_authorization_header_returns_401_code():
-    response_from_admin_registration_endpoint = requests.post(
-        f"http://localhost:8080/admin/approve-physician/{pytest.a_physician_uid}"
+    response_from_admin_registration_endpoint = client.post(
+        f"/admin/approve-physician/{pytest.a_physician_uid}"
     )
 
     assert response_from_admin_registration_endpoint.status_code == 401
@@ -216,8 +210,8 @@ def test_approve_physician_with_no_authorization_header_returns_401_code():
 
 
 def test_approve_physician_with_empty_authorization_header_returns_401_code():
-    response_from_admin_registration_endpoint = requests.post(
-        f"http://localhost:8080/admin/approve-physician/{pytest.a_physician_uid}",
+    response_from_admin_registration_endpoint = client.post(
+        f"/admin/approve-physician/{pytest.a_physician_uid}",
         headers={"Authorization": ""},
     )
 
@@ -229,8 +223,8 @@ def test_approve_physician_with_empty_authorization_header_returns_401_code():
 
 
 def test_approve_physician_with_empty_bearer_token_returns_401_code():
-    response_from_admin_registration_endpoint = requests.post(
-        f"http://localhost:8080/admin/approve-physician/{pytest.a_physician_uid}",
+    response_from_admin_registration_endpoint = client.post(
+        f"/admin/approve-physician/{pytest.a_physician_uid}",
         headers={"Authorization": f"Bearer "},
     )
 
@@ -242,8 +236,8 @@ def test_approve_physician_with_empty_bearer_token_returns_401_code():
 
 
 def test_approve_physician_with_non_bearer_token_returns_401_code():
-    response_from_admin_registration_endpoint = requests.post(
-        f"http://localhost:8080/admin/approve-physician/{pytest.a_physician_uid}",
+    response_from_admin_registration_endpoint = client.post(
+        f"/admin/approve-physician/{pytest.a_physician_uid}",
         headers={"Authorization": pytest.initial_admin_bearer},
     )
 
@@ -255,8 +249,8 @@ def test_approve_physician_with_non_bearer_token_returns_401_code():
 
 
 def test_approve_physician_with_invalid_bearer_token_returns_401_code():
-    response_from_admin_registration_endpoint = requests.post(
-        f"http://localhost:8080/admin/approve-physician/{pytest.a_physician_uid}",
+    response_from_admin_registration_endpoint = client.post(
+        f"/admin/approve-physician/{pytest.a_physician_uid}",
         headers={"Authorization": "Bearer smth"},
     )
 
@@ -268,16 +262,16 @@ def test_approve_physician_with_invalid_bearer_token_returns_401_code():
 
 
 def test_approve_physician_by_non_admin_returns_403_code_and_message():
-    non_admin_bearer = requests.post(
-        "http://localhost:8080/users/login",
+    non_admin_bearer = client.post(
+        "/users/login",
         json={
             "email": a_KMK_patient_information["email"],
             "password": a_KMK_patient_information["password"],
         },
     ).json()["token"]
 
-    response_from_admin_registration_endpoint = requests.post(
-        f"http://localhost:8080/admin/approve-physician/{pytest.a_physician_uid}",
+    response_from_admin_registration_endpoint = client.post(
+        f"/admin/approve-physician/{pytest.a_physician_uid}",
         headers={"Authorization": f"Bearer {non_admin_bearer}"},
     )
 

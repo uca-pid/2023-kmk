@@ -21,7 +21,7 @@ class PhysicianResponse(BaseModel):
                 if data.get("appointments")
                 else [],
             }
-        ).dict()
+        ).model_dump()
         super().__init__(**data)
 
 
