@@ -63,6 +63,7 @@ async def create_appointment(
     try:
         appointment_id = appointment.create()
         physician = Physician.get_by_id(appointment_creation_request.physician_id)
+        patient = Patient.get_by_id(patient_id)
         date = datetime.fromtimestamp(appointment_creation_request.date)
         requests.post(
             "http://localhost:9000/emails/send",
@@ -70,11 +71,12 @@ async def create_appointment(
                 "type": "PENDING_APPOINTMENT",
                 "data": {
                     "email": physician["email"],
-                    "name": physician["first_name"],
-                    "last_name": physician["last_name"],
+                    "name": patient["first_name"],
+                    "last_name": patient["last_name"],
                     "day": date.day,
                     "month": date.month,
                     "year": date.year,
+                    "hour": date.hour,
                     "minute": date.minute,
                     "second": date.second,
                 },
@@ -112,7 +114,8 @@ def get_all_appointments(uid=Depends(Auth.is_logged_in)):
     try:
         appointments = Appointment.get_all_appointments_for_user_with(uid)
         return {"appointments": appointments}
-    except:
+    except Exception as e:
+        print(e)
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal server error"},
@@ -208,6 +211,7 @@ def update_appointment(
     * Throw an error if appointment retrieving fails.
     """
     appointment = Appointment.get_by_id(id)
+    print(appointment, not appointment, uid, appointment.patient_id)
     if not appointment or appointment.patient_id != uid:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,

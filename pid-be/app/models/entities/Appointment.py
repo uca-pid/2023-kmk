@@ -58,6 +58,7 @@ class Appointment:
                 .get()
             )
         else:
+            print("HERE")
             appointments = (
                 db.collection("appointments")
                 .where("physician_id", "==", uid)
@@ -123,6 +124,7 @@ class Appointment:
         Physician.free_agenda(self.physician_id, self.date)
 
     def update(self, updated_values):
+        '''
         if not Physician.has_availability(
             id=self.physician_id, date=updated_values["date"]
         ):
@@ -130,6 +132,7 @@ class Appointment:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Can only set appointment at physicians available hours",
             )
+        '''
         Physician.free_agenda(self.physician_id, self.date)
         db.collection("appointments").document(self.id).update(
             {**updated_values, "updated_at": round(time.time()), "approved": "pending"}
