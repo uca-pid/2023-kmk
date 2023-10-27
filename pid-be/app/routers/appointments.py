@@ -84,6 +84,7 @@ async def create_appointment(
         )
         return {"appointment_id": appointment_id}
     except Exception as e:
+        print(e)
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal server error"},
@@ -219,6 +220,7 @@ def update_appointment(
         )
     appointment.update(update_appointment_request.dict())
     return {"message": "Appointment updated successfully"}
+
 
 @router.put(
     "/close-appointment/{id}",
