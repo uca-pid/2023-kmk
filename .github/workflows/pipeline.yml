@@ -111,6 +111,8 @@ jobs:
 
             - name: Run emualtors and backend tests
               env:
+                  REGISTER_URL: ${{ secrets.REGISTER_URL }}
+                  LOGIN_URL: ${{ secrets.LOGIN_URL }}
                   PROJECT_ID: ${{ secrets.PROJECT_ID }}
                   PRIVATE_KEY_ID: ${{ secrets.PRIVATE_KEY_ID }}
                   PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
