@@ -4,6 +4,8 @@ from datetime import datetime, timedelta
 from firebase_admin import auth, firestore
 from app.main import app
 from fastapi.testclient import TestClient
+import requests
+from unittest.mock import patch
 
 client = TestClient(app)
 
@@ -64,7 +66,7 @@ other_appointment_data = {
 }
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def create_test_users():
     first_created_user = auth.create_user(**a_KMK_user_information)
     second_created_user = auth.create_user(**another_KMK_user_information)
@@ -99,7 +101,7 @@ def create_test_users():
     db.collection("patients").document(other_KMK_user_information["uid"]).delete()
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def create_test_physicians(create_test_users):
     first_created_physician = auth.create_user(**a_KMK_physician_information)
     second_created_physician = auth.create_user(**another_KMK_physician_information)
@@ -111,9 +113,11 @@ def create_test_physicians(create_test_users):
             "id": a_KMK_physician_information["uid"],
             "first_name": "Doc",
             "last_name": "Docson",
-            "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
+            "email": a_KMK_physician_information["email"],
+            "agenda": {str(number_of_day_of_week): {"start": 8.0, "finish": 18.5}},
             "specialty": "surgeon",
             "approved": "approved",
+            "tuition": "111",
         }
     )
     db.collection("physicians").document(another_KMK_physician_information["uid"]).set(
@@ -121,9 +125,11 @@ def create_test_physicians(create_test_users):
             "id": another_KMK_physician_information["uid"],
             "first_name": "Doc",
             "last_name": "Docson the Second",
-            "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
+            "email": another_KMK_physician_information["email"],
+            "agenda": {str(number_of_day_of_week): {"start": 8.0, "finish": 18.5}},
             "specialty": "surgeon",
             "approved": "approved",
+            "tuition": "111",
         }
     )
     yield
@@ -135,7 +141,7 @@ def create_test_physicians(create_test_users):
     ).delete()
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def create_login_tokens(create_test_physicians):
     response_from_login_endpoint_for_first_user = client.post(
         "/users/login",
@@ -192,41 +198,57 @@ def create_login_tokens(create_test_physicians):
     )
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def create_test_appointments(create_login_tokens):
     an_appointment_data["physician_id"] = a_KMK_physician_information["uid"]
     another_appointment_data["physician_id"] = another_KMK_physician_information["uid"]
     other_appointment_data["physician_id"] = another_KMK_physician_information["uid"]
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        first_appointment_creation_response = client.post(
+            "/appointments",
+            json=an_appointment_data,
+            headers={"Authorization": f"Bearer {pytest.first_bearer}"},
+        )
 
-    first_appointment_creation_response = client.post(
-        "/appointments",
-        json=an_appointment_data,
-        headers={"Authorization": f"Bearer {pytest.first_bearer}"},
+        an_appointment_data["id"] = first_appointment_creation_response.json()[
+            "appointment_id"
+        ]
+
+        second_appointment_creation_response = client.post(
+            "/appointments",
+            json=another_appointment_data,
+            headers={"Authorization": f"Bearer {pytest.first_bearer}"},
+        )
+
+        another_appointment_data["id"] = second_appointment_creation_response.json()[
+            "appointment_id"
+        ]
+
+        third_appointment_creation_response = client.post(
+            "/appointments",
+            json=other_appointment_data,
+            headers={"Authorization": f"Bearer {pytest.second_bearer}"},
+        )
+
+        other_appointment_data["id"] = third_appointment_creation_response.json()[
+            "appointment_id"
+        ]
+
+
+@pytest.fixture(scope="module", autouse=True)
+def approve_test_appointments(create_test_appointments):
+    db.collection("appointments").document(an_appointment_data["id"]).update(
+        {"approved": "approved"}
     )
-
-    an_appointment_data["id"] = first_appointment_creation_response.json()[
-        "appointment_id"
-    ]
-
-    second_appointment_creation_response = client.post(
-        "/appointments",
-        json=another_appointment_data,
-        headers={"Authorization": f"Bearer {pytest.first_bearer}"},
+    db.collection("appointments").document(another_appointment_data["id"]).update(
+        {"approved": "approved"}
     )
-
-    another_appointment_data["id"] = second_appointment_creation_response.json()[
-        "appointment_id"
-    ]
-
-    third_appointment_creation_response = client.post(
-        "/appointments",
-        json=other_appointment_data,
-        headers={"Authorization": f"Bearer {pytest.second_bearer}"},
+    db.collection("appointments").document(other_appointment_data["id"]).update(
+        {"approved": "approved"}
     )
-
-    other_appointment_data["id"] = third_appointment_creation_response.json()[
-        "appointment_id"
-    ]
+    yield
 
 
 def test_valid_request_to_get_endpoint_returns_200_code():
@@ -284,6 +306,8 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects():
     assert first_appointment_to_validate.get("patient_id") == None
     assert first_appointment_to_validate["physician"] == {
         "id": a_KMK_physician_information["uid"],
+        "email": a_KMK_physician_information["email"],
+        "tuition": "111",
         "first_name": "Doc",
         "last_name": "Docson",
         "specialty": "surgeon",
@@ -292,7 +316,7 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects():
             "working_hours": [
                 {
                     "day_of_week": number_of_day_of_week,
-                    "start_time": 8,
+                    "start_time": 8.0,
                     "finish_time": 18.5,
                 }
             ],
@@ -315,6 +339,8 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects():
     )
     assert second_appointment_to_validate["physician"] == {
         "id": another_KMK_physician_information["uid"],
+        "email": another_KMK_physician_information["email"],
+        "tuition": "111",
         "first_name": "Doc",
         "last_name": "Docson the Second",
         "specialty": "surgeon",
@@ -323,7 +349,7 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects():
             "working_hours": [
                 {
                     "day_of_week": number_of_day_of_week,
-                    "start_time": 8,
+                    "start_time": 8.0,
                     "finish_time": 18.5,
                 }
             ],
@@ -449,6 +475,8 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects_for
     )
     assert first_appointment_to_validate["physician"] == {
         "id": another_KMK_physician_information["uid"],
+        "email": another_KMK_physician_information["email"],
+        "tuition": "111",
         "first_name": "Doc",
         "last_name": "Docson the Second",
         "specialty": "surgeon",
@@ -457,7 +485,7 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects_for
             "working_hours": [
                 {
                     "day_of_week": number_of_day_of_week,
-                    "start_time": 8,
+                    "start_time": 8.0,
                     "finish_time": 18.5,
                 }
             ],
@@ -483,6 +511,8 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects_for
     )
     assert second_appointment_to_validate["physician"] == {
         "id": another_KMK_physician_information["uid"],
+        "email": another_KMK_physician_information["email"],
+        "tuition": "111",
         "first_name": "Doc",
         "last_name": "Docson the Second",
         "specialty": "surgeon",
@@ -491,7 +521,7 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects_for
             "working_hours": [
                 {
                     "day_of_week": number_of_day_of_week,
-                    "start_time": 8,
+                    "start_time": 8.0,
                     "finish_time": 18.5,
                 }
             ],

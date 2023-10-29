@@ -66,7 +66,7 @@ initial_admin_information = {
 }
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def load_and_delete_specialties():
     for specialty in specialties:
         db.collection("specialties").document().set({"name": specialty})
@@ -76,7 +76,7 @@ def load_and_delete_specialties():
         specialty_doc.delete()
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def create_patient_and_then_delete_him(load_and_delete_specialties):
     created_user = auth.create_user(
         **{
@@ -133,7 +133,7 @@ def create_another_physician_and_then_delete_him():
         print("[+] Physisican has not been created")
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def create_initial_admin_and_then_delete_him(
     create_patient_and_then_delete_him,
 ):
@@ -146,7 +146,7 @@ def create_initial_admin_and_then_delete_him(
     db.collection("superusers").document(pytest.initial_admin_uid).delete()
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def log_in_initial_admin_user(create_initial_admin_and_then_delete_him):
     url = os.environ.get("LOGIN_URL")
     login_response = requests.post(
