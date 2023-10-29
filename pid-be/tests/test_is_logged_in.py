@@ -19,19 +19,24 @@ a_KMK_patient_information = {
 }
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def create_patient_and_then_delete_him():
-    client.post(
-        "/users/register",
-        json=a_KMK_patient_information,
+    created_user = auth.create_user(
+        **{
+            "email": a_KMK_patient_information["email"],
+            "password": a_KMK_patient_information["password"],
+        }
     )
-    pytest.patient_uid = auth.get_user_by_email(a_KMK_patient_information["email"]).uid
+    pytest.patient_uid = created_user.uid
+    db.collection("patients").document(pytest.patient_uid).set(
+        a_KMK_patient_information
+    )
     yield
     auth.delete_user(pytest.patient_uid)
     db.collection("patients").document(pytest.patient_uid).delete()
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def log_in_patient(create_patient_and_then_delete_him):
     pytest.bearer_token = client.post(
         "/users/login",

@@ -130,21 +130,19 @@ async def register(
         print("[+] User doesnt exist in authentication")
 
     if not auth_uid:
-        register_response = requests.post(
-            url,
-            json={
-                "email": register_request.email,
-                "password": register_request.password,
-                "returnSecureToken": True,
-            },
-            params={"key": firebase_client_config["apiKey"]},
-        )
-        if register_response.status_code != 200:
+        try:
+            register_response = auth.create_user(
+                **{
+                    "email": register_request.email,
+                    "password": register_request.password,
+                }
+            )
+            auth_uid = register_response.uid
+        except:
             return JSONResponse(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 content={"detail": "Internal Server Error"},
             )
-        auth_uid = register_response.json()["localId"]
 
     del register_request.password
     if register_request.role == "patient":
@@ -163,7 +161,9 @@ async def register(
         record = Record(**record_data, id=auth_uid)
         record.create()
     else:
-        physician = Physician(**register_request.dict(exclude_none=True), id=auth_uid)
+        physician = Physician(
+            **register_request.model_dump(exclude_none=True), id=auth_uid
+        )
         physician.create()
     requests.post(
         "http://localhost:9000/emails/send",

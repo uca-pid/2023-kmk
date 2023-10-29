@@ -110,8 +110,8 @@ async def deny_physician(physician_id: str, uid=Depends(Auth.is_admin)):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={"detail": "Can only deny physicians"},
             )
-        Admin.deny_physician(physician_id)
         physician = Physician.get_by_id(physician_id)
+        Admin.deny_physician(physician_id)
         requests.post(
             "http://localhost:9000/emails/send",
             json={
@@ -171,7 +171,9 @@ def get_all_pending_validations(uid=Depends(Auth.is_admin)):
         500: {"model": AdminRegistrationError},
     },
 )
-def regsiter_admin(admin_resgister_request: AdminRegisterRequest):
+def regsiter_admin(
+    admin_resgister_request: AdminRegisterRequest, uid=Depends(Auth.is_admin)
+):
     """
     Register an admin.
 
@@ -209,7 +211,7 @@ def regsiter_admin(admin_resgister_request: AdminRegisterRequest):
 
     del admin_resgister_request.password
     admin = Admin(
-        **admin_resgister_request.model_dump(), id=auth_uid, registered_by="qwertyui"
+        **admin_resgister_request.model_dump(), id=auth_uid, registered_by=uid
     )
     admin.create()
     return {"message": "Successfull registration"}

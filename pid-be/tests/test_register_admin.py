@@ -54,7 +54,7 @@ a_KMK_admin_information = {
 }
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def load_and_delete_specialties():
     for specialty in specialties:
         db.collection("specialties").document().set({"name": specialty})
@@ -64,21 +64,24 @@ def load_and_delete_specialties():
         specialty_doc.delete()
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def create_patient_and_then_delete_him(load_and_delete_specialties):
-    client.post(
-        "/users/register",
-        json=a_KMK_patient_information,
+    created_user = auth.create_user(
+        **{
+            "email": a_KMK_patient_information["email"],
+            "password": a_KMK_patient_information["password"],
+        }
+    )
+    pytest.patient_uid = created_user.uid
+    db.collection("patients").document(pytest.patient_uid).set(
+        a_KMK_patient_information
     )
     yield
-    created_test_patient_uid = auth.get_user_by_email(
-        a_KMK_patient_information["email"]
-    ).uid
-    auth.delete_user(created_test_patient_uid)
-    db.collection("patients").document(created_test_patient_uid).delete()
+    auth.delete_user(pytest.patient_uid)
+    db.collection("patients").document(pytest.patient_uid).delete()
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def delete_physician(create_patient_and_then_delete_him):
     yield
     try:
@@ -92,7 +95,7 @@ def delete_physician(create_patient_and_then_delete_him):
         print("[+] Physisican has not been created")
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def create_initial_admin_and_then_delete_him(delete_physician):
     pytest.initial_admin_uid = auth.create_user(**initial_admin_information).uid
     db.collection("superusers").document(pytest.initial_admin_uid).set(
@@ -103,7 +106,7 @@ def create_initial_admin_and_then_delete_him(delete_physician):
     db.collection("superusers").document(pytest.initial_admin_uid).delete()
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def log_in_initial_admin_user(create_initial_admin_and_then_delete_him):
     pytest.initial_admin_bearer = client.post(
         "/users/login",
@@ -374,12 +377,16 @@ def test_register_admin_by_non_admin_returns_403_code_and_message():
 
 
 def test_a_previously_created_user_as_non_admin_can_be_registered_as_admin():
-    response_from_resgistration_endpoint = client.post(
-        "/users/register",
-        json=a_KMK_physician_information,
+    created_user = auth.create_user(
+        **{
+            "email": a_KMK_physician_information["email"],
+            "password": a_KMK_physician_information["password"],
+        }
     )
-
-    assert response_from_resgistration_endpoint.status_code == 201
+    pytest.test_physician = created_user.uid
+    db.collection("physicians").document(pytest.test_physician).set(
+        a_KMK_physician_information
+    )
 
     response_from_admin_registration_endpoint = client.post(
         "/admin/register",

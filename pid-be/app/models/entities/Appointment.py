@@ -75,22 +75,23 @@ class Appointment:
         )
 
         return [appointment.to_dict() for appointment in appointments]
-    
+
     @staticmethod
     def get_all_appointments():
-        appointments = (
-            db.collection("appointments").get()
-        )
+        appointments = db.collection("appointments").get()
 
         return [appointment.to_dict() for appointment in appointments]
-    
+
     @staticmethod
     def get_all_appointments_updtated_for_physician(uid):
         updated_appointments = (
-            db.collection("appointments").where("physician_id", "==", uid).where("updated_at", "!=", None).get()
+            db.collection("appointments")
+            .where("physician_id", "==", uid)
+            .where("updated_at", "!=", None)
+            .get()
         )
         return [appointment.to_dict() for appointment in updated_appointments]
-    
+
     @staticmethod
     def get_all_appointments_updtated(uid):
         updated_appointments = (
@@ -124,7 +125,6 @@ class Appointment:
         Physician.free_agenda(self.physician_id, self.date)
 
     def update(self, updated_values):
-        '''
         if not Physician.has_availability(
             id=self.physician_id, date=updated_values["date"]
         ):
@@ -132,7 +132,6 @@ class Appointment:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Can only set appointment at physicians available hours",
             )
-        '''
         Physician.free_agenda(self.physician_id, self.date)
         db.collection("appointments").document(self.id).update(
             {**updated_values, "updated_at": round(time.time()), "approved": "pending"}
@@ -142,9 +141,12 @@ class Appointment:
 
     def close(self, updated_values):
         db.collection("appointments").document(self.id).update(
-            {**updated_values, "start_time": updated_values["start_time"], "attended": updated_values["attended"]}
+            {
+                **updated_values,
+                "start_time": updated_values["start_time"],
+                "attended": updated_values["attended"],
+            }
         )
-        
 
     def create(self):
         id = db.collection("appointments").document().id

@@ -37,49 +37,59 @@ a_physician_information = {
     "id": "avalidid",
     "first_name": "Doc",
     "last_name": "Docson",
+    "email": "doctor@getbyspecialty.com",
     "specialty": specialties[0],
     "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
     "approved": "approved",
+    "tuition": "111",
 }
 
 another_physician_information = {
     "id": "anothervalidid",
     "first_name": "Doc",
     "last_name": "Docson the Second",
+    "email": "doctor@getbyspecialty.com",
     "specialty": specialties[0],
     "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
     "approved": "approved",
+    "tuition": "111",
 }
 
 other_physician_information = {
     "id": "othervalidid",
     "first_name": "Doc",
     "last_name": "Docson the Third",
+    "email": "doctor@getbyspecialty.com",
     "specialty": specialties[1],
     "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
     "approved": "approved",
+    "tuition": "111",
 }
 
 pending_to_approve_physician_information = {
     "id": "pendingphysicianid",
     "first_name": "Doc",
     "last_name": "Docson the Third",
+    "email": "doctor@getbyspecialty.com",
     "specialty": specialties[1],
     "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
     "approved": "pending",
+    "tuition": "111",
 }
 
 denied_approve_physician_information = {
     "id": "deniedphysicianid",
     "first_name": "Doc",
     "last_name": "Docson the Third",
+    "email": "doctor@getbyspecialty.com",
     "specialty": specialties[1],
     "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
     "approved": "denied",
+    "tuition": "111",
 }
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def load_and_delete_physicians():
     db.collection("physicians").document(a_physician_information["id"]).set(
         a_physician_information
@@ -103,7 +113,7 @@ def load_and_delete_physicians():
         physician_doc.delete()
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def create_test_user():
     created_user = auth.create_user(**a_KMK_user_information)
     a_KMK_user_information["uid"] = created_user.uid
@@ -111,7 +121,7 @@ def create_test_user():
     auth.delete_user(a_KMK_user_information["uid"])
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def load_and_delete_specialties():
     for specialty in specialties:
         db.collection("specialties").document().set({"name": specialty})

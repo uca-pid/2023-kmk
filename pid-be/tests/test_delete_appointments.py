@@ -4,6 +4,9 @@ from datetime import datetime, timedelta
 from firebase_admin import auth, firestore
 from app.main import app
 from fastapi.testclient import TestClient
+import requests
+from unittest.mock import patch
+
 
 client = TestClient(app)
 
@@ -12,9 +15,15 @@ db = firestore.client()
 today_date = datetime.fromtimestamp(round(time.time()))
 number_of_day_of_week = int(today_date.date().strftime("%w"))
 next_week_day = today_date + timedelta(days=7)
-next_week_day_first_block = next_week_day.replace(hour=9)
-next_week_day_second_block = next_week_day.replace(hour=10)
-next_week_day_third_block = next_week_day.replace(hour=11)
+next_week_day_first_block = next_week_day.replace(
+    hour=9, minute=0, second=0, microsecond=0
+)
+next_week_day_second_block = next_week_day.replace(
+    hour=10, minute=0, second=0, microsecond=0
+)
+next_week_day_third_block = next_week_day.replace(
+    hour=11, minute=0, second=0, microsecond=0
+)
 
 specialties = [
     "pediatrics",
@@ -79,7 +88,7 @@ other_appointment_data = {
 }
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def create_users():
     first_created_user = auth.create_user(**a_KMK_user_information)
     second_created_user = auth.create_user(**another_KMK_user_information)
@@ -93,7 +102,7 @@ def create_users():
     auth.delete_user(pytest.third_user_id)
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(autouse=True)
 def create_physicians(create_users):
     first_created_physician = auth.create_user(**a_KMK_physician_information)
     second_created_physician = auth.create_user(**another_KMK_physician_information)
@@ -123,8 +132,8 @@ def create_physicians(create_users):
     db.collection("physicians").document(pytest.second_physician_id).delete()
 
 
-@pytest.fixture(scope="session", autouse=True)
-def create_users_in_firestore(create_physicians):
+@pytest.fixture(scope="module", autouse=True)
+def create_users_in_firestore(create_users):
     db.collection("patients").document(pytest.first_user_id).set(
         {
             "id": pytest.first_user_id,
@@ -155,7 +164,7 @@ def create_users_in_firestore(create_physicians):
     db.collection("patients").document(pytest.third_user_id).delete()
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def log_in_users(create_users):
     response_from_login_endpoint_for_first_user = client.post(
         "/users/login",
@@ -191,48 +200,51 @@ def log_in_users(create_users):
 
 @pytest.fixture(autouse=True)
 def create_test_environment(log_in_users):
-    first_appointment_creation_response = client.post(
-        "/appointments",
-        json={
-            **an_appointment_data,
-            "physician_id": pytest.first_physician_id,
-        },
-        headers={"Authorization": f"Bearer {pytest.first_bearer}"},
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        first_appointment_creation_response = client.post(
+            "/appointments",
+            json={
+                **an_appointment_data,
+                "physician_id": pytest.first_physician_id,
+            },
+            headers={"Authorization": f"Bearer {pytest.first_bearer}"},
+        )
 
-    an_appointment_data["id"] = first_appointment_creation_response.json()[
-        "appointment_id"
-    ]
+        an_appointment_data["id"] = first_appointment_creation_response.json()[
+            "appointment_id"
+        ]
 
-    second_appointment_creation_response = client.post(
-        "/appointments",
-        json={
-            **another_appointment_data,
-            "physician_id": pytest.second_physician_id,
-        },
-        headers={"Authorization": f"Bearer {pytest.first_bearer}"},
-    )
+        second_appointment_creation_response = client.post(
+            "/appointments",
+            json={
+                **another_appointment_data,
+                "physician_id": pytest.second_physician_id,
+            },
+            headers={"Authorization": f"Bearer {pytest.first_bearer}"},
+        )
 
-    another_appointment_data["id"] = second_appointment_creation_response.json()[
-        "appointment_id"
-    ]
+        another_appointment_data["id"] = second_appointment_creation_response.json()[
+            "appointment_id"
+        ]
 
-    third_appointment_creation_response = client.post(
-        "/appointments",
-        json={
-            **other_appointment_data,
-            "physician_id": pytest.second_physician_id,
-        },
-        headers={"Authorization": f"Bearer {pytest.second_bearer}"},
-    )
+        third_appointment_creation_response = client.post(
+            "/appointments",
+            json={
+                **other_appointment_data,
+                "physician_id": pytest.second_physician_id,
+            },
+            headers={"Authorization": f"Bearer {pytest.second_bearer}"},
+        )
 
-    other_appointment_data["id"] = third_appointment_creation_response.json()[
-        "appointment_id"
-    ]
+        other_appointment_data["id"] = third_appointment_creation_response.json()[
+            "appointment_id"
+        ]
     yield
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def load_and_delete_specialties(log_in_users):
     for specialty in specialties:
         db.collection("specialties").document().set({"name": specialty})
@@ -242,7 +254,7 @@ def load_and_delete_specialties(log_in_users):
         specialty_doc.delete()
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def load_and_delete_specialties(log_in_users):
     yield
     appointment_docs = db.collection("appointments").list_documents()
@@ -251,19 +263,25 @@ def load_and_delete_specialties(log_in_users):
 
 
 def test_delete_appointment_of_a_valid_appointment_returns_a_200_code():
-    response_to_delete_endpoint = client.delete(
-        f"/appointments/{an_appointment_data['id']}",
-        headers={"Authorization": f"Bearer {pytest.first_bearer}"},
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        response_to_delete_endpoint = client.delete(
+            f"/appointments/{an_appointment_data['id']}",
+            headers={"Authorization": f"Bearer {pytest.first_bearer}"},
+        )
 
     assert response_to_delete_endpoint.status_code == 200
 
 
 def test_delete_appointment_of_a_valid_appointment_returns_a_message_indicating_successful_deletion():
-    response_to_delete_endpoint = client.delete(
-        f"/appointments/{an_appointment_data['id']}",
-        headers={"Authorization": f"Bearer {pytest.first_bearer}"},
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        response_to_delete_endpoint = client.delete(
+            f"/appointments/{an_appointment_data['id']}",
+            headers={"Authorization": f"Bearer {pytest.first_bearer}"},
+        )
 
     assert (
         response_to_delete_endpoint.json()["message"]
@@ -277,10 +295,13 @@ def test_delete_appointment_of_a_valid_appointment_removes_appointment_from_fire
         == True
     )
 
-    client.delete(
-        f"/appointments/{an_appointment_data['id']}",
-        headers={"Authorization": f"Bearer {pytest.first_bearer}"},
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        client.delete(
+            f"/appointments/{an_appointment_data['id']}",
+            headers={"Authorization": f"Bearer {pytest.first_bearer}"},
+        )
 
     assert (
         db.collection("appointments").document(an_appointment_data["id"]).get().exists
@@ -373,6 +394,8 @@ def test_delete_appointment_that_doent_exist_returns_a_400_code_and_message():
 
 
 def test_delete_appointment_by_a_physician_by_the_physician_of_that_appointment_returns_a_200_code():
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
     physician_token = client.post(
         "/users/login",
         json={
@@ -380,10 +403,11 @@ def test_delete_appointment_by_a_physician_by_the_physician_of_that_appointment_
             "password": a_KMK_physician_information["password"],
         },
     ).json()["token"]
-    response_to_delete_endpoint = client.delete(
-        f"/appointments/{an_appointment_data['id']}",
-        headers={"Authorization": f"Bearer {physician_token}"},
-    )
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        response_to_delete_endpoint = client.delete(
+            f"/appointments/{an_appointment_data['id']}",
+            headers={"Authorization": f"Bearer {physician_token}"},
+        )
 
     assert response_to_delete_endpoint.status_code == 200
 
@@ -396,10 +420,13 @@ def test_delete_appointment_by_a_physician_of_a_valid_appointment_returns_a_mess
             "password": a_KMK_physician_information["password"],
         },
     ).json()["token"]
-    response_to_delete_endpoint = client.delete(
-        f"/appointments/{an_appointment_data['id']}",
-        headers={"Authorization": f"Bearer {physician_token}"},
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        response_to_delete_endpoint = client.delete(
+            f"/appointments/{an_appointment_data['id']}",
+            headers={"Authorization": f"Bearer {physician_token}"},
+        )
 
     assert (
         response_to_delete_endpoint.json()["message"]
@@ -420,10 +447,13 @@ def test_delete_appointment_by_a_physician_of_a_valid_appointment_removes_appoin
             "password": a_KMK_physician_information["password"],
         },
     ).json()["token"]
-    client.delete(
-        f"/appointments/{an_appointment_data['id']}",
-        headers={"Authorization": f"Bearer {physician_token}"},
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        client.delete(
+            f"/appointments/{an_appointment_data['id']}",
+            headers={"Authorization": f"Bearer {physician_token}"},
+        )
 
     assert (
         db.collection("appointments").document(an_appointment_data["id"]).get().exists
@@ -439,10 +469,13 @@ def test_delete_appointment_by_a_physician_who_isnt_assigned_to_it_returns_a_400
             "password": another_KMK_physician_information["password"],
         },
     ).json()["token"]
-    response_to_delete_endpoint = client.delete(
-        f"/appointments/{an_appointment_data['id']}",
-        headers={"Authorization": f"Bearer {physician_token}"},
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        response_to_delete_endpoint = client.delete(
+            f"/appointments/{an_appointment_data['id']}",
+            headers={"Authorization": f"Bearer {physician_token}"},
+        )
 
     assert response_to_delete_endpoint.status_code == 400
     assert response_to_delete_endpoint.json()["detail"] == "Invalid appointment id"
@@ -465,10 +498,13 @@ def test_appointment_deletion_removes_date_reccord_from_physicians_object_in_fir
             "password": another_KMK_physician_information["password"],
         },
     ).json()["token"]
-    client.delete(
-        f"/appointments/{another_appointment_data['id']}",
-        headers={"Authorization": f"Bearer {physician_token}"},
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        client.delete(
+            f"/appointments/{another_appointment_data['id']}",
+            headers={"Authorization": f"Bearer {physician_token}"},
+        )
 
     assert (
         db.collection("physicians")
@@ -478,3 +514,15 @@ def test_appointment_deletion_removes_date_reccord_from_physicians_object_in_fir
         .get(str(another_appointment_data["date"]))
         == None
     )
+
+
+def test_delete_appointment_endpoint_triggers_notification():
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        client.delete(
+            f"/appointments/{another_appointment_data['id']}",
+            headers={"Authorization": f"Bearer {pytest.first_bearer}"},
+        )
+
+    assert mocked_request.call_count == 2
