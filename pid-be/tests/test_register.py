@@ -1,7 +1,11 @@
 import pytest
-import requests
-from .config import *
 from firebase_admin import auth, firestore
+from app.main import app
+from fastapi.testclient import TestClient
+import requests
+from unittest.mock import patch
+
+client = TestClient(app)
 
 db = firestore.client()
 
@@ -66,15 +70,8 @@ another_KMK_patient_information = {
 }
 
 
-@pytest.fixture(scope="session", autouse=True)
-def clean_firestore():
-    requests.delete(
-        "http://localhost:8081/emulator/v1/projects/pid-kmk/databases/(default)/documents"
-    )
-
-
 @pytest.fixture(autouse=True)
-def delete_test_patients(clean_firestore):
+def delete_test_patients():
     yield
     try:
         created_test_user_uid = auth.get_user_by_email(
@@ -99,7 +96,7 @@ def delete_test_physicians():
         print("[+] Physician doesnt exist")
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def load_and_delete_specialties():
     for specialty in specialties:
         db.collection("specialties").document().set({"name": specialty})
@@ -110,19 +107,25 @@ def load_and_delete_specialties():
 
 
 def test_register_patient_returns_a_201_code():
-    response_to_register_endpoint = requests.post(
-        "http://localhost:8080/users/register",
-        json=a_KMK_patient_information,
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        response_to_register_endpoint = client.post(
+            "/users/register",
+            json=a_KMK_patient_information,
+        )
 
     assert response_to_register_endpoint.status_code == 201
 
 
 def test_register_patient_returns_a_message():
-    response_to_register_endpoint = requests.post(
-        "http://localhost:8080/users/register",
-        json=a_KMK_patient_information,
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        response_to_register_endpoint = client.post(
+            "/users/register",
+            json=a_KMK_patient_information,
+        )
 
     assert response_to_register_endpoint.json()["message"] == "Successfull registration"
 
@@ -130,27 +133,36 @@ def test_register_patient_returns_a_message():
 def test_register_patient_creates_record_in_authentication():
     with pytest.raises(Exception):
         auth.get_user_by_email(a_KMK_patient_information["email"])
-    requests.post(
-        "http://localhost:8080/users/register",
-        json=a_KMK_patient_information,
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        client.post(
+            "/users/register",
+            json=a_KMK_patient_information,
+        )
     assert auth.get_user_by_email(a_KMK_patient_information["email"]) != None
 
 
 def test_register_patient_creates_record_in_firestore():
-    requests.post(
-        "http://localhost:8080/users/register",
-        json=a_KMK_patient_information,
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        client.post(
+            "/users/register",
+            json=a_KMK_patient_information,
+        )
     created_users_uid = auth.get_user_by_email(a_KMK_patient_information["email"]).uid
     assert db.collection("patients").document(created_users_uid).get().exists == True
 
 
 def test_register_patient_sets_information_object_in_firestore():
-    requests.post(
-        "http://localhost:8080/users/register",
-        json=a_KMK_patient_information,
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        client.post(
+            "/users/register",
+            json=a_KMK_patient_information,
+        )
     created_users_uid = auth.get_user_by_email(a_KMK_patient_information["email"]).uid
     patient_object_from_firestore = (
         db.collection("patients").document(created_users_uid).get().to_dict()
@@ -167,13 +179,16 @@ def test_register_patient_sets_information_object_in_firestore():
 
 
 def test_register_patient_twice_returns_a_400_code():
-    first_register_patient = requests.post(
-        "http://localhost:8080/users/register",
-        json=a_KMK_patient_information,
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        first_register_patient = client.post(
+            "/users/register",
+            json=a_KMK_patient_information,
+        )
 
-    second_register_patient = requests.post(
-        "http://localhost:8080/users/register",
+    second_register_patient = client.post(
+        "/users/register",
         json=a_KMK_patient_information,
     )
 
@@ -183,8 +198,8 @@ def test_register_patient_twice_returns_a_400_code():
 
 
 def test_register_patient_with_empty_name_returns_a_422_code():
-    register_patient_response = requests.post(
-        "http://localhost:8080/users/register",
+    register_patient_response = client.post(
+        "/users/register",
         json={
             "role": a_KMK_patient_information["role"],
             "name": "",
@@ -198,8 +213,8 @@ def test_register_patient_with_empty_name_returns_a_422_code():
 
 
 def test_register_patient_with_non_string_name_returns_a_422_code():
-    register_patient_response = requests.post(
-        "http://localhost:8080/users/register",
+    register_patient_response = client.post(
+        "/users/register",
         json={
             "role": a_KMK_patient_information["role"],
             "name": 123456,
@@ -213,8 +228,8 @@ def test_register_patient_with_non_string_name_returns_a_422_code():
 
 
 def test_register_patient_with_empty_last_name_returns_a_422_code():
-    register_patient_response = requests.post(
-        "http://localhost:8080/users/register",
+    register_patient_response = client.post(
+        "/users/register",
         json={
             "role": a_KMK_patient_information["role"],
             "name": a_KMK_patient_information["name"],
@@ -228,8 +243,8 @@ def test_register_patient_with_empty_last_name_returns_a_422_code():
 
 
 def test_register_patient_with_non_string_last_name_returns_a_422_code():
-    register_patient_response = requests.post(
-        "http://localhost:8080/users/register",
+    register_patient_response = client.post(
+        "/users/register",
         json={
             "role": a_KMK_patient_information["role"],
             "name": a_KMK_patient_information["name"],
@@ -243,8 +258,8 @@ def test_register_patient_with_non_string_last_name_returns_a_422_code():
 
 
 def test_register_patient_with_invalid_email_returns_a_422_code():
-    register_patient_response = requests.post(
-        "http://localhost:8080/users/register",
+    register_patient_response = client.post(
+        "/users/register",
         json={
             "role": a_KMK_patient_information["role"],
             "name": a_KMK_patient_information["name"],
@@ -258,8 +273,8 @@ def test_register_patient_with_invalid_email_returns_a_422_code():
 
 
 def test_register_patient_with_password_of_less_than_8_characters_returns_a_422_code():
-    register_patient_response = requests.post(
-        "http://localhost:8080/users/register",
+    register_patient_response = client.post(
+        "/users/register",
         json={
             "role": a_KMK_patient_information["role"],
             "name": a_KMK_patient_information["name"],
@@ -276,8 +291,8 @@ def test_register_patient_with_password_of_less_than_8_characters_returns_a_422_
 
 
 def test_register_patient_with_password_with_no_uppercase_returns_a_422_code():
-    register_patient_response = requests.post(
-        "http://localhost:8080/users/register",
+    register_patient_response = client.post(
+        "/users/register",
         json={
             "role": a_KMK_patient_information["role"],
             "name": a_KMK_patient_information["name"],
@@ -294,8 +309,8 @@ def test_register_patient_with_password_with_no_uppercase_returns_a_422_code():
 
 
 def test_register_patient_with_password_with_no_lowercase_returns_a_422_code():
-    register_patient_response = requests.post(
-        "http://localhost:8080/users/register",
+    register_patient_response = client.post(
+        "/users/register",
         json={
             "role": a_KMK_patient_information["role"],
             "name": a_KMK_patient_information["name"],
@@ -312,8 +327,8 @@ def test_register_patient_with_password_with_no_lowercase_returns_a_422_code():
 
 
 def test_register_patient_with_password_with_no_numbers_returns_a_422_code():
-    register_patient_response = requests.post(
-        "http://localhost:8080/users/register",
+    register_patient_response = client.post(
+        "/users/register",
         json={
             "role": a_KMK_patient_information["role"],
             "name": a_KMK_patient_information["name"],
@@ -330,13 +345,16 @@ def test_register_patient_with_password_with_no_numbers_returns_a_422_code():
 
 
 def test_register_endpoint_returns_a_403_code_and_message_if_user_is_logged_in():
-    requests.post(
-        "http://localhost:8080/users/register",
-        json=a_KMK_patient_information,
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        client.post(
+            "/users/register",
+            json=a_KMK_patient_information,
+        )
 
-    response_to_login_endpoint = requests.post(
-        "http://localhost:8080/users/login",
+    response_to_login_endpoint = client.post(
+        "/users/login",
         json={
             "email": a_KMK_patient_information["email"],
             "password": a_KMK_patient_information["password"],
@@ -345,8 +363,8 @@ def test_register_endpoint_returns_a_403_code_and_message_if_user_is_logged_in()
 
     bearer = response_to_login_endpoint.json()["token"]
 
-    response_to_second_request_to_login_endpoint = requests.post(
-        "http://localhost:8080/users/register",
+    response_to_second_request_to_login_endpoint = client.post(
+        "/users/register",
         headers={"Authorization": f"Bearer {bearer}"},
         json=a_KMK_patient_information,
     )
@@ -359,19 +377,25 @@ def test_register_endpoint_returns_a_403_code_and_message_if_user_is_logged_in()
 
 
 def test_register_physician_returns_a_201_code():
-    response_to_register_endpoint = requests.post(
-        "http://localhost:8080/users/register",
-        json=a_KMK_physician_information,
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        response_to_register_endpoint = client.post(
+            "/users/register",
+            json=a_KMK_physician_information,
+        )
 
     assert response_to_register_endpoint.status_code == 201
 
 
 def test_register_physician_returns_a_message():
-    response_to_register_endpoint = requests.post(
-        "http://localhost:8080/users/register",
-        json=a_KMK_physician_information,
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        response_to_register_endpoint = client.post(
+            "/users/register",
+            json=a_KMK_physician_information,
+        )
 
     assert response_to_register_endpoint.json()["message"] == "Successfull registration"
 
@@ -379,27 +403,36 @@ def test_register_physician_returns_a_message():
 def test_register_physician_creates_record_in_authentication():
     with pytest.raises(Exception):
         auth.get_user_by_email(a_KMK_physician_information["email"])
-    requests.post(
-        "http://localhost:8080/users/register",
-        json=a_KMK_physician_information,
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        client.post(
+            "/users/register",
+            json=a_KMK_physician_information,
+        )
     assert auth.get_user_by_email(a_KMK_physician_information["email"]) != None
 
 
 def test_register_physician_creates_record_in_firestore():
-    requests.post(
-        "http://localhost:8080/users/register",
-        json=a_KMK_physician_information,
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        client.post(
+            "/users/register",
+            json=a_KMK_physician_information,
+        )
     created_users_uid = auth.get_user_by_email(a_KMK_physician_information["email"]).uid
     assert db.collection("physicians").document(created_users_uid).get().exists == True
 
 
 def test_register_physician_sets_information_object_in_firestore():
-    requests.post(
-        "http://localhost:8080/users/register",
-        json=a_KMK_physician_information,
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        client.post(
+            "/users/register",
+            json=a_KMK_physician_information,
+        )
     created_users_uid = auth.get_user_by_email(a_KMK_physician_information["email"]).uid
     physician_object_from_firestore = (
         db.collection("physicians").document(created_users_uid).get().to_dict()
@@ -427,8 +460,8 @@ def test_register_physician_sets_information_object_in_firestore():
 
 
 def test_register_physician_with_invalid_specialty_returns_a_422_code():
-    register_physician_response = requests.post(
-        "http://localhost:8080/users/register",
+    register_physician_response = client.post(
+        "/users/register",
         json={
             "role": a_KMK_physician_information["role"],
             "name": a_KMK_physician_information["name"],
@@ -444,8 +477,8 @@ def test_register_physician_with_invalid_specialty_returns_a_422_code():
 
 
 def test_register_physician_with_missing_tuition_returns_a_422_code():
-    register_physician_response = requests.post(
-        "http://localhost:8080/users/register",
+    register_physician_response = client.post(
+        "/users/register",
         json={
             "role": a_KMK_physician_information["role"],
             "name": a_KMK_physician_information["name"],
@@ -460,13 +493,16 @@ def test_register_physician_with_missing_tuition_returns_a_422_code():
 
 
 def test_register_patient_twice_returns_a_400_code():
-    first_register_patient = requests.post(
-        "http://localhost:8080/users/register",
-        json=a_KMK_physician_information,
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        first_register_patient = client.post(
+            "/users/register",
+            json=a_KMK_physician_information,
+        )
 
-    second_register_patient = requests.post(
-        "http://localhost:8080/users/register",
+    second_register_patient = client.post(
+        "/users/register",
         json=a_KMK_physician_information,
     )
 
@@ -476,15 +512,18 @@ def test_register_patient_twice_returns_a_400_code():
 
 
 def test_register_user_as_physician_and_as_patient_is_valid():
-    response_to_register_endpoint_as_physician = requests.post(
-        "http://localhost:8080/users/register",
-        json=another_KMK_physician_information,
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        response_to_register_endpoint_as_physician = client.post(
+            "/users/register",
+            json=another_KMK_physician_information,
+        )
 
-    response_to_register_endpoint_as_patient = requests.post(
-        "http://localhost:8080/users/register",
-        json=another_KMK_patient_information,
-    )
+        response_to_register_endpoint_as_patient = client.post(
+            "/users/register",
+            json=another_KMK_patient_information,
+        )
 
     assert response_to_register_endpoint_as_physician.status_code == 201
     assert response_to_register_endpoint_as_patient.status_code == 201
@@ -498,8 +537,8 @@ def test_register_user_as_physician_and_as_patient_is_valid():
 
 
 def test_registration_with_invalid_role_returns_a_422_code():
-    response_to_register_endpoint_with_invalid_role = requests.post(
-        "http://localhost:8080/users/register",
+    response_to_register_endpoint_with_invalid_role = client.post(
+        "/users/register",
         json={
             "role": "invalidrole",
             "name": a_KMK_patient_information["name"],
@@ -513,8 +552,8 @@ def test_registration_with_invalid_role_returns_a_422_code():
 
 
 def test_register_physician_with_password_of_less_than_8_characters_returns_a_422_code():
-    register_physician_response = requests.post(
-        "http://localhost:8080/users/register",
+    register_physician_response = client.post(
+        "/users/register",
         json={
             "role": a_KMK_physician_information["role"],
             "name": a_KMK_physician_information["name"],
@@ -530,8 +569,8 @@ def test_register_physician_with_password_of_less_than_8_characters_returns_a_42
 
 
 def test_register_physician_with_password_with_no_uppercase_returns_a_422_code():
-    register_physician_response = requests.post(
-        "http://localhost:8080/users/register",
+    register_physician_response = client.post(
+        "/users/register",
         json={
             "role": a_KMK_physician_information["role"],
             "name": a_KMK_physician_information["name"],
@@ -547,8 +586,8 @@ def test_register_physician_with_password_with_no_uppercase_returns_a_422_code()
 
 
 def test_register_physician_with_password_with_no_lowercase_returns_a_422_code():
-    register_physician_response = requests.post(
-        "http://localhost:8080/users/register",
+    register_physician_response = client.post(
+        "/users/register",
         json={
             "role": a_KMK_physician_information["role"],
             "name": a_KMK_physician_information["name"],
@@ -564,8 +603,8 @@ def test_register_physician_with_password_with_no_lowercase_returns_a_422_code()
 
 
 def test_register_physician_with_password_with_no_numbers_returns_a_422_code():
-    register_physician_response = requests.post(
-        "http://localhost:8080/users/register",
+    register_physician_response = client.post(
+        "/users/register",
         json={
             "role": a_KMK_physician_information["role"],
             "name": a_KMK_physician_information["name"],
@@ -578,3 +617,15 @@ def test_register_physician_with_password_with_no_numbers_returns_a_422_code():
     )
 
     assert register_physician_response.status_code == 422
+
+
+def test_register_endpoint_triggers_notification():
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        client.post(
+            "/users/register",
+            json=a_KMK_physician_information,
+        )
+
+    assert mocked_request.call_count == 1

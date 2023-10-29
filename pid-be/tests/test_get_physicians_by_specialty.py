@@ -1,9 +1,11 @@
 import pytest
-import requests
 import time
 from datetime import datetime
-from .config import *
 from firebase_admin import firestore, auth
+from app.main import app
+from fastapi.testclient import TestClient
+
+client = TestClient(app)
 
 db = firestore.client()
 
@@ -35,57 +37,60 @@ a_physician_information = {
     "id": "avalidid",
     "first_name": "Doc",
     "last_name": "Docson",
+    "email": "doctor@getbyspecialty.com",
     "specialty": specialties[0],
     "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
     "approved": "approved",
+    "tuition": "111",
 }
 
 another_physician_information = {
     "id": "anothervalidid",
     "first_name": "Doc",
     "last_name": "Docson the Second",
+    "email": "doctor@getbyspecialty.com",
     "specialty": specialties[0],
     "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
     "approved": "approved",
+    "tuition": "111",
 }
 
 other_physician_information = {
     "id": "othervalidid",
     "first_name": "Doc",
     "last_name": "Docson the Third",
+    "email": "doctor@getbyspecialty.com",
     "specialty": specialties[1],
     "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
     "approved": "approved",
+    "tuition": "111",
 }
 
 pending_to_approve_physician_information = {
     "id": "pendingphysicianid",
     "first_name": "Doc",
     "last_name": "Docson the Third",
+    "email": "doctor@getbyspecialty.com",
     "specialty": specialties[1],
     "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
     "approved": "pending",
+    "tuition": "111",
 }
 
 denied_approve_physician_information = {
     "id": "deniedphysicianid",
     "first_name": "Doc",
     "last_name": "Docson the Third",
+    "email": "doctor@getbyspecialty.com",
     "specialty": specialties[1],
     "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
     "approved": "denied",
+    "tuition": "111",
 }
 
 
-@pytest.fixture(scope="session", autouse=True)
-def clean_firestore():
-    requests.delete(
-        "http://localhost:8081/emulator/v1/projects/pid-kmk/databases/(default)/documents"
-    )
-
-
-@pytest.fixture(scope="session", autouse=True)
-def load_and_delete_physicians(clean_firestore):
+@pytest.fixture(scope="module", autouse=True)
+def load_and_delete_physicians():
     db.collection("physicians").document(a_physician_information["id"]).set(
         a_physician_information
     )
@@ -108,7 +113,7 @@ def load_and_delete_physicians(clean_firestore):
         physician_doc.delete()
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def create_test_user():
     created_user = auth.create_user(**a_KMK_user_information)
     a_KMK_user_information["uid"] = created_user.uid
@@ -116,7 +121,7 @@ def create_test_user():
     auth.delete_user(a_KMK_user_information["uid"])
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def load_and_delete_specialties():
     for specialty in specialties:
         db.collection("specialties").document().set({"name": specialty})
@@ -127,15 +132,15 @@ def load_and_delete_specialties():
 
 
 def test_valid_request_to_get_physicians_endpoint_returns_200_code():
-    response_from_login_endpoint = requests.post(
-        "http://localhost:8080/users/login",
+    response_from_login_endpoint = client.post(
+        "/users/login",
         json={
             "email": a_KMK_user_information["email"],
             "password": a_KMK_user_information["password"],
         },
     )
-    response_to_get_physicians_endpoint = requests.get(
-        f"http://localhost:8080/physicians/specialty/{specialties[0]}",
+    response_to_get_physicians_endpoint = client.get(
+        f"/physicians/specialty/{specialties[0]}",
         headers={
             "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
         },
@@ -145,15 +150,15 @@ def test_valid_request_to_get_physicians_endpoint_returns_200_code():
 
 
 def test_valid_request_to_get_physicians_endpoint_returns_a_list():
-    response_from_login_endpoint = requests.post(
-        "http://localhost:8080/users/login",
+    response_from_login_endpoint = client.post(
+        "/users/login",
         json={
             "email": a_KMK_user_information["email"],
             "password": a_KMK_user_information["password"],
         },
     )
-    response_to_get_physicians_endpoint = requests.get(
-        f"http://localhost:8080/physicians/specialty/{specialties[0]}",
+    response_to_get_physicians_endpoint = client.get(
+        f"/physicians/specialty/{specialties[0]}",
         headers={
             "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
         },
@@ -163,15 +168,15 @@ def test_valid_request_to_get_physicians_endpoint_returns_a_list():
 
 
 def test_valid_request_to_get_physicians_endpoint_for_first_specialty_returns_a_list_of_two_elements():
-    response_from_login_endpoint = requests.post(
-        "http://localhost:8080/users/login",
+    response_from_login_endpoint = client.post(
+        "/users/login",
         json={
             "email": a_KMK_user_information["email"],
             "password": a_KMK_user_information["password"],
         },
     )
-    response_to_get_physicians_endpoint = requests.get(
-        f"http://localhost:8080/physicians/specialty/{specialties[0]}",
+    response_to_get_physicians_endpoint = client.get(
+        f"/physicians/specialty/{specialties[0]}",
         headers={
             "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
         },
@@ -181,15 +186,15 @@ def test_valid_request_to_get_physicians_endpoint_for_first_specialty_returns_a_
 
 
 def test_valid_request_to_get_physicians_endpoint_for_second_specialty_returns_a_list_of_one_element():
-    response_from_login_endpoint = requests.post(
-        "http://localhost:8080/users/login",
+    response_from_login_endpoint = client.post(
+        "/users/login",
         json={
             "email": a_KMK_user_information["email"],
             "password": a_KMK_user_information["password"],
         },
     )
-    response_to_get_physicians_endpoint = requests.get(
-        f"http://localhost:8080/physicians/specialty/{specialties[1]}",
+    response_to_get_physicians_endpoint = client.get(
+        f"/physicians/specialty/{specialties[1]}",
         headers={
             "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
         },
@@ -199,15 +204,15 @@ def test_valid_request_to_get_physicians_endpoint_for_second_specialty_returns_a
 
 
 def test_valid_request_to_get_physicians_endpoint_for_third_specialty_returns_an_empty_list():
-    response_from_login_endpoint = requests.post(
-        "http://localhost:8080/users/login",
+    response_from_login_endpoint = client.post(
+        "/users/login",
         json={
             "email": a_KMK_user_information["email"],
             "password": a_KMK_user_information["password"],
         },
     )
-    response_to_get_physicians_endpoint = requests.get(
-        f"http://localhost:8080/physicians/specialty/{specialties[2]}",
+    response_to_get_physicians_endpoint = client.get(
+        f"/physicians/specialty/{specialties[2]}",
         headers={
             "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
         },
@@ -217,15 +222,15 @@ def test_valid_request_to_get_physicians_endpoint_for_third_specialty_returns_an
 
 
 def test_valid_request_to_get_physicians_endpoint_for_first_specialty_returns_a_list_of_two_physician_objects():
-    response_from_login_endpoint = requests.post(
-        "http://localhost:8080/users/login",
+    response_from_login_endpoint = client.post(
+        "/users/login",
         json={
             "email": a_KMK_user_information["email"],
             "password": a_KMK_user_information["password"],
         },
     )
-    response_to_get_physicians_endpoint = requests.get(
-        f"http://localhost:8080/physicians/specialty/{specialties[0]}",
+    response_to_get_physicians_endpoint = client.get(
+        f"/physicians/specialty/{specialties[0]}",
         headers={
             "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
         },
@@ -296,8 +301,8 @@ def test_valid_request_to_get_physicians_endpoint_for_first_specialty_returns_a_
 
 
 def test_get_physicians_by_specialty_with_no_authorization_header_returns_401_code():
-    response_to_get_physicians_by_specialty_endpoint = requests.get(
-        f"http://localhost:8080/physicians/specialty/{specialties[0]}"
+    response_to_get_physicians_by_specialty_endpoint = client.get(
+        f"/physicians/specialty/{specialties[0]}"
     )
 
     assert response_to_get_physicians_by_specialty_endpoint.status_code == 401
@@ -308,8 +313,8 @@ def test_get_physicians_by_specialty_with_no_authorization_header_returns_401_co
 
 
 def test_get_physicians_by_specialty_with_empty_authorization_header_returns_401_code():
-    response_to_get_physicians_by_specialty_endpoint = requests.get(
-        f"http://localhost:8080/physicians/specialty/{specialties[0]}",
+    response_to_get_physicians_by_specialty_endpoint = client.get(
+        f"/physicians/specialty/{specialties[0]}",
         headers={"Authorization": ""},
     )
 
@@ -321,8 +326,8 @@ def test_get_physicians_by_specialty_with_empty_authorization_header_returns_401
 
 
 def test_get_physicians_by_specialty_with_empty_bearer_token_returns_401_code():
-    response_to_get_physicians_by_specialty_endpoint = requests.get(
-        f"http://localhost:8080/physicians/specialty/{specialties[0]}",
+    response_to_get_physicians_by_specialty_endpoint = client.get(
+        f"/physicians/specialty/{specialties[0]}",
         headers={"Authorization": f"Bearer "},
     )
 
@@ -334,15 +339,15 @@ def test_get_physicians_by_specialty_with_empty_bearer_token_returns_401_code():
 
 
 def test_get_physicians_by_specialty_with_non_bearer_token_returns_401_code():
-    response_from_login_endpoint = requests.post(
-        "http://localhost:8080/users/login",
+    response_from_login_endpoint = client.post(
+        "/users/login",
         json={
             "email": a_KMK_user_information["email"],
             "password": a_KMK_user_information["password"],
         },
     )
-    response_to_get_physicians_by_specialty_endpoint = requests.get(
-        f"http://localhost:8080/physicians/specialty/{specialties[0]}",
+    response_to_get_physicians_by_specialty_endpoint = client.get(
+        f"/physicians/specialty/{specialties[0]}",
         headers={"Authorization": response_from_login_endpoint.json()["token"]},
     )
 
@@ -354,8 +359,8 @@ def test_get_physicians_by_specialty_with_non_bearer_token_returns_401_code():
 
 
 def test_get_physicians_by_specialty_with_invalid_bearer_token_returns_401_code():
-    response_to_get_physicians_by_specialty_endpoint = requests.get(
-        f"http://localhost:8080/physicians/specialty/{specialties[0]}",
+    response_to_get_physicians_by_specialty_endpoint = client.get(
+        f"/physicians/specialty/{specialties[0]}",
         headers={"Authorization": "Bearer smth"},
     )
 
@@ -367,15 +372,15 @@ def test_get_physicians_by_specialty_with_invalid_bearer_token_returns_401_code(
 
 
 def test_valid_request_to_get_physicians_endpoint_for_unexistant_specialty_returns_an_empty_list():
-    response_from_login_endpoint = requests.post(
-        "http://localhost:8080/users/login",
+    response_from_login_endpoint = client.post(
+        "/users/login",
         json={
             "email": a_KMK_user_information["email"],
             "password": a_KMK_user_information["password"],
         },
     )
-    response_to_get_physicians_endpoint = requests.get(
-        "http://localhost:8080/physicians/specialty/invalidspecialty",
+    response_to_get_physicians_endpoint = client.get(
+        "/physicians/specialty/invalidspecialty",
         headers={
             "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
         },

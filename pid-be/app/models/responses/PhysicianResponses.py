@@ -10,7 +10,7 @@ class PhysicianResponse(BaseModel):
     last_name: str
     specialty: str
     email: str
-    tuition: int
+    tuition: str
     agenda: AgendaResponse
 
     def __init__(self, **data):
@@ -21,7 +21,7 @@ class PhysicianResponse(BaseModel):
                 if data.get("appointments")
                 else [],
             }
-        ).dict()
+        ).model_dump()
         super().__init__(**data)
 
 
