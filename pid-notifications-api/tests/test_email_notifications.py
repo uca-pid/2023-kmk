@@ -7,13 +7,13 @@ from app.models.entities.TemplateHandler import TemplateHandler
 patient_account_data = {
     "name": "Tomas",
     "last_name": "Mudano",
-    "email": "mudano.tomas@gmail.com",
+    "email": "user@kmk.com",
 }
 
 physician_account_data = {
     "name": "Tomas",
     "last_name": "Mudano",
-    "email": "mudano.tomas@gmail.com",
+    "email": "user@kmk.com",
 }
 
 date_data = {"day": 20, "month": 3, "year": 2023, "hour": 10, "minute": 30}
