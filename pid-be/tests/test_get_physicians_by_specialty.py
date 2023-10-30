@@ -41,7 +41,7 @@ a_physician_information = {
     "specialty": specialties[0],
     "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
     "approved": "approved",
-    "tuition": "111",
+    "tuition": "A111",
 }
 
 another_physician_information = {
@@ -52,7 +52,7 @@ another_physician_information = {
     "specialty": specialties[0],
     "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
     "approved": "approved",
-    "tuition": "111",
+    "tuition": "A111",
 }
 
 other_physician_information = {
@@ -63,7 +63,7 @@ other_physician_information = {
     "specialty": specialties[1],
     "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
     "approved": "approved",
-    "tuition": "111",
+    "tuition": "A111",
 }
 
 pending_to_approve_physician_information = {
@@ -74,7 +74,7 @@ pending_to_approve_physician_information = {
     "specialty": specialties[1],
     "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
     "approved": "pending",
-    "tuition": "111",
+    "tuition": "A111",
 }
 
 denied_approve_physician_information = {
@@ -85,7 +85,7 @@ denied_approve_physician_information = {
     "specialty": specialties[1],
     "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
     "approved": "denied",
-    "tuition": "111",
+    "tuition": "A111",
 }
 
 

@@ -9,7 +9,7 @@ class Physician:
     role: str
     name: str
     last_name: str
-    tuition: int
+    tuition: str
     specialty: str
     email: str
     id: str
@@ -20,7 +20,7 @@ class Physician:
         role: str,
         name: str,
         last_name: str,
-        tuition: int,
+        tuition: str,
         specialty: str,
         email: str,
         id: str,

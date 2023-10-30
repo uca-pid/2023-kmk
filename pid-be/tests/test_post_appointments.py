@@ -104,7 +104,7 @@ def create_and_delete_physicians(load_and_delete_specialties):
             "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
             "approved": "approved",
             "last_name": "docson",
-            "tuition": "111",
+            "tuition": "A111",
             "specialty": specialties[0],
             "email": "docdocson@postappointments.com",
         }
@@ -115,7 +115,7 @@ def create_and_delete_physicians(load_and_delete_specialties):
             "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
             "approved": "pending",
             "last_name": "docson",
-            "tuition": "111",
+            "tuition": "A111",
             "specialty": specialties[0],
             "email": "docdocson@postappointments.com",
         }
@@ -126,7 +126,7 @@ def create_and_delete_physicians(load_and_delete_specialties):
             "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
             "approved": "denied",
             "last_name": "docson",
-            "tuition": "111",
+            "tuition": "A111",
             "specialty": specialties[0],
             "email": "docdocson@postappointments.com",
         }

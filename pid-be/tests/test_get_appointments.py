@@ -117,7 +117,7 @@ def create_test_physicians(create_test_users):
             "agenda": {str(number_of_day_of_week): {"start": 8.0, "finish": 18.5}},
             "specialty": "surgeon",
             "approved": "approved",
-            "tuition": "111",
+            "tuition": "A111",
         }
     )
     db.collection("physicians").document(another_KMK_physician_information["uid"]).set(
@@ -129,7 +129,7 @@ def create_test_physicians(create_test_users):
             "agenda": {str(number_of_day_of_week): {"start": 8.0, "finish": 18.5}},
             "specialty": "surgeon",
             "approved": "approved",
-            "tuition": "111",
+            "tuition": "A111",
         }
     )
     yield
@@ -307,7 +307,7 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects():
     assert first_appointment_to_validate["physician"] == {
         "id": a_KMK_physician_information["uid"],
         "email": a_KMK_physician_information["email"],
-        "tuition": "111",
+        "tuition": "A111",
         "first_name": "Doc",
         "last_name": "Docson",
         "specialty": "surgeon",
@@ -340,7 +340,7 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects():
     assert second_appointment_to_validate["physician"] == {
         "id": another_KMK_physician_information["uid"],
         "email": another_KMK_physician_information["email"],
-        "tuition": "111",
+        "tuition": "A111",
         "first_name": "Doc",
         "last_name": "Docson the Second",
         "specialty": "surgeon",
@@ -476,7 +476,7 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects_for
     assert first_appointment_to_validate["physician"] == {
         "id": another_KMK_physician_information["uid"],
         "email": another_KMK_physician_information["email"],
-        "tuition": "111",
+        "tuition": "A111",
         "first_name": "Doc",
         "last_name": "Docson the Second",
         "specialty": "surgeon",
@@ -512,7 +512,7 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects_for
     assert second_appointment_to_validate["physician"] == {
         "id": another_KMK_physician_information["uid"],
         "email": another_KMK_physician_information["email"],
-        "tuition": "111",
+        "tuition": "A111",
         "first_name": "Doc",
         "last_name": "Docson the Second",
         "specialty": "surgeon",
