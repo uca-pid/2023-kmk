@@ -48,32 +48,36 @@ class Appointment:
         self.start_time = start_time
 
     @staticmethod
-    def get_all_appointments_for_user_with(uid):
-        if Patient.is_patient(uid):
-            appointments = (
-                db.collection("appointments")
-                .where("patient_id", "==", uid)
-                .where("approved", "==", "approved")
-                .order_by("date")
-                .get()
+    def get_all_appointments_for_patient_with(uid):
+        if not Patient.is_patient(uid):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only patients can access this resource",
             )
-        else:
-            print("HERE")
-            appointments = (
-                db.collection("appointments")
-                .where("physician_id", "==", uid)
-                .where("approved", "==", "approved")
-                .order_by("date")
-                .get()
-            )
+        appointments = (
+            db.collection("appointments")
+            .where("patient_id", "==", uid)
+            .where("approved", "==", "approved")
+            .order_by("date")
+            .get()
+        )
+
         return [appointment.to_dict() for appointment in appointments]
 
     @staticmethod
     def get_all_appointments_for_physician_with(uid):
+        if not Physician.is_physician(uid):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only physicians can access this resource",
+            )
         appointments = (
-            db.collection("appointments").where("physician_id", "==", uid).get()
+            db.collection("appointments")
+            .where("physician_id", "==", uid)
+            .where("approved", "==", "approved")
+            .order_by("date")
+            .get()
         )
-
         return [appointment.to_dict() for appointment in appointments]
 
     @staticmethod

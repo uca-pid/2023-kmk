@@ -50,7 +50,12 @@ def get_admin_dashboard(uid=Depends(Auth.is_admin)):
     try:
         all_appointments = len(Appointment.get_all_appointments())
         updated_appointments = len(Appointment.get_all_appointments_updtated())
-        return {"dashboard_metrics": {"all_appointments": all_appointments, "updated_appointments": updated_appointments}}
+        return {
+            "dashboard_metrics": {
+                "all_appointments": all_appointments,
+                "updated_appointments": updated_appointments,
+            }
+        }
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -81,8 +86,15 @@ def get_physician_dashboard(uid=Depends(Auth.is_logged_in)):
     """
     try:
         all_appointments = len(Appointment.get_all_appointments_for_physician_with(uid))
-        updated_appointments = len(Appointment.get_all_appointments_updtated_for_physician(uid))
-        return {"dashboard_metrics": {"all_appointments": all_appointments, "updated_appointments": updated_appointments}}
+        updated_appointments = len(
+            Appointment.get_all_appointments_updtated_for_physician(uid)
+        )
+        return {
+            "dashboard_metrics": {
+                "all_appointments": all_appointments,
+                "updated_appointments": updated_appointments,
+            }
+        }
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

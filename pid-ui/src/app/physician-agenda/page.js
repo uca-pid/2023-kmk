@@ -39,7 +39,7 @@ const PhysicianAgenda = () => {
 
     const fetchAppointments = async () => {
         try {
-            const response = await axios.get(`${apiURL}appointments`, {
+            const response = await axios.get(`${apiURL}appointments/physician`, {
                 httpsAgent: agent,
             });
             response.data.appointments == undefined
