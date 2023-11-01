@@ -431,7 +431,7 @@ def test_get_appointments_with_invalid_bearer_token_returns_401_code():
 
 def test_get_appointments_for_second_physician_return_a_200_code():
     response_to_appointment_get_endpoint = client.get(
-        f"/appointments",
+        f"/appointments/physician",
         headers={"Authorization": f"Bearer {pytest.second_physician_bearer}"},
     )
 
@@ -440,7 +440,7 @@ def test_get_appointments_for_second_physician_return_a_200_code():
 
 def test_get_appointments_for_second_physician_returns_a_list():
     response_to_appointment_get_endpoint = client.get(
-        f"/appointments",
+        f"/appointments/physician",
         headers={"Authorization": f"Bearer {pytest.second_physician_bearer}"},
     )
 
@@ -449,7 +449,7 @@ def test_get_appointments_for_second_physician_returns_a_list():
 
 def test_get_appointments_for_second_physician_returns_a_list_of_two_elements():
     response_to_appointment_get_endpoint = client.get(
-        f"/appointments",
+        f"/appointments/physician",
         headers={"Authorization": f"Bearer {pytest.second_physician_bearer}"},
     )
 
@@ -458,7 +458,7 @@ def test_get_appointments_for_second_physician_returns_a_list_of_two_elements():
 
 def test_valid_request_to_get_endpoint_returns_populated_appointment_objects_for_physician():
     response_to_get_endpoint = client.get(
-        "/appointments",
+        "/appointments/physician",
         headers={"Authorization": f"Bearer {pytest.second_physician_bearer}"},
     )
 
@@ -537,3 +537,111 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects_for
         "last_name": "Second",
     }
     assert type(second_appointment_to_validate["created_at"]) == int
+
+
+def test_user_as_physician_that_is_also_a_patient_receives_appointments():
+    db.collection("patients").document(another_KMK_physician_information["uid"]).set(
+        {
+            "id": another_KMK_physician_information["uid"],
+            "first_name": "KMK",
+            "last_name": "Second",
+        }
+    )
+
+    response_to_appointment_get_endpoint = client.get(
+        f"/appointments/physician",
+        headers={"Authorization": f"Bearer {pytest.second_physician_bearer}"},
+    )
+
+    assert len(response_to_appointment_get_endpoint.json()["appointments"]) == 2
+    db.collection("patients").document(
+        another_KMK_physician_information["uid"]
+    ).delete()
+
+
+def test_patient_getting_physicians_appointments_return_403_code_and_message():
+    response_to_appointment_get_endpoint = client.get(
+        f"/appointments/physician",
+        headers={"Authorization": f"Bearer {pytest.first_bearer}"},
+    )
+
+    assert response_to_appointment_get_endpoint.status_code == 403
+    assert (
+        response_to_appointment_get_endpoint.json()["detail"]
+        == "Only physicians can access this resource"
+    )
+
+
+def test_physician_getting_patients_appointments_return_403_code_and_message():
+    response_to_appointment_get_endpoint = client.get(
+        f"/appointments",
+        headers={"Authorization": f"Bearer {pytest.first_physician_bearer}"},
+    )
+
+    assert response_to_appointment_get_endpoint.status_code == 403
+    assert (
+        response_to_appointment_get_endpoint.json()["detail"]
+        == "Only patients can access this resource"
+    )
+
+
+def test_get_appointments_with_no_authorization_header_returns_401_code():
+    response_to_appointment_get_endpoint = client.get("/appointments/physician")
+
+    assert response_to_appointment_get_endpoint.status_code == 401
+    assert (
+        response_to_appointment_get_endpoint.json()["detail"]
+        == "User must be logged in"
+    )
+
+
+def test_get_appointments_with_empty_authorization_header_returns_401_code():
+    response_to_appointment_get_endpoint = client.get(
+        "/appointments/physician",
+        headers={"Authorization": ""},
+    )
+
+    assert response_to_appointment_get_endpoint.status_code == 401
+    assert (
+        response_to_appointment_get_endpoint.json()["detail"]
+        == "User must be logged in"
+    )
+
+
+def test_get_appointments_with_empty_bearer_token_returns_401_code():
+    response_to_appointment_get_endpoint = client.get(
+        "/appointments/physician",
+        headers={"Authorization": f"Bearer "},
+    )
+
+    assert response_to_appointment_get_endpoint.status_code == 401
+    assert (
+        response_to_appointment_get_endpoint.json()["detail"]
+        == "User must be logged in"
+    )
+
+
+def test_get_appointments_with_non_bearer_token_returns_401_code():
+    response_to_appointment_get_endpoint = client.get(
+        "/appointments/physician",
+        headers={"Authorization": pytest.first_bearer},
+    )
+
+    assert response_to_appointment_get_endpoint.status_code == 401
+    assert (
+        response_to_appointment_get_endpoint.json()["detail"]
+        == "User must be logged in"
+    )
+
+
+def test_get_appointments_with_invalid_bearer_token_returns_401_code():
+    response_to_appointment_get_endpoint = client.get(
+        "/appointments/physician",
+        headers={"Authorization": "Bearer smth"},
+    )
+
+    assert response_to_appointment_get_endpoint.status_code == 401
+    assert (
+        response_to_appointment_get_endpoint.json()["detail"]
+        == "User must be logged in"
+    )
