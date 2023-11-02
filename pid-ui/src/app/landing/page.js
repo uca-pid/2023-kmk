@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import https from "https";
 import { Footer, HeaderSlim } from "../components/header";
-import userCheck from "../components/userCheck";
+import loginCheck from "../components/userCheck";
 import { toast } from "react-toastify";
 
 const Landing = () => {
@@ -44,7 +44,7 @@ const Landing = () => {
                 }
             );
             localStorage.setItem("token", response.data.token);
-            userCheck(router);
+            loginCheck(router);
         } catch (error) {
             console.error(error);
             toast.error(

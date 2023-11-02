@@ -3,7 +3,7 @@ import Image from "next/image";
 import styles from "../styles/Header.module.css";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import userCheck from "../components/userCheck";
+import loginCheck from "../components/userCheck";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -27,7 +27,7 @@ const Header = () => {
                 width={200}
                 height={200}
                 onClick={() => {
-                    userCheck(router);
+                    loginCheck(router);
                 }}
                 priority={true}
             />
@@ -93,7 +93,7 @@ const HeaderSlim = () => {
 const TabBar = (props) => {
     const router = useRouter();
     const handleLogoClick = () => {
-        userCheck(router);
+        loginCheck(router);
     };
 
     return (

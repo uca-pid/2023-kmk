@@ -6,7 +6,7 @@ const agent = new https.Agent({
     rejectUnauthorized: false,
 });
 
-const userCheck = async (router) => {
+const loginCheck = async (router) => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
     try {
         axios.defaults.headers.common = {
@@ -60,4 +60,40 @@ const userCheck = async (router) => {
     }
 };
 
-export default userCheck;
+const userCheck = async (router) => {
+    const apiURL = process.env.NEXT_PUBLIC_API_URL;
+    try {
+        axios.defaults.headers.common = {
+            Authorization: `bearer ${localStorage.getItem("token")}`,
+        };
+        const response = await axios.get(`${apiURL}users/role`, {
+            httpsAgent: agent,
+        });
+        if (response.status == 200) {
+            switch (response.data.roles) {
+                case "admin":
+                    router.replace("/dashboard-admin");
+                    break;
+                case "physician":
+                    router.replace("/physician-agenda");
+                    break;
+                case "patient":
+                    router.replace("/dashboard-patient");
+                    break;
+                default:
+                    router.replace("/");
+                    break;
+            }
+        }
+    } catch (error) {
+        console.error(error);
+
+        switch (error.response.data.detail) {
+            case "User must be logged in":
+                router.replace("/");
+                break;
+        }
+    }
+};
+
+export { loginCheck, userCheck };
