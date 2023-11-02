@@ -30,12 +30,7 @@ const PhysicianAgenda = () => {
     const agent = new https.Agent({
         rejectUnauthorized: false,
     });
-    const [observationPayload, setObservationPayload] = useState({
-        date: "",
-        physician: "",
-        specialty: "",
-        observation: "",
-    });
+    const [observationPayload, setObservationPayload] = useState("");
 
     const fetchAppointments = async () => {
         try {
@@ -53,7 +48,7 @@ const PhysicianAgenda = () => {
     const handleOpenObservationModal = (appointment) => {
         console.log(appointment);
         setIsAddObervationModalOpen(true);
-        setObservationPayload({});
+        setObservationPayload(appointment);
         setPatientId(appointment.patient.id);
         setNewObservationDate(appointment.date.toLocaleString("es-AR"));
     };
@@ -66,7 +61,9 @@ const PhysicianAgenda = () => {
             const response = await axios.post(
                 `${apiURL}records/update/${patientId}`,
                 {
-                    date: newObservationDate,
+                    date: observationPayload.date,
+                    physician: observationPayload.physician.id,
+                    specialty: observationPayload.specialty.id,
                     observation: newObservationContent,
                 },
                 {
