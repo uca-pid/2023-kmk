@@ -1,6 +1,8 @@
 import time
-from fastapi import UploadFile
+from fastapi import UploadFile, HTTPException, status
 from firebase_admin import storage, firestore
+
+from app.models.entities.Patient import Patient
 
 db = firestore.client()
 
@@ -10,13 +12,17 @@ class Analysis:
     uid: str
 
     def __init__(self, analysis: list[UploadFile], uid: str):
-        self.analysis = analysis
+        if not Patient.is_patient(uid):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User must be a patient to upload analysis",
+            )
         self.uid = uid
+        self.analysis = analysis
 
     async def save(self):
         response_data = []
         bucket = storage.bucket()
-        print(len(self.analysis))
         for analysis_to_upload in self.analysis:
             id = (
                 db.collection("analysis")
@@ -25,7 +31,9 @@ class Analysis:
                 .document()
                 .id
             )
-            blob = bucket.blob(f"analysis/{self.uid}/{analysis_to_upload.filename}")
+            blob = bucket.blob(
+                f"analysis/{self.uid}/{id}.{analysis_to_upload.filename.split('.')[-1]}"
+            )
             blob.upload_from_file(analysis_to_upload.file)
             blob.make_public()
             document_data_object = {
