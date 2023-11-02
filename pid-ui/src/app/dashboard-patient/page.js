@@ -11,7 +11,7 @@ import Modal from "react-modal";
 import axios from "axios";
 import https from "https";
 import { Footer, Header, TabBar } from "../components/header";
-import userCheck from "../components/userCheck";
+import { userCheck } from "../components/userCheck";
 import { toast } from "react-toastify";
 
 registerLocale("es", es);

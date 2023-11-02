@@ -3,7 +3,6 @@ import Image from "next/image";
 import styles from "../styles/Header.module.css";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import loginCheck from "../components/userCheck";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 

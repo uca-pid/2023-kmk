@@ -15,8 +15,11 @@ const loginCheck = async (router) => {
         const response = await axios.get(`${apiURL}users/role`, {
             httpsAgent: agent,
         });
+        console.log(response);
+
         if (response.status == 200) {
-            switch (response.data.roles) {
+            console.log(response.data.roles);
+            switch (response.data.roles[0]) {
                 case "admin":
                     router.replace("/dashboard-admin");
                     break;
@@ -24,6 +27,7 @@ const loginCheck = async (router) => {
                     router.replace("/physician-agenda");
                     break;
                 case "patient":
+                    console.log("patient");
                     router.replace("/dashboard-patient");
                     break;
                 default:
@@ -70,7 +74,7 @@ const userCheck = async (router) => {
             httpsAgent: agent,
         });
         if (response.status == 200) {
-            switch (response.data.roles) {
+            switch (response.data.roles[0]) {
                 case "admin":
                     router.replace("/dashboard-admin");
                     break;

@@ -7,14 +7,13 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import https from "https";
 import { Footer, HeaderSlim } from "../components/header";
-import loginCheck from "../components/userCheck";
+import { loginCheck } from "../components/userCheck";
 import { toast } from "react-toastify";
 
 const Landing = () => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
     const router = useRouter();
 
     const agent = new https.Agent({
@@ -30,6 +29,12 @@ const Landing = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
+
+        localStorage.removeItem("token");
+        axios.defaults.headers.common = {
+            Authorization: `bearer`,
+        };
+
         const userData = {
             email,
             password,
@@ -50,13 +55,6 @@ const Landing = () => {
             toast.error(
                 "Error al iniciar sesión: " + error.response.data.detail
             );
-
-            // Verificar si el elemento .error-message está presente en el DOM
-            const errorMessageElement =
-                document.querySelector(".error-message");
-            if (errorMessageElement) {
-                errorMessageElement.style.visibility = "visible"; // Muestra el mensaje de error
-            }
         }
     };
 
@@ -86,9 +84,6 @@ const Landing = () => {
                         required
                     />
                 </div>
-                {error && (
-                    <div className={styles["error-message"]}>{error}</div>
-                )}
                 <button type="submit" className={styles["cta-button"]}>
                     Iniciar Sesión
                 </button>
