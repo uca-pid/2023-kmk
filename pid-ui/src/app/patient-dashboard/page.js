@@ -11,7 +11,7 @@ import Modal from "react-modal";
 import axios from "axios";
 import https from "https";
 import { Footer, Header, TabBar } from "../components/header";
-import { userCheck } from "../components/userCheck";
+import { redirect } from "../components/userCheck";
 import { toast } from "react-toastify";
 
 registerLocale("es", es);
@@ -186,7 +186,7 @@ const DashboardPatient = () => {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
 
-        userCheck(router);
+        redirect(router);
         fetchSpecialties();
         fetchAppointments();
     }, []);
@@ -279,10 +279,10 @@ const DashboardPatient = () => {
                 </Modal>
             )}
 
-            <Header />
             <TabBar highlight="Turnos" />
 
-            {/* </header> */}
+            <Header role="patient" />
+
             <div className={styles["tab-content"]}>
                 <div className={styles.form}>
                     <div className={styles["title"]}>Mis Proximos Turnos</div>

@@ -15,8 +15,6 @@ const loginCheck = async (router) => {
         const response = await axios.get(`${apiURL}users/role`, {
             httpsAgent: agent,
         });
-        console.log(response);
-
         if (response.status == 200) {
             console.log(response.data.roles);
             switch (response.data.roles[0]) {
@@ -27,8 +25,7 @@ const loginCheck = async (router) => {
                     router.replace("/physician-agenda");
                     break;
                 case "patient":
-                    console.log("patient");
-                    router.replace("/dashboard-patient");
+                    router.replace("/patient-dashboard");
                     break;
                 default:
                     router.replace("/");
@@ -64,7 +61,7 @@ const loginCheck = async (router) => {
     }
 };
 
-const userCheck = async (router) => {
+const redirect = async (router) => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
     try {
         axios.defaults.headers.common = {
@@ -82,7 +79,7 @@ const userCheck = async (router) => {
                     router.replace("/physician-agenda");
                     break;
                 case "patient":
-                    router.replace("/dashboard-patient");
+                    router.replace("/patient-dashboard");
                     break;
                 default:
                     router.replace("/");
@@ -100,4 +97,24 @@ const userCheck = async (router) => {
     }
 };
 
-export { loginCheck, userCheck };
+const userCheck = async (router) => {
+    const apiURL = process.env.NEXT_PUBLIC_API_URL;
+    try {
+        axios.defaults.headers.common = {
+            Authorization: `bearer ${localStorage.getItem("token")}`,
+        };
+        const response = await axios.get(`${apiURL}users/role`, {
+            httpsAgent: agent,
+        });
+    } catch (error) {
+        console.error(error);
+
+        switch (error.response.data.detail) {
+            case "User must be logged in":
+                router.replace("/");
+                break;
+        }
+    }
+};
+
+export { loginCheck, redirect, userCheck };

@@ -130,7 +130,7 @@ async def deny_physician(physician_id: str, uid=Depends(Auth.is_admin)):
 
 
 @router.get(
-    "/pending-validations",
+    "/physicians-pending",
     status_code=status.HTTP_200_OK,
     response_model=AllPendingValidationsResponse,
     responses={

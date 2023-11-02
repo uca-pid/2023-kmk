@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import styles from "../styles/styles.module.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import https from "https";
-import { userCheck } from "../components/userCheck";
+import { redirect } from "../components/userCheck";
 import { Header, Footer } from "../components/header";
 import { toast } from "react-toastify";
 
@@ -23,45 +24,51 @@ const Admin = () => {
     const fetchPendingPhysicians = async () => {
         try {
             const response = await axios.get(
-                `${apiURL}admin/pending-validations`,
+                `${apiURL}admin/physicians-pending`,
                 {
                     httpsAgent: agent,
                 }
             );
             console.log(response.data.physicians_pending_validation);
             setPendingPhysicians(response.data.physicians_pending_validation);
+            toast.info("Profesionales actualizados");
         } catch (error) {
             console.error(error);
+            toast.error("Error al actualizar los profesionales");
         }
     };
 
     const fetchPhysicians = async () => {
         try {
             const response = await axios.get(
-                `${apiURL}admin/pending-validations`,
+                `${apiURL}admin/physicians-working`,
                 {
                     httpsAgent: agent,
                 }
             );
             console.log(response.data.physicians_pending_validation);
             setPhysicians(response.data.physicians_pending_validation);
+            toast.info("Profesionales actualizados");
         } catch (error) {
             console.error(error);
+            toast.error("Error al actualizar los profesionales");
         }
     };
 
     const fetchBlockedPhysicians = async () => {
         try {
             const response = await axios.get(
-                `${apiURL}admin/pending-validations`,
+                `${apiURL}admin/physicians-blocked`,
                 {
                     httpsAgent: agent,
                 }
             );
             console.log(response.data.physicians_pending_validation);
             setBlockedPhysicians(response.data.physicians_pending_validation);
+            toast.info("Profesionales actualizados");
         } catch (error) {
             console.error(error);
+            toast.error("Error al actualizar los profesionales");
         }
     };
 
@@ -120,6 +127,16 @@ const Admin = () => {
                     <div className={styles["title"]}>
                         Profesionales pendientes de aprobación
                     </div>
+                    <Image
+                        src="/refresh_icon.png"
+                        alt="Notificaciones"
+                        className={styles["refresh-icon"]}
+                        width={200}
+                        height={200}
+                        onClick={() => {
+                            fetchPendingPhysicians();
+                        }}
+                    />
                     <div className={styles["pending-approvals"]}>
                         {pendingPhysicians.length > 0 ? (
                             // If there are pending doctor approvals, map through them and display each appointment
@@ -187,6 +204,16 @@ const Admin = () => {
                     <div className={styles["title"]}>
                         Profesionales en funciones
                     </div>
+                    <Image
+                        src="/refresh_icon.png"
+                        alt="Notificaciones"
+                        className={styles["refresh-icon"]}
+                        width={200}
+                        height={200}
+                        onClick={() => {
+                            fetchPhysicians();
+                        }}
+                    />
                     <div className={styles["pending-approvals"]}>
                         {physicians.length > 0 ? (
                             // If there are pending doctor approvals, map through them and display each appointment
@@ -254,6 +281,16 @@ const Admin = () => {
                     <div className={styles["title"]}>
                         Profesionales bloqueados
                     </div>
+                    <Image
+                        src="/refresh_icon.png"
+                        alt="Notificaciones"
+                        className={styles["refresh-icon"]}
+                        width={200}
+                        height={200}
+                        onClick={() => {
+                            fetchBlockedPhysicians();
+                        }}
+                    />
                     <div className={styles["pending-approvals"]}>
                         {blockedPhysicians.length > 0 ? (
                             // If there are pending doctor approvals, map through them and display each appointment

@@ -11,9 +11,8 @@ import Modal from "react-modal";
 import axios from "axios";
 import https from "https";
 import { Header, Footer, PhysicianTabBar } from "../components/header";
-import userCheck from "../components/userCheck";
+import { redirect } from "../components/userCheck";
 import { toast } from "react-toastify";
-import ReactDatePicker from "react-datepicker";
 
 const PhysicianAgenda = () => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
@@ -57,14 +56,12 @@ const PhysicianAgenda = () => {
         console.log(patientId, "handleAddObservation");
         console.log(newObservationDate, newObservationContent);
         e.preventDefault();
+        console.log(observationPayload.id);
         try {
             const response = await axios.post(
-                `${apiURL}records/update/${patientId}`,
+                `${apiURL}records/update`,
                 {
-                    date: observationPayload.date,
-                    physician: observationPayload.physician.id,
-                    specialty: observationPayload.specialty.id,
-                    observation: newObservationContent,
+                    appointment_id: observationPayload.id,
                 },
                 {
                     httpsAgent: agent,
@@ -112,7 +109,7 @@ const PhysicianAgenda = () => {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
 
-        userCheck(router);
+        redirect(router);
         fetchAppointments();
     }, []);
 
@@ -192,8 +189,9 @@ const PhysicianAgenda = () => {
                 </Modal>
             )}
 
-            <Header />
             <PhysicianTabBar highlight={"TurnosDelDia"} />
+
+            <Header role="physician" />
 
             <div className={styles["tab-content"]}>
                 <div className={styles.form}>

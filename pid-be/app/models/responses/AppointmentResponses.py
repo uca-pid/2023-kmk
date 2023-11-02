@@ -50,8 +50,8 @@ class BasicAppointmentResponse(BaseModel):
     patient: PatientResponse
     created_at: int
     approved: str = "pending"
-    attended: Union[bool, None]
-    start_time: Union[str, None]
+    attended: Union[bool, None] = None
+    start_time: Union[str, None] = None
 
     def __init__(self, **data):
         physician = Physician.get_by_id(data["physician_id"])
