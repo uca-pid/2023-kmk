@@ -74,8 +74,10 @@ const MyRecord = () => {
 
     return (
         <div className={styles.dashboard}>
-            <Header />
             <TabBar highlight="Ficha" />
+
+            <Header role="patient" />
+
             <div className={styles["tab-content"]}>
                 <div className={styles.form}>
                     <div className={styles["title"]}>
