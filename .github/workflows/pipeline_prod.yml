@@ -59,7 +59,8 @@ jobs:
 
             - name: Build backend
               working-directory: pid-be
-              run: poetry run python -m pip wheel --use-pep517 "grpcio (==1.58.0)" |
+              run:
+                  poetry run python -m pip wheel --use-pep517 "grpcio (==1.58.0)" |
                   poetry install
 
             - name: Build notifications api
@@ -69,7 +70,6 @@ jobs:
             - name: Install firebase
               working-directory: pid-be
               run: npm install -g firebase-tools
-
 
             - name: Run emualtors and backend tests
               env:
