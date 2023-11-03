@@ -21,10 +21,11 @@ const Landing = () => {
     });
 
     useEffect(() => {
-        localStorage.removeItem("token");
-        axios.defaults.headers.common = {
-            Authorization: `bearer`,
-        };
+        // localStorage.removeItem("token");
+        // axios.defaults.headers.common = {
+        //     Authorization: `bearer`,
+        // };
+        loginCheck(router);
     }, []);
 
     const handleLogin = async (e) => {

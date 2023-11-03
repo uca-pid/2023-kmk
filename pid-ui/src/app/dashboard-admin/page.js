@@ -13,6 +13,7 @@ import { toast } from "react-toastify";
 const Admin = () => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
     const router = useRouter();
+    const [firstLoad, setFirstLoad] = useState(true);
     const [physicians, setPhysicians] = useState([]);
     const [pendingPhysicians, setPendingPhysicians] = useState([]);
     const [blockedPhysicians, setBlockedPhysicians] = useState([]);
@@ -31,10 +32,12 @@ const Admin = () => {
             );
             console.log(response.data.physicians_pending_validation);
             setPendingPhysicians(response.data.physicians_pending_validation);
-            toast.info("Profesionales actualizados");
+            !firstLoad ? toast.info("Profesionales actualizados") : null;
         } catch (error) {
             console.error(error);
-            toast.error("Error al actualizar los profesionales");
+            !firstLoad
+                ? toast.error("Error al actualizar los profesionales")
+                : null;
         }
     };
 
@@ -48,10 +51,12 @@ const Admin = () => {
             );
             console.log(response.data.physicians_pending_validation);
             setPhysicians(response.data.physicians_pending_validation);
-            toast.info("Profesionales actualizados");
+            !firstLoad ? toast.info("Profesionales actualizados") : null;
         } catch (error) {
             console.error(error);
-            toast.error("Error al actualizar los profesionales");
+            !firstLoad
+                ? toast.error("Error al actualizar los profesionales")
+                : null;
         }
     };
 
@@ -65,10 +70,12 @@ const Admin = () => {
             );
             console.log(response.data.physicians_pending_validation);
             setBlockedPhysicians(response.data.physicians_pending_validation);
-            toast.info("Profesionales actualizados");
+            !firstLoad ? toast.info("Profesionales actualizados") : null;
         } catch (error) {
             console.error(error);
-            toast.error("Error al actualizar los profesionales");
+            !firstLoad
+                ? toast.error("Error al actualizar los profesionales")
+                : null;
         }
     };
 
@@ -112,10 +119,11 @@ const Admin = () => {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
 
-        // userCheck(router);
+        redirect(router);
         fetchPhysicians();
         fetchPendingPhysicians();
         fetchBlockedPhysicians();
+        setFirstLoad(false);
     }, []);
 
     return (
