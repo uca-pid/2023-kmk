@@ -1,9 +1,16 @@
 import pytest
-import requests
-from .config import *
 from firebase_admin import firestore, auth
+from app.main import app
+from fastapi.testclient import TestClient
+from datetime import datetime, timedelta
+import time
+
+client = TestClient(app)
 
 db = firestore.client()
+
+today_date = datetime.fromtimestamp(round(time.time()))
+number_of_day_of_week = int(today_date.date().strftime("%w"))
 
 specialties = [
     "pediatrics",
@@ -27,6 +34,7 @@ a_KMK_physician_information = {
     "specialty": specialties[0],
     "email": "testphysicianforpendingvalidations@kmk.com",
     "password": "verySecurePassword123",
+    "agenda": {str(number_of_day_of_week): {"start": 8.0, "finish": 18.5}},
 }
 
 another_KMK_physician_information = {
@@ -37,6 +45,7 @@ another_KMK_physician_information = {
     "specialty": specialties[0],
     "email": "testphysicianforpendingvalidations2@kmk.com",
     "password": "verySecurePassword123",
+    "agenda": {str(number_of_day_of_week): {"start": 8.0, "finish": 18.5}},
 }
 
 other_KMK_physician_information = {
@@ -47,6 +56,7 @@ other_KMK_physician_information = {
     "specialty": specialties[0],
     "email": "testphysicianforpendingvalidations3@kmk.com",
     "password": "verySecurePassword123",
+    "agenda": {str(number_of_day_of_week): {"start": 8.0, "finish": 18.5}},
 }
 
 a_KMK_patient_information = {
@@ -66,15 +76,8 @@ initial_admin_information = {
 }
 
 
-@pytest.fixture(scope="session", autouse=True)
-def clean_firestore():
-    requests.delete(
-        "http://localhost:8081/emulator/v1/projects/pid-kmk/databases/(default)/documents"
-    )
-
-
-@pytest.fixture(scope="session", autouse=True)
-def load_and_delete_specialties(clean_firestore):
+@pytest.fixture(scope="module", autouse=True)
+def load_and_delete_specialties():
     for specialty in specialties:
         db.collection("specialties").document().set({"name": specialty})
     yield
@@ -83,88 +86,115 @@ def load_and_delete_specialties(clean_firestore):
         specialty_doc.delete()
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def create_patient_and_then_delete_him(load_and_delete_specialties):
-    requests.post(
-        "http://localhost:8080/users/register",
-        json=a_KMK_patient_information,
+    created_user = auth.create_user(
+        **{
+            "email": a_KMK_patient_information["email"],
+            "password": a_KMK_patient_information["password"],
+        }
+    )
+    pytest.patient_uid = created_user.uid
+    db.collection("patients").document(pytest.patient_uid).set(
+        a_KMK_patient_information
     )
     yield
-    created_test_patient_uid = auth.get_user_by_email(
-        a_KMK_patient_information["email"]
-    ).uid
-    auth.delete_user(created_test_patient_uid)
-    db.collection("patients").document(created_test_patient_uid).delete()
+    auth.delete_user(pytest.patient_uid)
+    db.collection("patients").document(pytest.patient_uid).delete()
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def create_validated_physician_and_then_delete_him(create_patient_and_then_delete_him):
-    requests.post(
-        "http://localhost:8080/users/register",
-        json=a_KMK_physician_information,
+    created_user = auth.create_user(
+        **{
+            "email": a_KMK_physician_information["email"],
+            "password": a_KMK_physician_information["password"],
+        }
     )
-    created_test_physician_uid = auth.get_user_by_email(
-        a_KMK_physician_information["email"]
-    ).uid
-    db.collection("physicians").document(created_test_physician_uid).update(
-        {"approved": "approved"}
+    pytest.physician_uid = created_user.uid
+    db.collection("physicians").document(pytest.physician_uid).set(
+        {
+            "id": pytest.physician_uid,
+            "first_name": a_KMK_physician_information["name"],
+            "last_name": a_KMK_physician_information["last_name"],
+            "email": a_KMK_physician_information["email"],
+            "agenda": a_KMK_physician_information["agenda"],
+            "specialty": a_KMK_physician_information["specialty"],
+            "tuition": a_KMK_physician_information["tuition"],
+            "approved": "approved",
+        }
     )
     yield
     try:
-        created_test_physician_uid = auth.get_user_by_email(
-            a_KMK_physician_information["email"]
-        ).uid
-        auth.delete_user(created_test_physician_uid)
-        db.collection("physicians").document(created_test_physician_uid).delete()
+        auth.delete_user(pytest.physician_uid)
+        db.collection("physicians").document(pytest.physician_uid).delete()
     except:
         print("[+] Physisican has not been created")
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def create_denied_physician_and_then_delete_him(
     create_validated_physician_and_then_delete_him,
 ):
-    requests.post(
-        "http://localhost:8080/users/register",
-        json=another_KMK_physician_information,
+    created_user = auth.create_user(
+        **{
+            "email": another_KMK_physician_information["email"],
+            "password": another_KMK_physician_information["password"],
+        }
     )
-    created_test_physician_uid = auth.get_user_by_email(
-        another_KMK_physician_information["email"]
-    ).uid
-    db.collection("physicians").document(created_test_physician_uid).update(
-        {"approved": "denied"}
+    pytest.another_physician_uid = created_user.uid
+    db.collection("physicians").document(pytest.another_physician_uid).set(
+        {
+            "id": pytest.another_physician_uid,
+            "first_name": another_KMK_physician_information["name"],
+            "last_name": another_KMK_physician_information["last_name"],
+            "email": another_KMK_physician_information["email"],
+            "agenda": another_KMK_physician_information["agenda"],
+            "specialty": another_KMK_physician_information["specialty"],
+            "tuition": another_KMK_physician_information["tuition"],
+            "approved": "denied",
+        }
     )
     yield
     try:
-        created_test_physician_uid = auth.get_user_by_email(
-            another_KMK_physician_information["email"]
-        ).uid
-        auth.delete_user(created_test_physician_uid)
-        db.collection("physicians").document(created_test_physician_uid).delete()
+        auth.delete_user(pytest.another_physician_uid)
+        db.collection("physicians").document(pytest.another_physician_uid).delete()
     except:
         print("[+] Physisican has not been created")
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def create_pending_physician_and_then_delete_him(
     create_denied_physician_and_then_delete_him,
 ):
-    requests.post(
-        "http://localhost:8080/users/register",
-        json=other_KMK_physician_information,
+    created_user = auth.create_user(
+        **{
+            "email": other_KMK_physician_information["email"],
+            "password": other_KMK_physician_information["password"],
+        }
+    )
+    pytest.other_physician_uid = created_user.uid
+    db.collection("physicians").document(pytest.other_physician_uid).set(
+        {
+            "id": pytest.other_physician_uid,
+            "first_name": other_KMK_physician_information["name"],
+            "last_name": other_KMK_physician_information["last_name"],
+            "email": other_KMK_physician_information["email"],
+            "agenda": other_KMK_physician_information["agenda"],
+            "specialty": other_KMK_physician_information["specialty"],
+            "tuition": other_KMK_physician_information["tuition"],
+            "approved": "pending",
+        }
     )
     yield
     try:
-        created_test_physician_uid = auth.get_user_by_email(
-            other_KMK_physician_information["email"]
-        ).uid
-        auth.delete_user(created_test_physician_uid)
-        db.collection("physicians").document(created_test_physician_uid).delete()
+        auth.delete_user(pytest.other_physician_uid)
+        db.collection("physicians").document(pytest.other_physician_uid).delete()
     except:
         print("[+] Physisican has not been created")
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def create_initial_admin_and_then_delete_him(
     create_pending_physician_and_then_delete_him,
 ):
@@ -177,10 +207,10 @@ def create_initial_admin_and_then_delete_him(
     db.collection("superusers").document(pytest.initial_admin_uid).delete()
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def log_in_initial_admin_user(create_initial_admin_and_then_delete_him):
-    pytest.initial_admin_bearer = requests.post(
-        "http://localhost:8080/users/login",
+    pytest.initial_admin_bearer = client.post(
+        "/users/login",
         json={
             "email": initial_admin_information["email"],
             "password": initial_admin_information["password"],
@@ -190,8 +220,8 @@ def log_in_initial_admin_user(create_initial_admin_and_then_delete_him):
 
 
 def test_get_pending_validations_returns_a_200_code():
-    response_to_get_pending_validations_endpoint = requests.get(
-        "http://localhost:8080/admin/pending-validations",
+    response_to_get_pending_validations_endpoint = client.get(
+        "/admin/pending-validations",
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
 
@@ -199,8 +229,8 @@ def test_get_pending_validations_returns_a_200_code():
 
 
 def test_get_pending_validations_returns_a_list():
-    response_to_get_pending_validations_endpoint = requests.get(
-        "http://localhost:8080/admin/pending-validations",
+    response_to_get_pending_validations_endpoint = client.get(
+        "/admin/pending-validations",
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
 
@@ -215,8 +245,8 @@ def test_get_pending_validations_returns_a_list():
 
 
 def test_get_pending_validations_returns_a_list_of_one_element():
-    response_to_get_pending_validations_endpoint = requests.get(
-        "http://localhost:8080/admin/pending-validations",
+    response_to_get_pending_validations_endpoint = client.get(
+        "/admin/pending-validations",
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
 
@@ -231,8 +261,8 @@ def test_get_pending_validations_returns_a_list_of_one_element():
 
 
 def test_get_pending_validations_returns_a_list_of_a_populated_physician():
-    response_to_get_pending_validations_endpoint = requests.get(
-        "http://localhost:8080/admin/pending-validations",
+    response_to_get_pending_validations_endpoint = client.get(
+        "/admin/pending-validations",
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
 
@@ -259,41 +289,21 @@ def test_get_pending_validations_returns_a_list_of_a_populated_physician():
         key=lambda x: x["day_of_week"]
     )
     assert physician_to_validate["agenda"] == {
-        "working_days": {1, 2, 3, 4, 5},
+        "working_days": {number_of_day_of_week},
         "working_hours": [
             {
-                "day_of_week": 1,
-                "start_time": 8,
-                "finish_time": 18,
-            },
-            {
-                "day_of_week": 2,
-                "start_time": 8,
-                "finish_time": 18,
-            },
-            {
-                "day_of_week": 3,
-                "start_time": 8,
-                "finish_time": 18,
-            },
-            {
-                "day_of_week": 4,
-                "start_time": 8,
-                "finish_time": 18,
-            },
-            {
-                "day_of_week": 5,
-                "start_time": 8,
-                "finish_time": 18,
-            },
+                "day_of_week": number_of_day_of_week,
+                "start_time": 8.0,
+                "finish_time": 18.5,
+            }
         ],
         "appointments": [],
     }
 
 
 def test_get_pending_validations_with_no_authorization_header_returns_401_code():
-    response_from_admin_registration_endpoint = requests.get(
-        "http://localhost:8080/admin/pending-validations",
+    response_from_admin_registration_endpoint = client.get(
+        "/admin/pending-validations",
     )
 
     assert response_from_admin_registration_endpoint.status_code == 401
@@ -304,8 +314,8 @@ def test_get_pending_validations_with_no_authorization_header_returns_401_code()
 
 
 def test_get_pending_validations_with_empty_authorization_header_returns_401_code():
-    response_from_admin_registration_endpoint = requests.get(
-        "http://localhost:8080/admin/pending-validations",
+    response_from_admin_registration_endpoint = client.get(
+        "/admin/pending-validations",
         headers={"Authorization": ""},
     )
 
@@ -317,8 +327,8 @@ def test_get_pending_validations_with_empty_authorization_header_returns_401_cod
 
 
 def test_get_pending_validations_with_empty_bearer_token_returns_401_code():
-    response_from_admin_registration_endpoint = requests.get(
-        "http://localhost:8080/admin/pending-validations",
+    response_from_admin_registration_endpoint = client.get(
+        "/admin/pending-validations",
         headers={"Authorization": f"Bearer "},
     )
 
@@ -330,8 +340,8 @@ def test_get_pending_validations_with_empty_bearer_token_returns_401_code():
 
 
 def test_get_pending_validations_with_non_bearer_token_returns_401_code():
-    response_from_admin_registration_endpoint = requests.get(
-        "http://localhost:8080/admin/pending-validations",
+    response_from_admin_registration_endpoint = client.get(
+        "/admin/pending-validations",
         headers={"Authorization": pytest.initial_admin_bearer},
     )
 
@@ -343,8 +353,8 @@ def test_get_pending_validations_with_non_bearer_token_returns_401_code():
 
 
 def test_get_pending_validations_with_invalid_bearer_token_returns_401_code():
-    response_from_admin_registration_endpoint = requests.get(
-        "http://localhost:8080/admin/pending-validations",
+    response_from_admin_registration_endpoint = client.get(
+        "/admin/pending-validations",
         headers={"Authorization": "Bearer smth"},
     )
 
@@ -356,16 +366,16 @@ def test_get_pending_validations_with_invalid_bearer_token_returns_401_code():
 
 
 def test_get_pending_validations_by_non_admin_returns_403_code_and_message():
-    non_admin_bearer = requests.post(
-        "http://localhost:8080/users/login",
+    non_admin_bearer = client.post(
+        "/users/login",
         json={
             "email": a_KMK_patient_information["email"],
             "password": a_KMK_patient_information["password"],
         },
     ).json()["token"]
 
-    response_from_admin_registration_endpoint = requests.get(
-        "http://localhost:8080/admin/pending-validations",
+    response_from_admin_registration_endpoint = client.get(
+        "/admin/pending-validations",
         headers={"Authorization": f"Bearer {non_admin_bearer}"},
     )
 
@@ -383,8 +393,8 @@ def test_get_pending_validations_if_none_exists_returns_an_empty_list():
     db.collection("physicians").document(created_test_physician_uid).update(
         {"approved": "approved"}
     )
-    response_to_get_pending_validations_endpoint = requests.get(
-        "http://localhost:8080/admin/pending-validations",
+    response_to_get_pending_validations_endpoint = client.get(
+        "/admin/pending-validations",
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
 

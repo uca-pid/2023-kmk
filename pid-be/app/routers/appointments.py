@@ -1,6 +1,6 @@
 import requests
 from datetime import datetime
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, status, Depends, HTTPException
 from fastapi.responses import JSONResponse
 
 from app.models.entities.Physician import Physician
@@ -58,11 +58,12 @@ async def create_appointment(
     * Throw an error if appointment creation fails.
     """
     appointment = Appointment(
-        **{**appointment_creation_request.dict(), "patient_id": patient_id}
+        **{**appointment_creation_request.model_dump(), "patient_id": patient_id}
     )
     try:
         appointment_id = appointment.create()
         physician = Physician.get_by_id(appointment_creation_request.physician_id)
+        patient = Patient.get_by_id(patient_id)
         date = datetime.fromtimestamp(appointment_creation_request.date)
         requests.post(
             "http://localhost:9000/emails/send",
@@ -70,8 +71,8 @@ async def create_appointment(
                 "type": "PENDING_APPOINTMENT",
                 "data": {
                     "email": physician["email"],
-                    "name": physician["first_name"],
-                    "last_name": physician["last_name"],
+                    "name": patient["first_name"],
+                    "last_name": patient["last_name"],
                     "day": date.day,
                     "month": date.month,
                     "year": date.year,
@@ -112,8 +113,43 @@ def get_all_appointments(uid=Depends(Auth.is_logged_in)):
     * Throw an error if appointment retrieving fails.
     """
     try:
-        appointments = Appointment.get_all_appointments_for_user_with(uid)
+        appointments = Appointment.get_all_appointments_for_patient_with(uid)
         return {"appointments": appointments}
+    except HTTPException as http_exception:
+        raise http_exception
+    except:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "Internal server error"},
+        )
+
+
+@router.get(
+    "/physician",
+    status_code=status.HTTP_200_OK,
+    response_model=AllAppointmentsResponse,
+    responses={
+        401: {"model": GetAppointmentError},
+        403: {"model": GetAppointmentError},
+        500: {"model": GetAppointmentError},
+    },
+)
+def get_all_appointments_for_physician(uid=Depends(Auth.is_logged_in)):
+    """
+    Get all appointments.
+
+    This will allow authenticated users to retrieve all their appointments.
+
+    This path operation will:
+
+    * Return all of users appointments ordered by date.
+    * Throw an error if appointment retrieving fails.
+    """
+    try:
+        appointments = Appointment.get_all_appointments_for_physician_with(uid)
+        return {"appointments": appointments}
+    except HTTPException as http_exception:
+        raise http_exception
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -176,7 +212,8 @@ def delete_appointment_by_id(id: str, uid=Depends(Auth.is_logged_in)):
             },
         )
         return {"message": "Appointment cancelled successfully"}
-    except:
+    except Exception as e:
+        print(e)
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal server error"},
@@ -215,7 +252,7 @@ def update_appointment(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"detail": "Invalid appointment id"},
         )
-    appointment.update(update_appointment_request.dict())
+    appointment.update(update_appointment_request.model_dump())
     return {"message": "Appointment updated successfully"}
 
 
@@ -251,5 +288,5 @@ def close_appointment(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"detail": "Invalid appointment id"},
         )
-    appointment.close(close_appointment_request.dict())
+    appointment.close(close_appointment_request.model_dump())
     return {"message": "Appointment closed successfully"}
