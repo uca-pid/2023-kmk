@@ -4,6 +4,8 @@ from typing import Union
 
 from app.models.entities.Auth import Auth
 from app.models.entities.Analysis import Analysis
+from app.models.entities.Patient import Patient
+from app.models.entities.Physician import Physician
 from app.models.responses.AnalysisResponses import (
     AnalysisUploadErrorResponse,
     SuccessfullAnalysisResponse,
@@ -47,14 +49,19 @@ async def upload_analysis(analysis: list[UploadFile], uid=Depends(Auth.is_logged
     response_model=list[SuccessfullAnalysisResponse],
     responses={
         401: {"model": AnalysisGetErrorResponse},
+        403: {"model": AnalysisGetErrorResponse},
         500: {"model": AnalysisGetErrorResponse},
     },
 )
 def get_all_analysis(uid=Depends(Auth.is_logged_in)):
     try:
+        if not Patient.is_patient(uid):
+            return JSONResponse(
+                status_code=status.HTTP_403_FORBIDDEN,
+                content={"detail": "Only patients can view their analysis"},
+            )
         return Analysis.get_all_for(uid=uid)
-    except Exception as e:
-        print(e)
+    except Exception:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal server error"},
@@ -70,11 +77,15 @@ def get_all_analysis(uid=Depends(Auth.is_logged_in)):
         500: {"model": AnalysisGetErrorResponse},
     },
 )
-def get_all_analysis(patient_id: str):
+def get_all_analysis(patient_id: str, uid=Depends(Auth.is_logged_in)):
     try:
+        if not Physician.is_physician(uid):
+            return JSONResponse(
+                status_code=status.HTTP_403_FORBIDDEN,
+                content={"detail": "Only physicians can view their analysis"},
+            )
         return Analysis.get_all_for(uid=patient_id)
-    except Exception as e:
-        print(e)
+    except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal server error"},

@@ -230,7 +230,7 @@ def test_sending_no_files_to_upload_analysis_returns_422_code():
 
 
 def test_upload_analysis_with_no_authorization_header_returns_401_code():
-    response_from_analysis_upload_endpoint = client.post("/users/change-password")
+    response_from_analysis_upload_endpoint = client.post("/analysis")
 
     assert response_from_analysis_upload_endpoint.status_code == 401
     assert (
@@ -241,7 +241,7 @@ def test_upload_analysis_with_no_authorization_header_returns_401_code():
 
 def test_upload_analysis_with_empty_authorization_header_returns_401_code():
     response_from_analysis_upload_endpoint = client.post(
-        "/users/change-password",
+        "/analysis",
         headers={"Authorization": ""},
     )
 
@@ -254,7 +254,7 @@ def test_upload_analysis_with_empty_authorization_header_returns_401_code():
 
 def test_upload_analysis_with_empty_bearer_token_returns_401_code():
     response_from_analysis_upload_endpoint = client.post(
-        "/users/change-password",
+        "/analysis",
         headers={"Authorization": f"Bearer "},
     )
 
@@ -267,7 +267,7 @@ def test_upload_analysis_with_empty_bearer_token_returns_401_code():
 
 def test_upload_analysis_with_non_bearer_token_returns_401_code():
     response_from_analysis_upload_endpoint = client.post(
-        "/users/change-password",
+        "/analysis",
         headers={"Authorization": pytest.patients_bearer_token},
     )
 
@@ -280,7 +280,7 @@ def test_upload_analysis_with_non_bearer_token_returns_401_code():
 
 def test_upload_analysis_with_invalid_bearer_token_returns_401_code():
     response_from_analysis_upload_endpoint = client.post(
-        "/users/change-password",
+        "/analysis",
         headers={"Authorization": "Bearer smth"},
     )
 
