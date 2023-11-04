@@ -2,12 +2,12 @@ import React from "react";
 import Image from "next/image";
 import styles from "../styles/Header.module.css";
 import axios from "axios";
+import { redirect } from "../components/userCheck";
 import { useRouter } from "next/navigation";
-import userCheck from "../components/userCheck";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const Header = () => {
+const Header = (props) => {
     const router = useRouter();
 
     return (
@@ -27,7 +27,7 @@ const Header = () => {
                 width={200}
                 height={200}
                 onClick={() => {
-                    userCheck(router);
+                    redirect(router);
                 }}
                 priority={true}
             />
@@ -60,7 +60,7 @@ const Header = () => {
                 width={200}
                 height={200}
                 onClick={() => {
-                    router.push("/user");
+                    router.push("/" + `${props.role}` + "-my-user");
                 }}
             />
         </div>
@@ -93,7 +93,7 @@ const HeaderSlim = () => {
 const TabBar = (props) => {
     const router = useRouter();
     const handleLogoClick = () => {
-        userCheck(router);
+        loginCheck(router);
     };
 
     return (

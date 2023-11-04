@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, Depends, UploadFile, HTTPException
+from fastapi import APIRouter, status, Depends, UploadFile
 from fastapi.responses import JSONResponse
 from typing import Union
 
@@ -25,7 +25,6 @@ router = APIRouter(
     response_model=list[Union[SuccessfullAnalysisResponse, None]],
     responses={
         401: {"model": AnalysisUploadErrorResponse},
-        403: {"model": AnalysisUploadErrorResponse},
         500: {"model": AnalysisUploadErrorResponse},
     },
 )
@@ -34,8 +33,6 @@ async def upload_analysis(analysis: list[UploadFile], uid=Depends(Auth.is_logged
     try:
         saved_analysis = await analysis.save()
         return saved_analysis
-    except HTTPException as http_exception:
-        return http_exception
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

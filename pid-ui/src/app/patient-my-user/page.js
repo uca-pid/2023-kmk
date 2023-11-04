@@ -3,11 +3,14 @@
 import React, { useState, useEffect } from "react";
 import styles from "../styles/styles.module.css";
 import axios from "axios";
+import { userCheck } from "../components/userCheck";
+import { useRouter } from "next/navigation";
 import validator from "validator";
 import { Footer, Header, TabBar } from "../components/header";
 import { toast } from "react-toastify";
 
 const UserProfile = () => {
+    const router = useRouter();
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
     const [user, setUser] = useState({
         firstName: "",
@@ -90,12 +93,15 @@ const UserProfile = () => {
     };
 
     useEffect(() => {
+        userCheck(router);
         getUserData();
     }, []);
 
     return (
         <div className={styles.dashboard}>
-            <Header />
+            <TabBar />
+
+            <Header role="patient" />
 
             <div className={styles["tab-content"]}>
                 <div className={styles.form}>

@@ -14,7 +14,7 @@ from app.models.responses.ValidationResponses import (
 )
 from app.models.responses.AppointmentResponses import (
     AllAppointmentsResponse,
-    GetAppointmentError,
+    GetAppointmentError
 )
 
 router = APIRouter(

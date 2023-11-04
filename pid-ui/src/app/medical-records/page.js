@@ -5,6 +5,7 @@ import styles from "../styles/styles.module.css";
 import axios from "axios";
 import https from "https";
 import { Footer, Header } from "../components/header";
+import { toast } from "react-toastify";
 import Image from "next/image";
 
 const MedicalRecords = ({ searchParams }) => {
@@ -33,8 +34,6 @@ const MedicalRecords = ({ searchParams }) => {
         observations: [],
     });
     const [analysis, setAnalysis] = useState([]);
-    const [newObservationDate, setNewObservationDate] = useState("");
-    const [newObservationContent, setNewObservationContent] = useState("");
 
     const fetchData = async () => {
         try {
@@ -72,7 +71,7 @@ const MedicalRecords = ({ searchParams }) => {
 
     return (
         <div className={styles.dashboard}>
-            <Header />
+            <Header role="physician" />
             {/* <div className={styles["title"]}>Patient ID: {patient_id}</div> */}
             <div className={styles["tab-content"]}>
                 <div className={styles.form}>

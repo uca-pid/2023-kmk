@@ -2,6 +2,7 @@ import requests
 from fastapi import APIRouter, status, Depends
 from fastapi.responses import JSONResponse
 
+from app.models.entities.Appointment import Appointment
 from app.models.entities.Patient import Patient
 from app.models.entities.Auth import Auth
 from app.models.entities.Record import Record
@@ -83,7 +84,7 @@ def get_my_record(patient_id=Depends(Auth.is_logged_in)):
 
 
 @router.post(
-    "/update/{patient_id}",
+    "/update",
     status_code=status.HTTP_200_OK,
     response_model=GetRecordResponse,
     responses={
@@ -93,7 +94,6 @@ def get_my_record(patient_id=Depends(Auth.is_logged_in)):
     },
 )
 def update_record(
-    patient_id,
     observation_creation_request: ObservationRequest,
     uid=Depends(Auth.is_logged_in),
 ):
@@ -109,19 +109,10 @@ def update_record(
     * Throw an error if the record is not found or updating fails.
     """
     try:
+        appointment = Appointment.get_by_id(
+            observation_creation_request.appointment_id)
         record = Record.add_observation(
-            patient_id, observation_creation_request.model_dump(), uid
-        )
-        patient = Patient.get_by_id(patient_id)
-        requests.post(
-            "http://localhost:9000/emails/send",
-            json={
-                "type": "CANCELED_APPOINTMENT",
-                "data": {
-                    "email": patient["email"],
-                },
-            },
-        )
+            appointment.patient_id, observation_creation_request.dict(),uid)
         return {"record": record}
     except:
         return JSONResponse(
