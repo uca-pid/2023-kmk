@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, Depends, UploadFile
+from fastapi import APIRouter, status, Depends, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 from typing import Union
 
@@ -33,6 +33,8 @@ async def upload_analysis(analysis: list[UploadFile], uid=Depends(Auth.is_logged
     try:
         saved_analysis = await analysis.save()
         return saved_analysis
+    except HTTPException as http_exception:
+        return http_exception
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
