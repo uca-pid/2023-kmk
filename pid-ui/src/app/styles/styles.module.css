@@ -110,6 +110,54 @@
     cursor: pointer;
 }
 
+.physician-info-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    align-items: top;
+    padding: 1rem 2rem;
+}
+
+.datepicker-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    align-items: baseline;
+}
+
+.reviews-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    width: 100%;
+    align-items: baseline;
+}
+
+.review-card {
+    margin: 1rem 0;
+    padding: 1rem;
+    background-color: #fff; /* Fondo blanco */
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 20rem;
+}
+
+.review-card-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.review-card-content {
+    font-size: 1rem;
+    position: flex-end;
+}
 .schedule-day-modify {
     padding: 0 1rem;
     margin: 1rem 0;

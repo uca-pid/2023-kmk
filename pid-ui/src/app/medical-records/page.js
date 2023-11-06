@@ -159,54 +159,8 @@ const MedicalRecords = ({ searchParams }) => {
                         </div>
                     </div>
 
-                    {/* <form
-                        className={styles["new-record-section"]}
-                        onSubmit={handleAddObservation}
-                    >
-                        <div className={styles["title"]}>Nueva observación</div>
-
-                        <label htmlFor="observation-date">
-                            Fecha de la Observacion
-                        </label>
-                        <input
-                            type="date"
-                            id="observation-date"
-                            value={newObservationDate}
-                            onChange={(e) =>
-                                setNewObservationDate(e.target.value)
-                            }
-                            required
-                        />
-                        <label htmlFor="observation">Observacion</label>
-
-                        <input
-                            type="text"
-                            id="observation"
-                            value={newObservationContent}
-                            onChange={(e) =>
-                                setNewObservationContent(e.target.value)
-                            }
-                            placeholder="Escribe una nueva observación"
-                            required
-                        />
-                        <button
-                            className={`${styles["submit-button"]} ${
-                                !newObservationContent || !newObservationDate
-                                    ? styles["disabled-button"]
-                                    : ""
-                            }`}
-                            type="submit"
-                            disabled={
-                                !newObservationContent || !newObservationDate
-                            }
-                        >
-                            Agregar
-                        </button>
-                    </form> */}
-
                     <div className={styles["records-section"]}>
                         {record.observations.length > 0 ? (
-                            // If there are appointments, map through them and display each appointment
                             <>
                                 {record.observations.map(
                                     (observation, index) => {
@@ -239,7 +193,6 @@ const MedicalRecords = ({ searchParams }) => {
                                 )}
                             </>
                         ) : (
-                            // If there are no appointments, display the message
                             <div className={styles["subtitle"]}>
                                 No hay observaciones en esta historia clinica
                             </div>

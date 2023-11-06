@@ -37,6 +37,14 @@ const DashboardPatient = () => {
         agenda: {},
     });
 
+    const [reviews, setReviews] = useState([
+        { key: 1, type: "Puntualidad", rating: 5 },
+        { key: 1, type: "Atencion", rating: 4.5 },
+        { key: 1, type: "Limpieza", rating: 4.5 },
+        { key: 1, type: "Instalaciones", rating: 3 },
+        { key: 1, type: "Precio", rating: 4.5 },
+    ]);
+
     const agent = new https.Agent({
         rejectUnauthorized: false,
     });
@@ -153,6 +161,9 @@ const DashboardPatient = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            console.log(selectedDoctor);
+            console.log(Math.round(date.getTime() / 1000));
+
             const response = await axios.post(
                 `${apiURL}appointments/`,
                 {
@@ -373,7 +384,9 @@ const DashboardPatient = () => {
                     </div>
 
                     {/* Selector de especialidades */}
-                    <label htmlFor="specialty">Especialidad:</label>
+                    <div className={styles["subtitle"]}>
+                        Seleccione una especialidad
+                    </div>
                     <select
                         id="specialty"
                         value={selectedSpecialty}
@@ -383,7 +396,7 @@ const DashboardPatient = () => {
                             fetchPhysicians(e.target.value);
                         }}
                     >
-                        <option value="">Selecciona una especialidad</option>
+                        <option value="">Especialidad</option>
                         {specialties.map((specialty) => (
                             <option key={specialty} value={specialty}>
                                 {specialty}
@@ -392,7 +405,9 @@ const DashboardPatient = () => {
                     </select>
 
                     {/* Selector de médicos */}
-                    <label htmlFor="doctor">Médico:</label>
+                    <div className={styles["subtitle"]}>
+                        Seleccione un médico
+                    </div>
                     <select
                         id="doctor"
                         value={selectedDoctor}
@@ -403,7 +418,7 @@ const DashboardPatient = () => {
                         }}
                         disabled={!selectedSpecialty} // Deshabilita si no se ha seleccionado una especialidad
                     >
-                        <option value="">Selecciona un médico</option>
+                        <option value="">Médico</option>
                         {doctors.map((doctor) => (
                             <option
                                 key={doctor.id}
@@ -415,54 +430,114 @@ const DashboardPatient = () => {
                         ))}
                     </select>
 
-                    {/* Selector de fechas */}
-                    <label htmlFor="fecha">Fechas disponibles:</label>
+                    <div className={styles["subtitle"]}>
+                        Puntuaciones del médico{" "}
+                    </div>
 
-                    <DatePicker
-                        locale="es"
-                        selected={date}
-                        onChange={(date) => {
-                            setDate(date);
-                        }}
-                        timeCaption="Hora"
-                        timeIntervals={30}
-                        showPopperArrow={false}
-                        showTimeSelect
-                        inline
-                        filterDate={(date) => {
-                            if (physiciansAgenda.working_days) {
-                                return physiciansAgenda.working_days.includes(
-                                    date.getDay()
-                                );
-                            }
-                            return false;
-                        }}
-                        minDate={new Date()}
-                        filterTime={(time) => {
-                            if (
-                                physiciansAgenda.appointments &&
-                                !physiciansAgenda.appointments.includes(
-                                    Math.round(time.getTime() / 1000)
-                                ) &&
-                                physiciansAgenda.working_hours &&
-                                time >= new Date()
-                            ) {
-                                let workingHour =
-                                    physiciansAgenda.working_hours.filter(
-                                        (workingHour) =>
-                                            workingHour.day_of_week ===
+                    <div className={styles["reviews-container"]}>
+                        {reviews.length > 0 ? (
+                            <>
+                                {reviews.map((review) => (
+                                    <div
+                                        key={review.id}
+                                        className={styles["review"]}
+                                    >
+                                        <div
+                                            className={
+                                                styles["review-cards-container"]
+                                            }
+                                        >
+                                            <div
+                                                className={
+                                                    styles["review-card"]
+                                                }
+                                            >
+                                                <div
+                                                    className={
+                                                        styles[
+                                                            "review-card-title"
+                                                        ]
+                                                    }
+                                                >
+                                                    {review.type}
+                                                </div>
+                                                <div
+                                                    className={
+                                                        styles[
+                                                            "review-card-content"
+                                                        ]
+                                                    }
+                                                >
+                                                    {review.rating}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </>
+                        ) : (
+                            // If there are no reviews, display the message
+                            <div className={styles["subtitle"]}>
+                                No hay reviews
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Selector de fechas */}
+                    <div className={styles["subtitle"]}>
+                        Seleccione una fecha
+                    </div>
+                    <div className={styles["physician-info-container"]}>
+                        <div className={styles["datepicker-container"]}>
+                            <DatePicker
+                                locale="es"
+                                selected={date}
+                                onChange={(date) => {
+                                    setDate(date);
+                                }}
+                                timeCaption="Hora"
+                                timeIntervals={30}
+                                showPopperArrow={false}
+                                showTimeSelect
+                                inline
+                                filterDate={(date) => {
+                                    if (physiciansAgenda.working_days) {
+                                        return physiciansAgenda.working_days.includes(
                                             date.getDay()
-                                    )[0];
-                                let parsedTime =
-                                    time.getHours() + time.getMinutes() / 60;
-                                return (
-                                    workingHour.start_time <= parsedTime &&
-                                    workingHour.finish_time > parsedTime
-                                );
-                            }
-                            return false;
-                        }}
-                    />
+                                        );
+                                    }
+                                    return false;
+                                }}
+                                minDate={new Date()}
+                                filterTime={(time) => {
+                                    if (
+                                        physiciansAgenda.appointments &&
+                                        !physiciansAgenda.appointments.includes(
+                                            Math.round(time.getTime() / 1000)
+                                        ) &&
+                                        physiciansAgenda.working_hours &&
+                                        time >= new Date()
+                                    ) {
+                                        let workingHour =
+                                            physiciansAgenda.working_hours.filter(
+                                                (workingHour) =>
+                                                    workingHour.day_of_week ===
+                                                    date.getDay()
+                                            )[0];
+                                        let parsedTime =
+                                            time.getHours() +
+                                            time.getMinutes() / 60;
+                                        return (
+                                            workingHour.start_time <=
+                                                parsedTime &&
+                                            workingHour.finish_time > parsedTime
+                                        );
+                                    }
+                                    return false;
+                                }}
+                            />
+                        </div>
+                    </div>
 
                     <button
                         type="submit"
