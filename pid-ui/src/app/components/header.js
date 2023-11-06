@@ -2,7 +2,7 @@ import React from "react";
 import Image from "next/image";
 import styles from "../styles/Header.module.css";
 import axios from "axios";
-import { redirect } from "../components/userCheck";
+import { loginCheck, redirect } from "../components/userCheck";
 import { useRouter } from "next/navigation";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -110,7 +110,7 @@ const TabBar = (props) => {
                 className={`${styles["tab"]} ${
                     props.highlight === "Ficha" ? styles["selected-tab"] : ""
                 }`}
-                onClick={() => router.push("/my-record")}
+                onClick={() => router.push("/patient-my-record")}
             >
                 Mi Ficha
             </div>

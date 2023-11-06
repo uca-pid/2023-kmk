@@ -33,16 +33,7 @@ const PhysicianPendingAppointments = () => {
 
             <Header role="physician" />
 
-            <div className={styles["tab-content"]}>
-                <Image
-                    src="/dogo.png"
-                    alt=""
-                    className={styles["dogo-icon"]}
-                    width={500}
-                    height={500}
-                    onClick={() => {}}
-                />
-            </div>
+            <div className={styles["tab-content"]}></div>
 
             <Footer />
         </div>

@@ -12,11 +12,6 @@
     margin-top: 150px;
 }
 
-.dogo-icon {
-    height: auto;
-    margin-bottom: 1rem;
-}
-
 /* Estilos para los mensajes de error */
 .error-message {
     color: red;
@@ -41,7 +36,7 @@
 /* Estilos para el contenido de la pestaña activa */
 .tab-content {
     flex: 1;
-    padding: 2rem;
+    padding: 1rem 2rem;
     width: 100%;
 }
 
@@ -113,6 +108,39 @@
     appearance: none;
     outline: none;
     cursor: pointer;
+}
+
+.schedule-day-modify {
+    padding: 0 1rem;
+    margin: 1rem 0;
+
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.schedule-day-modify h3 {
+    margin-top: 1rem;
+    font-size: 1.5rem;
+}
+
+.time-picker-container {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    align-items: baseline;
+}
+
+.time-picker-container input {
+    width: 30%;
+    max-width: 20rem;
+    margin-bottom: 0;
+}
+
+.time-picker-container button {
+    margin-bottom: 1rem;
 }
 
 /* Estilos para la sección de "Mis Proximos Turnos" */
