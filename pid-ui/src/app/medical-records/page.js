@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import styles from "../styles/styles.module.css";
 import axios from "axios";
 import https from "https";
-import { Footer, Header } from "../components/header";
+import { Footer, Header, PhysicianTabBar } from "../components/header";
 import { toast } from "react-toastify";
 import Image from "next/image";
 
@@ -71,8 +71,9 @@ const MedicalRecords = ({ searchParams }) => {
 
     return (
         <div className={styles.dashboard}>
+            <PhysicianTabBar />
+
             <Header role="physician" />
-            {/* <div className={styles["title"]}>Patient ID: {patient_id}</div> */}
             <div className={styles["tab-content"]}>
                 <div className={styles.form}>
                     <div className={styles["title"]}>
@@ -108,11 +109,11 @@ const MedicalRecords = ({ searchParams }) => {
                             {Array.isArray(analysis) ? (
                                 analysis.map((uploaded_analysis) => {
                                     return (
-                                        <div
-                                            key={uploaded_analysis.id}
-                                            className={styles["estudio-card"]}
-                                        >
+                                        <div key={uploaded_analysis.id}>
                                             <a
+                                                className={
+                                                    styles["estudio-card"]
+                                                }
                                                 href={uploaded_analysis.url}
                                                 target="_blank"
                                             >
@@ -121,9 +122,10 @@ const MedicalRecords = ({ searchParams }) => {
                                                         styles["estudio-name"]
                                                     }
                                                 >
-                                                    {
-                                                        uploaded_analysis.file_name
-                                                    }
+                                                    {uploaded_analysis.file_name.substring(
+                                                        0,
+                                                        12
+                                                    ) + "..."}
                                                 </div>
                                                 <Image
                                                     src="/document.png"
