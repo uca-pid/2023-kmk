@@ -36,7 +36,7 @@
 /* Estilos para el contenido de la pestaña activa */
 .tab-content {
     flex: 1;
-    padding: 1rem 2rem;
+    padding: 2rem 1rem;
     width: 100%;
 }
 
@@ -218,6 +218,7 @@
     margin-top: 1rem;
     display: flex;
     flex-direction: row;
+    justify-content: space-evenly;
     width: 100%;
 }
 
@@ -238,8 +239,6 @@
 }
 
 .file-upload-form button {
-    right: -5rem;
-    align-self: flex-end;
     position: relative;
     align-self: center;
     margin-top: 0;
