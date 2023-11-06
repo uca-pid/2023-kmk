@@ -50,6 +50,7 @@ const MyRecord = () => {
 
     const onSubmit = async (e) => {
         e.preventDefault();
+        toast.info("Subiendo analisis");
         const formData = new FormData();
         Array.from(file).forEach((file_to_upload) =>
             formData.append("analysis", file_to_upload)
@@ -112,11 +113,11 @@ const MyRecord = () => {
                             {Array.isArray(analysis) ? (
                                 analysis.map((uploaded_analysis) => {
                                     return (
-                                        <div
-                                            key={uploaded_analysis.id}
-                                            className={styles["estudio-card"]}
-                                        >
+                                        <div key={uploaded_analysis.id}>
                                             <a
+                                                className={
+                                                    styles["estudio-card"]
+                                                }
                                                 href={uploaded_analysis.url}
                                                 target="_blank"
                                             >
@@ -125,9 +126,10 @@ const MyRecord = () => {
                                                         styles["estudio-name"]
                                                     }
                                                 >
-                                                    {
-                                                        uploaded_analysis.file_name
-                                                    }
+                                                    {uploaded_analysis.file_name.substring(
+                                                        0,
+                                                        12
+                                                    ) + "..."}
                                                 </div>
                                                 <Image
                                                     src="/document.png"
@@ -176,7 +178,7 @@ const MyRecord = () => {
                                 type="submit"
                                 value="Upload"
                             >
-                                Upload
+                                Cargar analisis
                             </button>
                         </form>
                     </div>
