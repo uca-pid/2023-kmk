@@ -221,7 +221,7 @@ def log_in_initial_admin_user(create_initial_admin_and_then_delete_him):
 
 def test_get_pending_validations_returns_a_200_code():
     response_to_get_pending_validations_endpoint = client.get(
-        "/admin/pending-validations",
+        "/admin/physicians-pending",
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
 
@@ -230,7 +230,7 @@ def test_get_pending_validations_returns_a_200_code():
 
 def test_get_pending_validations_returns_a_list():
     response_to_get_pending_validations_endpoint = client.get(
-        "/admin/pending-validations",
+        "/admin/physicians-pending",
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
 
@@ -246,7 +246,7 @@ def test_get_pending_validations_returns_a_list():
 
 def test_get_pending_validations_returns_a_list_of_one_element():
     response_to_get_pending_validations_endpoint = client.get(
-        "/admin/pending-validations",
+        "/admin/physicians-pending",
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
 
@@ -262,7 +262,7 @@ def test_get_pending_validations_returns_a_list_of_one_element():
 
 def test_get_pending_validations_returns_a_list_of_a_populated_physician():
     response_to_get_pending_validations_endpoint = client.get(
-        "/admin/pending-validations",
+        "/admin/physicians-pending",
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
 
@@ -303,7 +303,7 @@ def test_get_pending_validations_returns_a_list_of_a_populated_physician():
 
 def test_get_pending_validations_with_no_authorization_header_returns_401_code():
     response_from_admin_registration_endpoint = client.get(
-        "/admin/pending-validations",
+        "/admin/physicians-pending",
     )
 
     assert response_from_admin_registration_endpoint.status_code == 401
@@ -315,7 +315,7 @@ def test_get_pending_validations_with_no_authorization_header_returns_401_code()
 
 def test_get_pending_validations_with_empty_authorization_header_returns_401_code():
     response_from_admin_registration_endpoint = client.get(
-        "/admin/pending-validations",
+        "/admin/physicians-pending",
         headers={"Authorization": ""},
     )
 
@@ -328,7 +328,7 @@ def test_get_pending_validations_with_empty_authorization_header_returns_401_cod
 
 def test_get_pending_validations_with_empty_bearer_token_returns_401_code():
     response_from_admin_registration_endpoint = client.get(
-        "/admin/pending-validations",
+        "/admin/physicians-pending",
         headers={"Authorization": f"Bearer "},
     )
 
@@ -341,7 +341,7 @@ def test_get_pending_validations_with_empty_bearer_token_returns_401_code():
 
 def test_get_pending_validations_with_non_bearer_token_returns_401_code():
     response_from_admin_registration_endpoint = client.get(
-        "/admin/pending-validations",
+        "/admin/physicians-pending",
         headers={"Authorization": pytest.initial_admin_bearer},
     )
 
@@ -354,7 +354,7 @@ def test_get_pending_validations_with_non_bearer_token_returns_401_code():
 
 def test_get_pending_validations_with_invalid_bearer_token_returns_401_code():
     response_from_admin_registration_endpoint = client.get(
-        "/admin/pending-validations",
+        "/admin/physicians-pending",
         headers={"Authorization": "Bearer smth"},
     )
 
@@ -375,7 +375,7 @@ def test_get_pending_validations_by_non_admin_returns_403_code_and_message():
     ).json()["token"]
 
     response_from_admin_registration_endpoint = client.get(
-        "/admin/pending-validations",
+        "/admin/physicians-pending",
         headers={"Authorization": f"Bearer {non_admin_bearer}"},
     )
 
@@ -394,7 +394,7 @@ def test_get_pending_validations_if_none_exists_returns_an_empty_list():
         {"approved": "approved"}
     )
     response_to_get_pending_validations_endpoint = client.get(
-        "/admin/pending-validations",
+        "/admin/physicians-pending",
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
 
