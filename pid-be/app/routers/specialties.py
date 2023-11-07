@@ -82,6 +82,7 @@ def add_specialty(
         )
     
 @router.delete(
+@router.delete(
     "/delete",
     status_code=status.HTTP_200_OK,
     response_model=UpdateSpecialtiesResponse,
