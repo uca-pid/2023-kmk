@@ -56,7 +56,7 @@ def get_all_specialties():
         500: {"model": UpdateSpecialtiesError},
     },
 )
-def update_record(
+def add_specialty(
     specialty: str,
     uid=Depends(Auth.is_admin),
 ):
@@ -91,7 +91,7 @@ def update_record(
         500: {"model": UpdateSpecialtiesError},
     },
 )
-def delete_record(
+def delete_specialty(
     specialty_name: str,
     uid=Depends(Auth.is_admin),
 ):
