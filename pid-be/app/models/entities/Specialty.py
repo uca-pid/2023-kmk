@@ -12,3 +12,11 @@ class Specialty:
     @staticmethod
     def exists_with_name(name):
         return len(db.collection("specialties").where("name", "==", name).get()) > 0
+    
+    @staticmethod
+    def add_specialty(name):
+        db.collection("specialties").document().set({"name": name})
+
+    @staticmethod
+    def delete_specialty(id):
+        db.collection("specialties").document(id).delete()
