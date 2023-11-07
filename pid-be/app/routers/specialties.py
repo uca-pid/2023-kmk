@@ -56,7 +56,7 @@ def get_all_specialties():
         500: {"model": UpdateSpecialtiesError},
     },
 )
-def update_record(
+def add_specialty(
     specialty: str,
     uid=Depends(Auth.is_admin),
 ):
@@ -81,7 +81,7 @@ def update_record(
             content={"detail": "Internal server error"},
         )
     
-@router.post(
+@router.delete(
     "/delete",
     status_code=status.HTTP_200_OK,
     response_model=UpdateSpecialtiesResponse,
@@ -91,7 +91,7 @@ def update_record(
         500: {"model": UpdateSpecialtiesError},
     },
 )
-def update_record(
+def delete_specialty(
     specialty_id: str,
     uid=Depends(Auth.is_admin),
 ):

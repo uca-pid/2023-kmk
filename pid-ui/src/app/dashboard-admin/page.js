@@ -40,8 +40,9 @@ const Admin = () => {
 
     const handleAddSpecialty = async () => {
         try {
+            console.log(newSpecialty);
             const response = await axios.post(
-                `${apiURL}specialties`,
+                `${apiURL}specialties/add`,
                 {
                     specialty: newSpecialty,
                 },
@@ -60,11 +61,10 @@ const Admin = () => {
 
     const handleSpecialtyDelete = async (specialty) => {
         try {
-            const response = await axios.delete(
-                `${apiURL}specialties/${specialty}`,
-                {
-                    httpsAgent: agent,
-                }
+            const response = await axios.post(
+                `${apiURL}specialties/delete`,
+                { specialty: specialty },
+                { httpsAgent: agent }
             );
             console.log(response.data);
             toast.info("Especialidad borrada");
@@ -185,7 +185,7 @@ const Admin = () => {
             <Header />
 
             <div className={styles["tab-content"]}>
-                <div className={styles.form} onSubmit={handleAddSpecialty}>
+                <div className={styles.form}>
                     <div className={styles["title"]}>Especialidades</div>
                     <Image
                         src="/refresh_icon.png"
@@ -209,7 +209,12 @@ const Admin = () => {
                         value={newSpecialty}
                         onChange={(e) => setNewSpecialty(e.target.value)}
                     />
-                    <button className={styles["add-button"]}>Agregar</button>
+                    <button
+                        className={styles["add-button"]}
+                        onClick={handleAddSpecialty}
+                    >
+                        Agregar
+                    </button>
                     <div className={styles["admin-scrollable-section"]}>
                         {specialties.length > 0 ? (
                             <>
@@ -246,7 +251,7 @@ const Admin = () => {
                             </>
                         ) : (
                             <div className={styles["subtitle"]}>
-                                No hay aprobaciones pendientes
+                                No hay especialidades
                             </div>
                         )}
                     </div>
