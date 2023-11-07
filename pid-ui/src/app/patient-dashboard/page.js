@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import styles from "../styles/styles.module.css";
 import { useRouter } from "next/navigation";
 import DatePicker, { registerLocale } from "react-datepicker";
@@ -38,11 +39,11 @@ const DashboardPatient = () => {
     });
 
     const [reviews, setReviews] = useState([
-        { key: 1, type: "Puntualidad", rating: 5 },
-        { key: 1, type: "Atencion", rating: 4.5 },
-        { key: 1, type: "Limpieza", rating: 4.5 },
-        { key: 1, type: "Instalaciones", rating: 3 },
-        { key: 1, type: "Precio", rating: 4.5 },
+        { id: 1, type: "Puntualidad", rating: 5 },
+        { id: 2, type: "Atencion", rating: 4.5 },
+        { id: 3, type: "Limpieza", rating: 4.5 },
+        { id: 4, type: "Instalaciones", rating: 3 },
+        { id: 5, type: "Precio", rating: 4.5 },
     ]);
 
     const agent = new https.Agent({
@@ -71,6 +72,7 @@ const DashboardPatient = () => {
                 ? setSpecialties([])
                 : setSpecialties(response.data.specialties);
         } catch (error) {
+            toast.error("Error al cargar especialidades");
             console.error(error);
         }
     };
@@ -92,6 +94,7 @@ const DashboardPatient = () => {
                 setPhysiciansAgenda({});
             }
         } catch (error) {
+            toast.error("Error al cargar médicos");
             console.error(error);
         }
     };
@@ -139,11 +142,12 @@ const DashboardPatient = () => {
                 }
             );
             fetchAppointments();
+            setIsEditModalOpen(false);
+            toast.info("Turno modificado exitosamente");
         } catch (error) {
             console.error(error);
+            toast.error("Error al modificar turno");
         }
-        setIsEditModalOpen(false);
-        toast.info("Turno modificado exitosamente");
     };
 
     const handleDeleteAppointment = async (appointmentId) => {
@@ -155,6 +159,7 @@ const DashboardPatient = () => {
             fetchAppointments();
         } catch (error) {
             console.error(error);
+            toast.error("Error al eliminar turno");
         }
     };
 
@@ -178,6 +183,7 @@ const DashboardPatient = () => {
             fetchAppointments();
         } catch (error) {
             console.error(error);
+            toast.error("Error al solicitar turno");
         }
     };
 
@@ -325,7 +331,17 @@ const DashboardPatient = () => {
                                             {appointment.physician.first_name +
                                                 " " +
                                                 appointment.physician.last_name}
+                                            <Link
+                                                href="google.com"
+                                                style={{
+                                                    textDecoration: "none",
+                                                    color: "blue",
+                                                }}
+                                            >
+                                                {"    "} (Ver Puntuacion)
+                                            </Link>
                                         </p>
+
                                         <p>
                                             Fecha y hora:{" "}
                                             {new Date(
@@ -434,7 +450,10 @@ const DashboardPatient = () => {
                         Puntuaciones del médico{" "}
                     </div>
 
-                    <div className={styles["reviews-container"]}>
+                    <div
+                        key={reviews.key}
+                        className={styles["reviews-container"]}
+                    >
                         {reviews.length > 0 ? (
                             <>
                                 {reviews.map((review) => (

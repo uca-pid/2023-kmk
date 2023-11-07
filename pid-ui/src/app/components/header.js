@@ -29,10 +29,9 @@ const Header = (props) => {
                 onClick={() => {
                     redirect(router);
                 }}
-                priority={true}
             />
             <Image
-                src="/logout-icon.png"
+                src="/logout_icon.png"
                 alt="CerrarSesion"
                 className={styles["logout-icon"]}
                 width={200}
@@ -54,7 +53,7 @@ const Header = (props) => {
                 onClick={() => {}}
             /> */}
             <Image
-                src="/user-icon.png"
+                src="/user_icon.png"
                 alt="Usuario"
                 className={styles["user-icon"]}
                 width={200}
