@@ -31,6 +31,16 @@ initial_admin_information = {
 }
 
 @pytest.fixture(scope="module", autouse=True)
+def create_initial_admin_and_then_delete_him():
+    pytest.initial_admin_uid = auth.create_user(**initial_admin_information).uid
+    db.collection("superusers").document(pytest.initial_admin_uid).set(
+        initial_admin_information
+    )
+    yield
+    auth.delete_user(pytest.initial_admin_uid)
+    db.collection("superusers").document(pytest.initial_admin_uid).delete()
+
+@pytest.fixture(scope="module", autouse=True)
 def log_in_initial_admin_user(create_initial_admin_and_then_delete_him):
     pytest.initial_admin_bearer = client.post(
         "/users/login",
