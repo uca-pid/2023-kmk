@@ -92,7 +92,7 @@ def update_record(
     },
 )
 def delete_record(
-    specialty_id: str,
+    specialty_name: str,
     uid=Depends(Auth.is_admin),
 ):
     """
@@ -107,7 +107,7 @@ def delete_record(
     * Throw an error if it fails.
     """
     try:
-        Specialty.delete_specialty(specialty_id)
+        Specialty.delete_specialty(specialty_name)
         updated_specialties = Specialty.get_all()
         return {"specialties": updated_specialties}
     except:
