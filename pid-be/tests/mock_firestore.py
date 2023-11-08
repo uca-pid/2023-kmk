@@ -86,32 +86,35 @@ if __name__ == "__main__":
     }
 
     a_physician_information = {
-        "approved": "Approved",
+        "approved": "approved",
         "id": "avalidid",
         "first_name": "Doc",
         "last_name": "Docson",
         "email": "DocDocson@kmk.com",
         "specialty": specialties[0],
+        "tuition": "123456",
         "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
     }
 
     another_physician_information = {
-        "approved": "Approved",
+        "approved": "approved",
         "id": "anothervalidid",
         "first_name": "Doc",
         "last_name": "Docson the Second",
         "email": "DocDocsonTheSecond@kmk.com",
         "specialty": specialties[0],
+        "tuition": "1112222",
         "agenda": {str(number_of_day_of_week): {"start": 8, "finish": 18.5}},
     }
 
     other_physician_information = {
-        "approved": "Approved",
+        "approved": "approved",
         "id": "othervalidid",
         "first_name": "Doc",
         "last_name": "Docson the Third",
         "email": "DocDocsonTheThird@kmk.com",
         "specialty": specialties[1],
+        "tuition": "999543",
         "agenda": {
             str(number_of_day_of_week): {"start": 8, "finish": 18.5},
             str((number_of_day_of_week + 1) % 7): {"start": 7, "finish": 16},
