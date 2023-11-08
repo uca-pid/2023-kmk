@@ -54,7 +54,7 @@ const Admin = () => {
             toast.info("Especialidad agregada");
             fetchSpecialties();
         } catch (error) {
-            console.log(error);
+            console.error(error);
             toast.error("Error al agregar especialidad");
         }
     };
@@ -70,7 +70,7 @@ const Admin = () => {
             toast.info("Especialidad borrada");
             fetchSpecialties();
         } catch (error) {
-            console.log(error);
+            console.error(error);
             toast.error("Error al borrar especialidad");
         }
     };

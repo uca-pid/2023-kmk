@@ -57,8 +57,7 @@ def get_all_specialties():
     },
 )
 def add_specialty(
-    specialty: str,
-    uid=Depends(Auth.is_admin),
+    specialty: str
 ):
     """
     Add a new specialty.
