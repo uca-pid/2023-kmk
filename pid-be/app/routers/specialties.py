@@ -91,6 +91,7 @@ def add_specialty(
         500: {"model": UpdateSpecialtiesError},
     },
 )
+
 def delete_specialty(
     specialty_name: str,
     uid=Depends(Auth.is_admin),
