@@ -42,10 +42,7 @@ const Admin = () => {
         try {
             console.log(newSpecialty);
             const response = await axios.post(
-                `${apiURL}specialties/add`,
-                {
-                    specialty: newSpecialty,
-                },
+                `${apiURL}specialties/add/${newSpecialty}`,
                 {
                     httpsAgent: agent,
                 }
@@ -61,9 +58,8 @@ const Admin = () => {
 
     const handleSpecialtyDelete = async (specialty) => {
         try {
-            const response = await axios.post(
-                `${apiURL}specialties/delete`,
-                { specialty: specialty },
+            const response = await axios.delete(
+                `${apiURL}specialties/delete/${specialty}`,
                 { httpsAgent: agent }
             );
             console.log(response.data);
