@@ -202,6 +202,7 @@ def get_user_roles(user_id=Depends(Auth.is_logged_in)):
     * Return the users roles.
     * Throw an error if users role retrieving process fails.
     """
+    print(user_id)
     roles = []
     try:
         if Admin.is_admin(user_id):

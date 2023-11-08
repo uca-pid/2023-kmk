@@ -3,6 +3,7 @@ from fastapi import status, HTTPException
 from firebase_admin import firestore
 
 from app.models.entities.Physician import Physician
+from app.models.entities.Appointment import Appointment
 
 db = firestore.client()
 
@@ -37,8 +38,15 @@ class Record:
     def add_observation(id, observation, uid):
         record_ref = db.collection("records").document(id)
         physician = Physician.get_by_id(uid)
-        observation["physician"] = physician.first_name + " " + physician.last_name
-        observation["specialty"]: physician.specialty
+        observation["physician"] = physician["first_name"]+ " " + physician["last_name"]
+        observation["specialty"] =  physician["specialty"]
+        observation["observation"] = observation["observation"]
+        observation["attended"] = observation["attended"]
+        observation["real_start_time"] = observation["real_start_time"]
+        appt = Appointment.get_by_id(observation["appointment_id"])
+        print(appt.date)
+        observation["appointment_date"] = appt.date
+        print(observation)
         record_ref.update({"observations": firestore.ArrayUnion([observation])})
 
         updated_record = record_ref.get().to_dict()

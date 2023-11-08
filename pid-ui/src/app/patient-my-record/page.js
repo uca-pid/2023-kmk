@@ -31,6 +31,7 @@ const MyRecord = () => {
             const response = await axios.get(`${apiURL}records/get-my-record`, {
                 httpsAgent: agent,
             });
+            console.log(response);
             setRecord(response.data.record);
             console.log(response);
         } catch (error) {
@@ -203,7 +204,9 @@ const MyRecord = () => {
                                                     }
                                                 >
                                                     Observacion del{" "}
-                                                    {observation.date.toLocaleString()}
+                                                    {observation.appointment_date.toLocaleString()}
+                                                    {" "}- Médico:{" "}
+                                                    {observation.physician}
                                                 </div>
                                                 <div
                                                     className={
