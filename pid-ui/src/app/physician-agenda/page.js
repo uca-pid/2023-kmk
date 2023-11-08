@@ -62,12 +62,15 @@ const PhysicianAgenda = () => {
                 `${apiURL}records/update`,
                 {
                     appointment_id: observationPayload.id,
+                    attended: appointmentAttended,
+                    real_start_time: newObservationDate,
+                    observation: newObservationContent
                 },
                 {
                     httpsAgent: agent,
                 }
             );
-            console.log(response);
+            console.log("************",response);
             toast.info("Observación agregada exitosamente");
             handleCloseEditModal();
         } catch (error) {
