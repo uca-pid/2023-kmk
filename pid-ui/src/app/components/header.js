@@ -2,7 +2,7 @@ import React from "react";
 import Image from "next/image";
 import styles from "../styles/Header.module.css";
 import axios from "axios";
-import { redirect } from "../components/userCheck";
+import { loginCheck, redirect } from "../components/userCheck";
 import { useRouter } from "next/navigation";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -29,10 +29,9 @@ const Header = (props) => {
                 onClick={() => {
                     redirect(router);
                 }}
-                priority={true}
             />
             <Image
-                src="/logout-icon.png"
+                src="/logout_icon.png"
                 alt="CerrarSesion"
                 className={styles["logout-icon"]}
                 width={200}
@@ -54,7 +53,7 @@ const Header = (props) => {
                 onClick={() => {}}
             /> */}
             <Image
-                src="/user-icon.png"
+                src="/user_icon.png"
                 alt="Usuario"
                 className={styles["user-icon"]}
                 width={200}
@@ -110,7 +109,7 @@ const TabBar = (props) => {
                 className={`${styles["tab"]} ${
                     props.highlight === "Ficha" ? styles["selected-tab"] : ""
                 }`}
-                onClick={() => router.push("/my-record")}
+                onClick={() => router.push("/patient-my-record")}
             >
                 Mi Ficha
             </div>
