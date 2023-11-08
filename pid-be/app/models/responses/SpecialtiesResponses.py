@@ -8,3 +8,10 @@ class GetSpecialtiesResponse(BaseModel):
 
 class GetSpecialtyError(BaseModel):
     detail: str
+
+class UpdateSpecialtiesResponse(BaseModel):
+    specialties: list[Union[str, None]]
+
+
+class UpdateSpecialtiesError(BaseModel):
+    detail: str

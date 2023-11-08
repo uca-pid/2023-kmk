@@ -62,6 +62,7 @@ const MyRecord = () => {
             fetchMyAnalysis();
         } catch (error) {
             console.error(error);
+            toast.error("Error al subir analisis");
         }
     };
 

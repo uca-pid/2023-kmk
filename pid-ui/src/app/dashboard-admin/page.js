@@ -14,6 +14,8 @@ const Admin = () => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
     const router = useRouter();
     const [firstLoad, setFirstLoad] = useState(true);
+    const [specialties, setSpecialties] = useState([]);
+    const [newSpecialty, setNewSpecialty] = useState("");
     const [physicians, setPhysicians] = useState([]);
     const [pendingPhysicians, setPendingPhysicians] = useState([]);
     const [blockedPhysicians, setBlockedPhysicians] = useState([]);
@@ -21,6 +23,53 @@ const Admin = () => {
     const agent = new https.Agent({
         rejectUnauthorized: false,
     });
+
+    const fetchSpecialties = async () => {
+        try {
+            const response = await axios.get(`${apiURL}specialties`, {
+                httpsAgent: agent,
+            });
+            response.data.specialties == undefined
+                ? setSpecialties([])
+                : setSpecialties(response.data.specialties);
+        } catch (error) {
+            toast.error("Error al cargar especialidades");
+            console.error(error);
+        }
+    };
+
+    const handleAddSpecialty = async () => {
+        try {
+            console.log(newSpecialty);
+            const response = await axios.post(
+                `${apiURL}specialties/add/${newSpecialty}`,
+                {
+                    httpsAgent: agent,
+                }
+            );
+            console.log(response.data);
+            toast.info("Especialidad agregada");
+            fetchSpecialties();
+        } catch (error) {
+            console.error(error);
+            toast.error("Error al agregar especialidad");
+        }
+    };
+
+    const handleSpecialtyDelete = async (specialty) => {
+        try {
+            const response = await axios.delete(
+                `${apiURL}specialties/delete/${specialty}`,
+                { httpsAgent: agent }
+            );
+            console.log(response.data);
+            toast.info("Especialidad borrada");
+            fetchSpecialties();
+        } catch (error) {
+            console.error(error);
+            toast.error("Error al borrar especialidad");
+        }
+    };
 
     const fetchPendingPhysicians = async () => {
         try {
@@ -119,10 +168,11 @@ const Admin = () => {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
 
+        // fetchBlockedPhysicians();
+        // fetchPhysicians();
+        fetchSpecialties();
         redirect(router);
-        fetchPhysicians();
         fetchPendingPhysicians();
-        fetchBlockedPhysicians();
         setFirstLoad(false);
     }, []);
 
@@ -131,6 +181,78 @@ const Admin = () => {
             <Header />
 
             <div className={styles["tab-content"]}>
+                <div className={styles.form}>
+                    <div className={styles["title"]}>Especialidades</div>
+                    <Image
+                        src="/refresh_icon.png"
+                        alt="Notificaciones"
+                        className={styles["refresh-icon"]}
+                        width={200}
+                        height={200}
+                        onClick={() => {
+                            fetchSpecialties();
+                        }}
+                    />
+
+                    <div className={styles["subtitle"]}>
+                        Agregar Especialidad
+                    </div>
+                    <input
+                        type="text"
+                        id="specialty"
+                        name="specialty"
+                        placeholder="Especialidad"
+                        value={newSpecialty}
+                        onChange={(e) => setNewSpecialty(e.target.value)}
+                    />
+                    <button
+                        className={styles["add-button"]}
+                        onClick={handleAddSpecialty}
+                    >
+                        Agregar
+                    </button>
+                    <div className={styles["admin-scrollable-section"]}>
+                        {specialties.length > 0 ? (
+                            <>
+                                {specialties.map((specialty) => (
+                                    <div
+                                        key={specialty}
+                                        className={
+                                            styles["specialty-container"]
+                                        }
+                                    >
+                                        <p>{specialty}</p>
+                                        <div
+                                            className={
+                                                styles[
+                                                    "appointment-buttons-container"
+                                                ]
+                                            }
+                                        >
+                                            <Image
+                                                src="/trash_icon.png"
+                                                alt="borrar"
+                                                className={styles.logo}
+                                                width={25}
+                                                height={25}
+                                                onClick={() => {
+                                                    handleSpecialtyDelete(
+                                                        specialty
+                                                    );
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </>
+                        ) : (
+                            <div className={styles["subtitle"]}>
+                                No hay especialidades
+                            </div>
+                        )}
+                    </div>
+                </div>
+
                 <div className={styles.form}>
                     <div className={styles["title"]}>
                         Profesionales pendientes de aprobación
@@ -145,25 +267,21 @@ const Admin = () => {
                             fetchPendingPhysicians();
                         }}
                     />
-                    <div className={styles["pending-approvals"]}>
+                    <div className={styles["admin-section"]}>
                         {pendingPhysicians.length > 0 ? (
-                            // If there are pending doctor approvals, map through them and display each appointment
                             <div>
                                 {pendingPhysicians.map((doctor) => (
                                     <div
                                         key={doctor.id}
                                         className={styles["appointment"]}
                                     >
-                                        <p>
-                                            Profesional:{" "}
+                                        <div className={styles["subtitle"]}>
                                             {doctor.first_name +
                                                 " " +
                                                 doctor.last_name}
-                                        </p>
+                                        </div>
                                         <p>Especialidad: {doctor.specialty}</p>
-                                        <p>
-                                            Correo electrónico: {doctor.email}
-                                        </p>
+                                        <p>E-mail: {doctor.email}</p>
                                         <p>Matricula: {doctor.tuition}</p>
                                         <div
                                             className={
@@ -200,7 +318,6 @@ const Admin = () => {
                                 ))}
                             </div>
                         ) : (
-                            // If there are no pending doctor approvals, display the message
                             <div className={styles["subtitle"]}>
                                 No hay aprobaciones pendientes
                             </div>
@@ -222,25 +339,21 @@ const Admin = () => {
                             fetchPhysicians();
                         }}
                     />
-                    <div className={styles["pending-approvals"]}>
+                    <div className={styles["admin-section"]}>
                         {physicians.length > 0 ? (
-                            // If there are pending doctor approvals, map through them and display each appointment
                             <div>
                                 {physicians.map((doctor) => (
                                     <div
                                         key={doctor.id}
                                         className={styles["appointment"]}
                                     >
-                                        <p>
-                                            Profesional:{" "}
+                                        <div className={styles["subtitle"]}>
                                             {doctor.first_name +
                                                 " " +
                                                 doctor.last_name}
-                                        </p>
+                                        </div>
                                         <p>Especialidad: {doctor.specialty}</p>
-                                        <p>
-                                            Correo electrónico: {doctor.email}
-                                        </p>
+                                        <p>E-mail: {doctor.email}</p>
                                         <p>Matricula: {doctor.tuition}</p>
                                         <div
                                             className={
@@ -277,9 +390,8 @@ const Admin = () => {
                                 ))}
                             </div>
                         ) : (
-                            // If there are no pending doctor approvals, display the message
                             <div className={styles["subtitle"]}>
-                                No hay aprobaciones pendientes
+                                No hay profesionales en funciones
                             </div>
                         )}
                     </div>
@@ -299,7 +411,7 @@ const Admin = () => {
                             fetchBlockedPhysicians();
                         }}
                     />
-                    <div className={styles["pending-approvals"]}>
+                    <div className={styles["admin-section"]}>
                         {blockedPhysicians.length > 0 ? (
                             // If there are pending doctor approvals, map through them and display each appointment
                             <div>
@@ -308,16 +420,13 @@ const Admin = () => {
                                         key={doctor.id}
                                         className={styles["appointment"]}
                                     >
-                                        <p>
-                                            Profesional:{" "}
+                                        <div className={styles["subtitle"]}>
                                             {doctor.first_name +
                                                 " " +
                                                 doctor.last_name}
-                                        </p>
+                                        </div>
                                         <p>Especialidad: {doctor.specialty}</p>
-                                        <p>
-                                            Correo electrónico: {doctor.email}
-                                        </p>
+                                        <p>E-mail: {doctor.email}</p>
                                         <p>Matricula: {doctor.tuition}</p>
                                         <div
                                             className={
@@ -356,7 +465,7 @@ const Admin = () => {
                         ) : (
                             // If there are no pending doctor approvals, display the message
                             <div className={styles["subtitle"]}>
-                                No hay aprobaciones pendientes
+                                No hay profesionales bloqueados
                             </div>
                         )}
                     </div>
