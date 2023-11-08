@@ -14,7 +14,7 @@ from app.models.responses.ValidationResponses import (
 )
 from app.models.responses.AppointmentResponses import (
     AllAppointmentsResponse,
-    GetAppointmentError
+    GetAppointmentError,
 )
 
 router = APIRouter(
@@ -159,3 +159,8 @@ def get_all_pending_appointments(uid=Depends(Auth.is_logged_in)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal server error"},
         )
+
+
+@router.put("/agenda", status_code=status.HTTP_200_OK)
+def update_physicians_agenda():
+    return {}
