@@ -47,7 +47,7 @@ def get_all_specialties():
         )
 
 @router.post(
-    "/add",
+    "/add/{specialty_name}",
     status_code=status.HTTP_200_OK,
     response_model=UpdateSpecialtiesResponse,
     responses={
@@ -57,7 +57,8 @@ def get_all_specialties():
     },
 )
 def add_specialty(
-    specialty: str
+    specialty_name: str,
+    #uid=Depends(Auth.is_admin),
 ):
     """
     Add a new specialty.
@@ -71,7 +72,7 @@ def add_specialty(
     * Throw an error if it fails.
     """
     try:
-        Specialty.add_specialty(specialty)
+        Specialty.add_specialty(specialty_name)
         updated_specialties = Specialty.get_all()
         return {"specialties": updated_specialties}
     except:
@@ -81,7 +82,7 @@ def add_specialty(
         )
     
 @router.delete(
-    "/delete",
+    "/delete/{specialty_name}",
     status_code=status.HTTP_200_OK,
     response_model=UpdateSpecialtiesResponse,
     responses={
@@ -93,7 +94,7 @@ def add_specialty(
 
 def delete_specialty(
     specialty_name: str,
-    uid=Depends(Auth.is_admin),
+    #uid=Depends(Auth.is_admin),
 ):
     """
     Deletes a specialty.
