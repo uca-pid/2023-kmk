@@ -60,28 +60,49 @@ def log_in_initial_admin_user(create_initial_admin_and_then_delete_him):
     ).json()["token"]
     yield
 
+# def test_add_specialty_updates_document_in_firestore():
+#     specialties_before_update = ( db.collection("specialties").get())
+
+#     pytest.initial_admin_bearer = client.post(
+#         "/specialties/add/aNewSpecialty",
+#         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
+#     )
+#     specialties_after_update = ( db.collection("specialties").get())
+#     assert len(specialties_before_update) + 1 == len(specialties_after_update)
+#     assert "aNewSpecialty" in specialties_after_update
+
 def test_add_specialty_updates_document_in_firestore():
-    specialties_before_update = ( db.collection("specialties").get().to_dict())
+    specialties_before_update = db.collection("specialties").get()
+
     pytest.initial_admin_bearer = client.post(
-        "/specialties/add",
-        json={
-            "name": "aNewSpecialty",
-        },
+        "/specialties/add/aNewSpecialty",
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
-    specialties_after_update = ( db.collection("specialties").get().to_dict())
+    specialties_after_update = db.collection("specialties").get()
+
+    # Verificar si el nuevo nombre "aNewSpecialty" está presente en los datos de los documentos
+    new_specialty_added = False
+    for doc in specialties_after_update:
+        data = doc.to_dict()
+        if "name" in data and data["name"] == "aNewSpecialty":
+            new_specialty_added = True
+            break
+
     assert len(specialties_before_update) + 1 == len(specialties_after_update)
-    assert "aNewSpecialty" in specialties_after_update
+    assert new_specialty_added
+
+
 
 def test_delete_specialty_updates_document_in_firestore():
-    specialties_before_update = ( db.collection("specialties").get().to_dict())
-    pytest.initial_admin_bearer = client.post(
-        "/specialties/delete",
-        json={
-            "specialty_id": pytest.specialty_id,
-        },
-        headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        client.delete(
+            f"/specialties/delete/{specialties[0]}",
+            headers={"Authorization": f"Bearer {pytest.first_bearer}"},
+        )
+    print("*******")
+    assert (
+        db.collection("appointments").document(specialties[0]).get().exists
+        == False
     )
-    specialties_after_update = ( db.collection("specialties").get().to_dict())
-    assert len(specialties_before_update) - 1 == len(specialties_after_update)
-    assert specialties_before_update[pytest.specialty_id] not in specialties_after_update
