@@ -33,18 +33,36 @@ class Score:
     def get_by_id(physician_id):
         return db.collection("scores").document(physician_id).get().to_dict()
     
-    @staticmethod
-    def add_scores(physician_id, scores):
-        score_ref = db.collection("scores").document(physician_id)
-        score_ref.update(
-            {"punality": firestore.ArrayUnion(scores["puntuality"]),
-            "attention": firestore.ArrayUnion(scores["attention"]),
-            "cleanliness": firestore.ArrayUnion(scores["cleanliness"]),
-            "facilities": firestore.ArrayUnion(scores["facilities"]),
-            "price": firestore.ArrayUnion(scores["price"]),}
-        )
 
-    
+    @staticmethod
+    def add_scores(scores):
+        physician_id = scores.physician_id
+        score_ref = db.collection("scores").document(physician_id)
+        print(score_ref.get().to_dict())
+        # Verifica si el documento ya existe
+        if score_ref.get().exists:
+            current_scores = score_ref.get().to_dict()
+        else:
+            current_scores = {
+                "puntuality": [],
+                "attention": [],
+                "cleanliness": [],
+                "facilities": [],
+                "price": [],
+            }
+        print("--------------")
+        print(current_scores)
+        # Agrega puntajes únicos a cada lista
+        current_scores["puntuality"].append(scores.puntuality)
+        current_scores["attention"].append(scores.attention)
+        current_scores["cleanliness"].append(scores.cleanliness)
+        current_scores["facilities"].append(scores.facilities)
+        current_scores["price"].append(scores.price)
+
+        # Realiza la actualización en Firestore
+        score_ref.set(current_scores)
+
+
     @staticmethod
     def get_scores(physician_id):
         scores = db.collection("scores").document(physician_id).get().to_dict()
@@ -56,11 +74,11 @@ class Score:
         avg_price = sum(scores["price"]) / len(scores["price"])
 
         return {
-            "puntuality": avg_puntuality,
-            "attention": avg_attention,
-            "cleanliness": avg_cleanliness,
-            "facilities": avg_facilities,
-            "price": avg_price
+            "puntuality": round(avg_puntuality,1),
+            "attention": round(avg_attention,1),
+            "cleanliness": round(avg_cleanliness,1),
+            "facilities": round(avg_facilities,1),
+            "price": round(avg_price,1)
         }
     
 

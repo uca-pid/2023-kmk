@@ -119,7 +119,7 @@ async def register(
         Union[PatientRegisterRequest, PhysicianRegisterRequest],
         Body(discriminator="role"),
     ],
-    #token=Depends(Auth.has_bearer_token),
+    token=Depends(Auth.has_bearer_token),
 ):
     """
     Register a user.
@@ -360,6 +360,8 @@ def add_score(
     * Raise an error if password change fails.
     """
     try:
+        print(add_score_request)
+        print(add_score_request.cleanliness)
         Score.add_scores(add_score_request)
         return {"message": "Scores added successfully"}
     except:
@@ -370,7 +372,7 @@ def add_score(
     
 
 @router.get(
-    "/score",
+    "/score/{physician_id}",
     status_code=status.HTTP_200_OK,
     response_model=SuccessfullScoreResponse,
     responses={
