@@ -5,9 +5,11 @@ from .config import initialize_firebase_app
 
 initialize_firebase_app()
 
-from fastapi import FastAPI, status, Depends
+from fastapi import FastAPI, status, Depends, Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse, HTMLResponse
+from fastapi.responses import RedirectResponse, HTMLResponse, JSONResponse
+from fastapi.exceptions import RequestValidationError
 from fastapi.openapi.utils import get_openapi
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 
@@ -52,6 +54,20 @@ routers = [
 
 for router in routers:
     app.include_router(router)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content=jsonable_encoder(
+            {
+                "detail": "Invalid input format",  # optionally include the errors
+                "body": exc.body,
+                "error": exc.errors(),
+            }
+        ),
+    )
 
 
 @app.get("/docs", response_class=HTMLResponse)

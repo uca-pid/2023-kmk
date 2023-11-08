@@ -88,6 +88,18 @@ async def login_user(
             content={"detail": "Invalid email and/or password"},
         )
     elif login_response.status_code == 200:
+        if Physician.is_physician(login_response.json()["localId"]):
+            physician = Physician.get_by_id(login_response.json()["localId"])
+            if physician["approved"] == "denied" or physician["approved"] == "blocked":
+                return JSONResponse(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    content={"detail": "Account is not approved"},
+                )
+            elif physician["approved"] == "pending":
+                return JSONResponse(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    content={"detail": "Account has to be approved by admin"},
+                )
         return {"token": login_response.json()["idToken"]}
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
