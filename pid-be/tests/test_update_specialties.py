@@ -31,6 +31,15 @@ initial_admin_information = {
 }
 
 @pytest.fixture(scope="module", autouse=True)
+def load_and_delete_specialties():
+    for specialty in specialties:
+        db.collection("specialties").document().set({"name": specialty})
+    yield
+    specilaties_doc = db.collection("specialties").list_documents()
+    for specialty_doc in specilaties_doc:
+        specialty_doc.delete()
+
+@pytest.fixture(scope="module", autouse=True)
 def create_initial_admin_and_then_delete_him():
     pytest.initial_admin_uid = auth.create_user(**initial_admin_information).uid
     db.collection("superusers").document(pytest.initial_admin_uid).set(

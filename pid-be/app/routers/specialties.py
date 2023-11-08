@@ -58,7 +58,7 @@ def get_all_specialties():
 )
 def add_specialty(
     specialty_name: str,
-    #uid=Depends(Auth.is_admin),
+    uid=Depends(Auth.is_admin),
 ):
     """
     Add a new specialty.
@@ -94,7 +94,7 @@ def add_specialty(
 
 def delete_specialty(
     specialty_name: str,
-    #uid=Depends(Auth.is_admin),
+    uid=Depends(Auth.is_admin),
 ):
     """
     Deletes a specialty.
