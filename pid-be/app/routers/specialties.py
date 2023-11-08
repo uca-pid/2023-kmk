@@ -82,7 +82,6 @@ def add_specialty(
         )
     
 @router.delete(
-@router.delete(
     "/delete",
     status_code=status.HTTP_200_OK,
     response_model=UpdateSpecialtiesResponse,
@@ -93,7 +92,7 @@ def add_specialty(
     },
 )
 def delete_specialty(
-    specialty_id: str,
+    specialty_name: str,
     uid=Depends(Auth.is_admin),
 ):
     """
@@ -108,7 +107,7 @@ def delete_specialty(
     * Throw an error if it fails.
     """
     try:
-        Specialty.delete_specialty(specialty_id)
+        Specialty.delete_specialty(specialty_name)
         updated_specialties = Specialty.get_all()
         return {"specialties": updated_specialties}
     except:

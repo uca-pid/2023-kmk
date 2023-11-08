@@ -18,5 +18,5 @@ class Specialty:
         db.collection("specialties").document().set({"name": name})
 
     @staticmethod
-    def delete_specialty(id):
-        db.collection("specialties").document(id).delete()
+    def delete_specialty(name):
+        db.collection("specialties").where("name", "==", name).document(id).delete()
