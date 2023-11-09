@@ -30,7 +30,7 @@ const Landing = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
-
+        toast.info("Iniciando sesión...");
         localStorage.removeItem("token");
         axios.defaults.headers.common = {
             Authorization: `bearer`,
