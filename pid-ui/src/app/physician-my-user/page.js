@@ -11,6 +11,7 @@ import { Footer, Header, PhysicianTabBar, TabBar } from "../components/header";
 import { toast } from "react-toastify";
 
 const UserProfile = () => {
+    const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
     const [user, setUser] = useState({
@@ -26,8 +27,6 @@ const UserProfile = () => {
                 { day_of_week: 3, start_time: 0, finish_time: 0 },
                 { day_of_week: 4, start_time: 0, finish_time: 0 },
                 { day_of_week: 5, start_time: 0, finish_time: 0 },
-                { day_of_week: 6, start_time: 0, finish_time: 0 },
-                { day_of_week: 7, start_time: 0, finish_time: 0 },
             ],
             appointments: [],
         },
@@ -47,13 +46,28 @@ const UserProfile = () => {
                 httpsAgent: agent,
             });
 
-            let userData = {
+            const userData = {
                 firstName: response.data.first_name,
                 lastName: response.data.last_name,
                 email: response.data.email,
                 bloodtype: response.data.blood_type,
-                agenda: response.data.agenda,
+                agenda: user.agenda,
             };
+
+            response.data.agenda.working_hours.forEach((element) => {
+                userData.agenda.working_hours[
+                    element.day_of_week - 1
+                ].start_time = element.start_time;
+                userData.agenda.working_hours[
+                    element.day_of_week - 1
+                ].finish_time = element.finish_time;
+                userData.agenda.working_hours[
+                    element.day_of_week - 1
+                ].day_of_week = element.day_of_week;
+            });
+
+            console.log(userData);
+
             setUser(userData);
         } catch (error) {
             console.error(error);
@@ -204,8 +218,17 @@ const UserProfile = () => {
 
     useEffect(() => {
         userCheck(router);
-        getUserData();
-        console.log(user);
+        getUserData()
+            .then(() =>
+                user.agenda.working_hours.sort(
+                    (a, b) => a.day_of_week - b.day_of_week
+                )
+            )
+            .then(() => setIsLoading(false)) // Marcar como cargado cuando la respuesta llega
+            .catch(() => {
+                setIsLoading(false); // Asegúrate de marcar como cargado en caso de error
+                toast.error("Error al obtener los datos del usuario");
+            });
     }, []);
 
     return (
@@ -213,158 +236,194 @@ const UserProfile = () => {
             <PhysicianTabBar />
 
             <Header role="physician" />
-
-            <div className={styles["tab-content"]}>
-                <div className={styles.form}>
-                    {/* Datos del usuario */}
-                    <div className={styles["title"]}>Datos del Usuario</div>
-                    <div className={styles["form-group"]}>
-                        <label htmlFor="firstName">
-                            Nombre: {user.firstName}
-                        </label>
-                    </div>
-                    <div className={styles["form-group"]}>
-                        <label htmlFor="lastName">
-                            Apellido: {user.lastName}
-                        </label>
-                    </div>
-
-                    <div className={styles["form-group"]}>
-                        <label htmlFor="email">
-                            Correo Electrónico: {user.email}
-                        </label>
-                    </div>
-                </div>
-
-                <div className={styles.form}>
-                    {/* Modificar horario de atencion */}
-                    <div className={styles["title"]}>Horario de Atención</div>
-
-                    <div className="horario">
-                        <subtitle>Modificar Horario de Atención</subtitle>
-                        {user.agenda.working_hours.map((item) => (
-                            <div
-                                key={item.day_of_week}
-                                className={styles["schedule-day-modify"]}
-                            >
-                                <h3>{convertDay(item.day_of_week)}</h3>
-                                <input
-                                    type="checkbox"
-                                    id="workingDay"
-                                    name="workingDay"
-                                    className={styles["checkbox-input"]}
-                                    defaultChecked={user.agenda.working_days.includes(
-                                        item.day_of_week
-                                    )}
-                                    value={item.day_of_week}
-                                />
-                                <label
-                                    for={item.day_of_week}
-                                    className={styles["checkbox-label"]}
-                                >
-                                    {"    "}¿Atiende este día?
-                                </label>
-                                <div
-                                    className={styles["time-picker-container"]}
-                                >
-                                    <label>Inicio: </label>
-                                    <input
-                                        type="time"
-                                        defaultValue={convertTime(
-                                            item.start_time
-                                        )}
-                                        onChange={(e) =>
-                                            handleStartTimeChange(
-                                                item.day_of_week,
-                                                e.target.value
-                                            )
-                                        }
-                                    />
-
-                                    <label>Fin:</label>
-                                    <input
-                                        type="time"
-                                        defaultValue={convertTime(
-                                            item.finish_time
-                                        )}
-                                        onChange={(e) =>
-                                            handleFinishTimeChange(
-                                                item.day_of_week,
-                                                e.target.value
-                                            )
-                                        }
-                                    />
-                                </div>
+            {isLoading ? (
+                <p>Cargando...</p>
+            ) : (
+                <>
+                    <div className={styles["tab-content"]}>
+                        <div className={styles.form}>
+                            {/* Datos del usuario */}
+                            <div className={styles["title"]}>
+                                Datos del Usuario
                             </div>
-                        ))}
-                        <button
-                            className={styles["standard-button"]}
-                            onClick={handleSaveChanges}
-                        >
-                            Guardar Cambios
-                        </button>
-                    </div>
-                </div>
+                            <div className={styles["form-group"]}>
+                                <label htmlFor="firstName">Nombre:</label>
+                                <input
+                                    type="text"
+                                    id="firstName"
+                                    value={user.firstName}
+                                    readOnly
+                                />
+                            </div>
+                            <div className={styles["form-group"]}>
+                                <label htmlFor="lastName">Apellido:</label>
+                                <input
+                                    type="text"
+                                    id="lastName"
+                                    value={user.lastName}
+                                    readOnly
+                                />
+                            </div>
 
-                {/* Cambio de Contraseña */}
-                <form
-                    className={styles["form"]}
-                    onSubmit={handleChangePassword}
-                >
-                    <div className={styles["title"]}>Cambiar Contraseña</div>
-                    <div className={styles["form-group"]}>
-                        <label htmlFor="currentPassword">
-                            Contraseña Actual:
-                        </label>
-                        <input
-                            type="password"
-                            id="currentPassword"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            autoComplete="current-password"
-                        />
+                            <div className={styles["form-group"]}>
+                                <label htmlFor="email">
+                                    Correo Electrónico:
+                                </label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    value={user.email}
+                                    readOnly
+                                />
+                            </div>
+                        </div>
+
+                        <div className={styles.form}>
+                            {/* Modificar horario de atencion */}
+                            <div className={styles["title"]}>
+                                Horario de Atención
+                            </div>
+
+                            <div className="horario">
+                                {user.agenda.working_hours.map((item) => (
+                                    <div
+                                        key={item.day_of_week}
+                                        className={
+                                            styles["schedule-day-modify"]
+                                        }
+                                    >
+                                        <h3>{convertDay(item.day_of_week)}</h3>
+                                        <input
+                                            type="checkbox"
+                                            id="workingDay"
+                                            name="workingDay"
+                                            className={styles["checkbox-input"]}
+                                            defaultChecked={user.agenda.working_days.includes(
+                                                item.day_of_week
+                                            )}
+                                            value={item.day_of_week}
+                                        />
+                                        <label
+                                            htmlFor={item.day_of_week}
+                                            className={styles["checkbox-label"]}
+                                        >
+                                            {"    "}¿Atiende este día?
+                                        </label>
+                                        <div
+                                            className={
+                                                styles["time-picker-container"]
+                                            }
+                                        >
+                                            <label>Inicio: </label>
+                                            <input
+                                                type="time"
+                                                defaultValue={convertTime(
+                                                    item.start_time
+                                                )}
+                                                onChange={(e) =>
+                                                    handleStartTimeChange(
+                                                        item.day_of_week,
+                                                        e.target.value
+                                                    )
+                                                }
+                                            />
+
+                                            <label>Fin:</label>
+                                            <input
+                                                type="time"
+                                                defaultValue={convertTime(
+                                                    item.finish_time
+                                                )}
+                                                onChange={(e) =>
+                                                    handleFinishTimeChange(
+                                                        item.day_of_week,
+                                                        e.target.value
+                                                    )
+                                                }
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                                <button
+                                    className={styles["standard-button"]}
+                                    onClick={handleSaveChanges}
+                                >
+                                    Guardar Cambios
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Cambio de Contraseña */}
+                        <form
+                            className={styles["form"]}
+                            onSubmit={handleChangePassword}
+                        >
+                            <div className={styles["title"]}>
+                                Cambiar Contraseña
+                            </div>
+                            <div className={styles["form-group"]}>
+                                <label htmlFor="currentPassword">
+                                    Contraseña Actual:
+                                </label>
+                                <input
+                                    type="password"
+                                    id="currentPassword"
+                                    value={password}
+                                    onChange={(e) =>
+                                        setPassword(e.target.value)
+                                    }
+                                    required
+                                    autoComplete="current-password"
+                                />
+                            </div>
+                            <div className={styles["form-group"]}>
+                                <label htmlFor="newPassword">
+                                    Nueva Contraseña:
+                                </label>
+                                <input
+                                    type="password"
+                                    id="newPassword"
+                                    value={newPassword}
+                                    onChange={(e) =>
+                                        setNewPassword(e.target.value)
+                                    }
+                                    required
+                                    autoComplete="new-password"
+                                />
+                            </div>
+                            <div className={styles["form-group"]}>
+                                <label htmlFor="confirmNewPassword">
+                                    Confirmar Nueva Contraseña:
+                                </label>
+                                <input
+                                    type="password"
+                                    id="confirmNewPassword"
+                                    value={confirmNewPassword}
+                                    onChange={(e) =>
+                                        setConfirmNewPassword(e.target.value)
+                                    }
+                                    required
+                                    autoComplete="new-password"
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                className={`${styles["standard-button"]} ${
+                                    newPassword !== confirmNewPassword || error
+                                        ? styles["disabled-button"]
+                                        : ""
+                                }`}
+                                disabled={
+                                    newPassword !== confirmNewPassword || error
+                                }
+                            >
+                                Cambiar Contraseña
+                            </button>
+                        </form>
                     </div>
-                    <div className={styles["form-group"]}>
-                        <label htmlFor="newPassword">Nueva Contraseña:</label>
-                        <input
-                            type="password"
-                            id="newPassword"
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            required
-                            autoComplete="new-password"
-                        />
-                    </div>
-                    <div className={styles["form-group"]}>
-                        <label htmlFor="confirmNewPassword">
-                            Confirmar Nueva Contraseña:
-                        </label>
-                        <input
-                            type="password"
-                            id="confirmNewPassword"
-                            value={confirmNewPassword}
-                            onChange={(e) =>
-                                setConfirmNewPassword(e.target.value)
-                            }
-                            required
-                            autoComplete="new-password"
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        className={`${styles["standard-button"]} ${
-                            newPassword !== confirmNewPassword || error
-                                ? styles["disabled-button"]
-                                : ""
-                        }`}
-                        disabled={newPassword !== confirmNewPassword || error}
-                    >
-                        Cambiar Contraseña
-                    </button>
-                </form>
-            </div>
-            <Footer />
+                    <Footer />
+                </>
+            )}
         </div>
     );
 };
