@@ -32,6 +32,7 @@ const MyRecord = () => {
             const response = await axios.get(`${apiURL}records/get-my-record`, {
                 httpsAgent: agent,
             });
+            console.log(response);
             setRecord(response.data.record);
             console.log(response);
         } catch (error) {
@@ -205,60 +206,54 @@ const MyRecord = () => {
                                 </form>
                             </div>
 
-                            <div className={styles["records-section"]}>
-                                {record.observations.length > 0 ? (
-                                    // If there are appointments, map through them and display each appointment
-                                    <>
-                                        {record.observations.map(
-                                            (observation, index) => {
-                                                return (
-                                                    <div
-                                                        className={
-                                                            styles[
-                                                                "record-card"
-                                                            ]
-                                                        }
-                                                        key={index}
-                                                    >
-                                                        <div
-                                                            className={
-                                                                styles[
-                                                                    "record-date"
-                                                                ]
-                                                            }
-                                                        >
-                                                            Observacion del{" "}
-                                                            {observation.date.toLocaleString()}
-                                                        </div>
-                                                        <div
-                                                            className={
-                                                                styles[
-                                                                    "record-observations"
-                                                                ]
-                                                            }
-                                                        >
-                                                            {
-                                                                observation.observation
-                                                            }
-                                                        </div>
-                                                    </div>
-                                                );
-                                            }
-                                        )}
-                                    </>
-                                ) : (
-                                    // If there are no appointments, display the message
-                                    <div className={styles["subtitle"]}>
-                                        No hay observaciones en esta historia
-                                        clinica
-                                    </div>
+                    <div className={styles["records-section"]}>
+                        {record.observations.length > 0 ? (
+                            // If there are appointments, map through them and display each appointment
+                            <>
+                                {record.observations.map(
+                                    (observation, index) => {
+                                        return (
+                                            <div
+                                                className={
+                                                    styles["record-card"]
+                                                }
+                                                key={index}
+                                            >
+                                                <div
+                                                    className={
+                                                        styles["record-date"]
+                                                    }
+                                                >
+                                                    Observacion del{" "}
+                                                    {observation.appointment_date.toLocaleString()}
+                                                    {" "}- Médico:{" "}
+                                                    {observation.physician}
+                                                </div>
+                                                <div
+                                                    className={
+                                                        styles[
+                                                            "record-observations"
+                                                        ]
+                                                    }
+                                                >
+                                                    {observation.observation}
+                                                </div>
+                                            </div>
+                                        );
+                                    }
                                 )}
+                            </>
+                        ) : (
+                            // If there are no appointments, display the message
+                            <div className={styles["subtitle"]}>
+                                No hay observaciones en esta historia clinica
                             </div>
-                        </div>
+                        )}
                     </div>
-                    <Footer />
-                </>
-            )}
+                </div>
+            </div>
+
+            <Footer />
         </div>
     );
 };

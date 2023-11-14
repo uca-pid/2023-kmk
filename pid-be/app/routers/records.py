@@ -74,7 +74,9 @@ def get_my_record(patient_id=Depends(Auth.is_logged_in)):
     * Throw an error if recrods retrieving fails.
     """
     try:
+        print(patient_id)
         record = Record.get_by_id(patient_id)
+        print(record)
         return {"record": record}
     except:
         return JSONResponse(
@@ -109,8 +111,10 @@ def update_record(
     * Throw an error if the record is not found or updating fails.
     """
     try:
+        print(observation_creation_request)
         appointment = Appointment.get_by_id(
             observation_creation_request.appointment_id)
+        print(appointment.patient_id)
         record = Record.add_observation(
             appointment.patient_id, observation_creation_request.dict(),uid)
         return {"record": record}
