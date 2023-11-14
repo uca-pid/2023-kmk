@@ -26,12 +26,21 @@ from app.models.responses.UserResponses import (
     SuccessfullChangePasswordResponse,
     ChangePasswordErrorResponse,
 )
+from app.models.responses.ScoreResponses import (
+    SuccessfullLoadScoreResponse,
+    ScoreErrorResponse,
+    SuccessfullScoreResponse,
+)
+from app.models.requests.ScoreRequests import (
+    LoadScoreRequest
+)
 
 from app.models.entities.Auth import Auth
 from app.models.entities.Patient import Patient
 from app.models.entities.Physician import Physician
 from app.models.entities.Admin import Admin
 from app.models.entities.Record import Record
+from app.models.entities.Score import Score
 
 from firebase_admin import firestore, auth
 
@@ -202,6 +211,7 @@ def get_user_roles(user_id=Depends(Auth.is_logged_in)):
     * Return the users roles.
     * Throw an error if users role retrieving process fails.
     """
+    print(user_id)
     roles = []
     try:
         if Admin.is_admin(user_id):
@@ -326,3 +336,71 @@ def change_password(
         status_code=status.HTTP_400_BAD_REQUEST,
         content={"detail": "Invalid current password"},
     )
+
+
+@router.post(
+    "/add-score",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessfullLoadScoreResponse,
+    responses={
+        400: {"model": ScoreErrorResponse},
+        401: {"model": ScoreErrorResponse},
+    },
+)
+def add_score(
+    add_score_request: LoadScoreRequest, uid=Depends(Auth.is_logged_in)
+):
+    """
+    Add score.
+
+    This will allow authenticated users to add scores.
+
+    This path operation will:
+
+    * Add score.
+    * Raise an error if password change fails.
+    """
+    try:
+        print(add_score_request)
+        print(add_score_request.cleanliness)
+        Score.add_scores(add_score_request)
+        return {"message": "Scores added successfully"}
+    except:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "Internal server error"},
+        )
+    
+
+@router.get(
+    "/score/{physician_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessfullScoreResponse,
+    responses={
+        400: {"model": ScoreErrorResponse},
+        401: {"model": ScoreErrorResponse},
+    },
+)
+def show_score(
+    physician_id: str, uid=Depends(Auth.is_logged_in)
+):
+    """
+    Show scores from a physician.
+
+    This will allow authenticated users to see physician scores.
+
+    This path operation will:
+
+    * Show physician scores.
+    * Raise an error if password change fails.
+    """
+    try:
+        scores = Score.get_scores(physician_id)
+        return {
+            "score_metrics": scores
+        }
+    except:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "Internal server error"},
+        )

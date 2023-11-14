@@ -1,10 +1,14 @@
 from fastapi import APIRouter, status, Depends
 from fastapi.responses import JSONResponse
 
+from app.models.entities.Auth import Auth
+from app.models.entities.Admin import Admin
 from app.models.entities.Specialty import Specialty
 from app.models.responses.SpecialtiesResponses import (
     GetSpecialtiesResponse,
     GetSpecialtyError,
+    UpdateSpecialtiesResponse,
+    UpdateSpecialtiesError,
 )
 
 router = APIRouter(
@@ -36,6 +40,77 @@ def get_all_specialties():
     try:
         specialties = Specialty.get_all()
         return {"specialties": specialties}
+    except:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "Internal server error"},
+        )
+
+@router.post(
+    "/add/{specialty_name}",
+    status_code=status.HTTP_200_OK,
+    response_model=UpdateSpecialtiesResponse,
+    responses={
+        401: {"model": UpdateSpecialtiesError},
+        403: {"model": UpdateSpecialtiesError},
+        500: {"model": UpdateSpecialtiesError},
+    },
+)
+def add_specialty(
+    specialty_name: str,
+    uid=Depends(Auth.is_admin),
+):
+    """
+    Add a new specialty.
+
+    This will allow authenticated admins to add new specialties.
+
+    This path operation will:
+
+    * Add the new specialty.
+    * Return the updated list of specialties.
+    * Throw an error if it fails.
+    """
+    try:
+        Specialty.add_specialty(specialty_name)
+        updated_specialties = Specialty.get_all()
+        return {"specialties": updated_specialties}
+    except:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "Internal server error"},
+        )
+    
+@router.delete(
+    "/delete/{specialty_name}",
+    status_code=status.HTTP_200_OK,
+    response_model=UpdateSpecialtiesResponse,
+    responses={
+        401: {"model": UpdateSpecialtiesError},
+        403: {"model": UpdateSpecialtiesError},
+        500: {"model": UpdateSpecialtiesError},
+    },
+)
+
+def delete_specialty(
+    specialty_name: str,
+    uid=Depends(Auth.is_admin),
+):
+    """
+    Deletes a specialty.
+
+    This will allow authenticated admins to delete specialties.
+
+    This path operation will:
+
+    * Delete the specialty.
+    * Return the updated list of specialties.
+    * Throw an error if it fails.
+    """
+    try:
+        Specialty.delete_specialty(specialty_name)
+        updated_specialties = Specialty.get_all()
+        return {"specialties": updated_specialties}
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

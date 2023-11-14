@@ -5,3 +5,7 @@ from fastapi import Query
 
 class ObservationRequest(BaseModel):
     appointment_id: str
+    attended: str
+    real_start_time: str
+    observation: str
+
