@@ -60,6 +60,7 @@ const DashboardPatient = () => {
                 ? setAppointments([])
                 : setAppointments(response.data.appointments);
         } catch (error) {
+            toast.error("Error al cargar turnos");
             console.error(error);
         }
     };
@@ -332,7 +333,7 @@ const DashboardPatient = () => {
                                 height={200}
                                 onClick={() => {
                                     fetchAppointments();
-                                    toast.info("Turnos actualizados");
+                                    toast.info("Actualizando turnos...");
                                 }}
                             />
                             <div className={styles["appointments-section"]}>
@@ -587,7 +588,6 @@ const DashboardPatient = () => {
                                                             workingHour.day_of_week ===
                                                             date.getDay()
                                                     )[0];
-                                                console.log(workingHour);
                                                 let parsedTime =
                                                     time.getHours() +
                                                     time.getMinutes() / 60;
