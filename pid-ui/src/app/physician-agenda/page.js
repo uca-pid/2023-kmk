@@ -22,14 +22,14 @@ const PhysicianAgenda = () => {
         useState(false);
     const [patientId, setPatientId] = useState("");
     const [newObservationDate, setNewObservationDate] = useState(new Date());
-    const [startDate, setStartDate] = useState(new Date());
+    const [startTime, setStartTime] = useState(new Date());
     const [newObservationContent, setNewObservationContent] = useState("");
-    const [appointmentAttended, setAppointmentAttended] = useState("yes");
+    const [appointmentAttended, setAppointmentAttended] = useState(true);
 
     const agent = new https.Agent({
         rejectUnauthorized: false,
     });
-    const [observationPayload, setObservationPayload] = useState("");
+    const [appointmentToClose, setAppointmentToClose] = useState("");
 
     const fetchAppointments = async () => {
         try {
@@ -43,40 +43,51 @@ const PhysicianAgenda = () => {
                 ? setAppointments([])
                 : setAppointments(response.data.appointments);
         } catch (error) {
+            toast.error("Error al obtener los turnos");
             console.log(error);
         }
     };
 
-    const handleOpenObservationModal = (appointment) => {
+    const handleOpenAppointmentClosureModal = (appointment) => {
         console.log(appointment);
         setIsAddObervationModalOpen(true);
-        setObservationPayload(appointment);
+        setAppointmentToClose(appointment);
         setPatientId(appointment.patient.id);
         setNewObservationDate(appointment.date.toLocaleString("es-AR"));
     };
 
-    const handleAddObservation = async (e) => {
-        console.log(patientId, "handleAddObservation");
-        console.log(newObservationDate, newObservationContent);
-        e.preventDefault();
-        console.log(observationPayload.id);
+    const handleAppointmentClosure = async () => {
         try {
             const response = await axios.post(
-                `${apiURL}records/update`,
+                `${apiURL}appointments/close-appointment/${appointmentToClose.id}`,
                 {
-                    appointment_id: observationPayload.id,
                     attended: appointmentAttended,
-                    real_start_time: newObservationDate,
+                    start_time: newObservationDate,
+                },
+                {
+                    httpsAgent: agent,
+                }
+            );
+        } catch (error) {
+            toast.error("Error al cerrar el turno");
+            console.error(error);
+        }
+
+        try {
+            const response = await axios.post(
+                `${apiURL}records/update/${patientId}`,
+                {
                     observation: newObservationContent,
                 },
                 {
                     httpsAgent: agent,
                 }
             );
-            console.log("************", response);
-            toast.info("Observación agregada exitosamente");
-            handleCloseEditModal();
+            toast.info("Turno cerrado exitosamente");
+            fetchAppointments();
+            setIsAddObervationModalOpen(false);
         } catch (error) {
+            toast.error("Error al agregar la observación");
             console.error(error);
         }
     };
@@ -90,6 +101,7 @@ const PhysicianAgenda = () => {
             toast.info("Turno eliminado exitosamente");
             fetchAppointments();
         } catch (error) {
+            toast.error("Error al eliminar el turno");
             console.log(error);
         }
     };
@@ -120,7 +132,6 @@ const PhysicianAgenda = () => {
             .then(() => setIsLoading(false)) // Marcar como cargado cuando la respuesta llega
             .catch(() => {
                 setIsLoading(false); // Asegúrate de marcar como cargado en caso de error
-                toast.error("Error al obtener los datos del usuario");
             });
     }, []);
 
@@ -135,7 +146,7 @@ const PhysicianAgenda = () => {
                 >
                     <form
                         className={styles["new-record-section"]}
-                        onSubmit={handleAddObservation}
+                        onSubmit={handleAppointmentClosure}
                     >
                         <div className={styles["title"]}>Gestion del Turno</div>
                         <div className={styles["appointment"]}>
@@ -148,8 +159,8 @@ const PhysicianAgenda = () => {
                                 id="attended"
                                 onChange={(e) => setAppointmentAttended(e)}
                             >
-                                <option value="yes">Si</option>
-                                <option value="no">No</option>
+                                <option value={true}>Si</option>
+                                <option value={false}>No</option>
                             </select>
 
                             <div className={styles["subtitle"]}>
@@ -160,11 +171,11 @@ const PhysicianAgenda = () => {
                                 type="time"
                                 id="time"
                                 name="time"
-                                onChange={(date) => setStartDate(date)}
+                                onChange={(date) => setStartTime(date)}
                             />
 
                             <div className={styles["subtitle"]}>
-                                Observaciones{" "}
+                                Observaciones
                             </div>
 
                             <textarea
@@ -217,8 +228,8 @@ const PhysicianAgenda = () => {
                                 width={200}
                                 height={200}
                                 onClick={() => {
+                                    toast.info("Actualizando...");
                                     fetchAppointments();
-                                    toast.info("Turnos actualizados");
                                 }}
                             />
                             <div className={styles["appointments-section"]}>
@@ -264,12 +275,12 @@ const PhysicianAgenda = () => {
                                                             ]
                                                         }
                                                         onClick={() => {
-                                                            handleOpenObservationModal(
+                                                            handleOpenAppointmentClosureModal(
                                                                 appointment
                                                             );
                                                         }}
                                                     >
-                                                        Agregar Observacion{" "}
+                                                        Finalizar Turno
                                                     </button>
                                                     <Link
                                                         href={{

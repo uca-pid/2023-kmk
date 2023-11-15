@@ -30,14 +30,8 @@ const DashboardPatient = () => {
     const [date, setDate] = useState(new Date());
     const [dateToEdit, setDateToEdit] = useState(new Date());
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [editingAppointment, setEditingAppointment] = useState({
-        id: null,
-        specialty: "",
-        doctor: doctors[0],
-        date: new Date(),
-        patient: "",
-        agenda: {},
-    });
+    const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
+    const [editingAppointment, setEditingAppointment] = useState({});
 
     const [reviews, setReviews] = useState([
         { id: 1, type: "Puntualidad", rating: 5 },
@@ -101,7 +95,8 @@ const DashboardPatient = () => {
         }
     };
 
-    const handleEditAppointment = (appointment) => {
+    const handleOpenEditModal = (appointment) => {
+        setEditingAppointment({});
         console.log(appointment);
         console.log(editingAppointment);
 
@@ -117,27 +112,12 @@ const DashboardPatient = () => {
             patient: appointment.patient,
             agenda: appointment.physician.agenda,
         });
-        console.log(editingAppointment);
-    };
-
-    const handleCloseEditModal = () => {
-        setIsEditModalOpen(false);
-    };
-
-    const saveAgenda = (doctorId) => {
-        if (doctorId) {
-            console.log(
-                doctors.filter((doctor) => doctor.id == doctorId)[0].agenda
-            );
-            setPhysiciansAgenda(
-                doctors.filter((doctor) => doctor.id == doctorId)[0].agenda
-            );
-        } else {
-            setPhysiciansAgenda({});
-        }
     };
 
     const handleSaveAppointment = async () => {
+        console.log(dateToEdit);
+        console.log(editingAppointment);
+
         try {
             await axios.put(
                 `${apiURL}appointments/${editingAppointment.id}`,
@@ -157,6 +137,34 @@ const DashboardPatient = () => {
         }
     };
 
+    const handleCloseEditModal = () => {
+        setIsEditModalOpen(false);
+    };
+
+    const handleOpenRatingModal = (doctorId) => {
+        setIsRatingModalOpen(true);
+
+        console.log(doctorId);
+        //Logica de fecth review para el doctorID pasado por parametro
+    };
+
+    const handleCloseRatingModal = () => {
+        setIsRatingModalOpen(false);
+    };
+
+    const saveAgenda = (doctorId) => {
+        if (doctorId) {
+            console.log(
+                doctors.filter((doctor) => doctor.id == doctorId)[0].agenda
+            );
+            setPhysiciansAgenda(
+                doctors.filter((doctor) => doctor.id == doctorId)[0].agenda
+            );
+        } else {
+            setPhysiciansAgenda({});
+        }
+    };
+
     const handleDeleteAppointment = async (appointmentId) => {
         try {
             await axios.delete(`${apiURL}appointments/${appointmentId}`, {
@@ -173,8 +181,6 @@ const DashboardPatient = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            console.log(Math.round(date.getTime() / 1000));
-
             const response = await axios.post(
                 `${apiURL}appointments/`,
                 {
@@ -208,12 +214,22 @@ const DashboardPatient = () => {
         },
     };
 
+    const ratingModalStyles = {
+        content: {
+            top: "50%",
+            left: "50%",
+            right: "auto",
+            bottom: "auto",
+            marginRight: "-50%",
+            transform: "translate(-50%, -50%)",
+            width: "70%",
+        },
+    };
+
     useEffect(() => {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
-
-        console.log(physiciansAgenda);
 
         redirect(router);
         fetchSpecialties();
@@ -279,17 +295,9 @@ const DashboardPatient = () => {
                                                 workingHour.day_of_week ===
                                                 date.getDay()
                                         )[0];
-                                    console.log(
-                                        "#### WORKING HOUR ####   " +
-                                            workingHour
-                                    );
                                     let parsedTime =
                                         time.getHours() +
                                         time.getMinutes() / 60;
-
-                                    console.log(
-                                        "#### PARSED TIME ####   " + parsedTime
-                                    );
                                     return (
                                         workingHour.start_time <= parsedTime &&
                                         workingHour.finish_time > parsedTime
@@ -303,13 +311,95 @@ const DashboardPatient = () => {
                     {/* Botones de Guardar y Cerrar */}
                     <button
                         className={styles["standard-button"]}
-                        onClick={handleSaveAppointment}
+                        onClick={() => {
+                            handleSaveAppointment();
+                        }}
                     >
                         Guardar
                     </button>
                     <button
                         className={styles["standard-button"]}
-                        onClick={handleCloseEditModal}
+                        onClick={() => {
+                            handleCloseEditModal();
+                            console.log(editingAppointment);
+                        }}
+                    >
+                        Cerrar
+                    </button>
+                </Modal>
+            )}
+
+            {/* Modal de ratings */}
+            {isRatingModalOpen && (
+                <Modal
+                    ariaHideApp={false}
+                    isOpen={isRatingModalOpen}
+                    onRequestClose={handleCloseRatingModal}
+                    style={ratingModalStyles}
+                    contentLabel="Example Modal"
+                >
+                    <div
+                        key={reviews.key}
+                        className={styles["reviews-container"]}
+                    >
+                        {reviews.length > 0 ? (
+                            <>
+                                {reviews.map((review) => (
+                                    <div
+                                        key={review.id}
+                                        className={styles["review"]}
+                                    >
+                                        <div
+                                            className={
+                                                styles["review-cards-container"]
+                                            }
+                                        >
+                                            <div
+                                                className={
+                                                    styles["review-card"]
+                                                }
+                                            >
+                                                <div
+                                                    className={
+                                                        styles[
+                                                            "review-card-title"
+                                                        ]
+                                                    }
+                                                >
+                                                    {review.type}
+                                                </div>
+                                                <div
+                                                    className={
+                                                        styles[
+                                                            "review-card-content"
+                                                        ]
+                                                    }
+                                                >
+                                                    {review.rating}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </>
+                        ) : (
+                            // If there are no reviews, display the message
+                            <div className={styles["subtitle"]}>
+                                No hay reviews
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Botones de Guardar y Cerrar */}
+                    <button
+                        className={styles["standard-button"]}
+                        onClick={() => {}}
+                    >
+                        Guardar
+                    </button>
+                    <button
+                        className={styles["standard-button"]}
+                        onClick={handleCloseRatingModal}
                     >
                         Cerrar
                     </button>
@@ -368,8 +458,14 @@ const DashboardPatient = () => {
                                                         " " +
                                                         appointment.physician
                                                             .last_name}
-                                                    <Link
-                                                        href="google.com"
+                                                    <a
+                                                        onClick={() => {
+                                                            handleOpenRatingModal(
+                                                                appointment
+                                                                    .physician
+                                                                    .id
+                                                            );
+                                                        }}
                                                         style={{
                                                             textDecoration:
                                                                 "none",
@@ -378,7 +474,7 @@ const DashboardPatient = () => {
                                                     >
                                                         {"    "} (Ver
                                                         Puntuacion)
-                                                    </Link>
+                                                    </a>
                                                 </p>
 
                                                 <p>
@@ -401,7 +497,7 @@ const DashboardPatient = () => {
                                                             ]
                                                         }
                                                         onClick={() =>
-                                                            handleEditAppointment(
+                                                            handleOpenEditModal(
                                                                 appointment
                                                             )
                                                         }
