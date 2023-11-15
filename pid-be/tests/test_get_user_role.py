@@ -113,7 +113,7 @@ def create_physician_and_then_delete_him(log_in_patient):
             "agenda": a_KMK_physician_information["agenda"],
             "specialty": a_KMK_physician_information["specialty"],
             "tuition": a_KMK_physician_information["tuition"],
-            "approved": "pending",
+            "approved": "approved",
         }
     )
     yield
@@ -216,6 +216,8 @@ def test_role_retrieving_of_a_patient_returns_only_patient_role():
 
 
 def test_role_retrieving_of_a_pending_physician_returns_a_403_code():
+    physician_uid = auth.get_user_by_email(a_KMK_physician_information["email"]).uid
+    db.collection("physicians").document(physician_uid).update({"approved": "pending"})
     response_from_users_role_endpoint = client.get(
         "/users/role",
         headers={"Authorization": f"Bearer {pytest.physician_bearer}"},
