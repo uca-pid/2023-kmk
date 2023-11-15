@@ -111,6 +111,10 @@ class Physician:
     def deny_appointment(id):
         db.collection("appointments").document(id).update({"approved": "denied"})
 
+    @staticmethod
+    def update_agenda(id, agenda):
+        db.collection("physicians").document(id).update({"agenda": agenda})
+
     def create(self):
         if db.collection("physicians").document(self.id).get().exists:
             raise HTTPException(

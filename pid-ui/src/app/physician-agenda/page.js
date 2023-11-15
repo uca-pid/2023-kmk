@@ -15,6 +15,7 @@ import { redirect } from "../components/userCheck";
 import { toast } from "react-toastify";
 
 const PhysicianAgenda = () => {
+    const [isLoading, setIsLoading] = useState(true);
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
     const router = useRouter();
     const [appointments, setAppointments] = useState([]);
@@ -33,9 +34,12 @@ const PhysicianAgenda = () => {
 
     const fetchAppointments = async () => {
         try {
-            const response = await axios.get(`${apiURL}appointments/physician`, {
-                httpsAgent: agent,
-            });
+            const response = await axios.get(
+                `${apiURL}appointments/physician`,
+                {
+                    httpsAgent: agent,
+                }
+            );
             response.data.appointments == undefined
                 ? setAppointments([])
                 : setAppointments(response.data.appointments);
@@ -113,7 +117,12 @@ const PhysicianAgenda = () => {
         };
 
         redirect(router);
-        fetchAppointments();
+        fetchAppointments()
+            .then(() => setIsLoading(false)) // Marcar como cargado cuando la respuesta llega
+            .catch(() => {
+                setIsLoading(false); // Asegúrate de marcar como cargado en caso de error
+                toast.error("Error al obtener los datos del usuario");
+            });
     }, []);
 
     return (
@@ -196,107 +205,127 @@ const PhysicianAgenda = () => {
 
             <Header role="physician" />
 
-            <div className={styles["tab-content"]}>
-                <div className={styles.form}>
-                    <div className={styles["title"]}>Mis Proximos Turnos</div>
-                    <Image
-                        src="/refresh_icon.png"
-                        alt="Notificaciones"
-                        className={styles["refresh-icon"]}
-                        width={200}
-                        height={200}
-                        onClick={() => {
-                            fetchAppointments();
-                            toast.info("Turnos actualizados");
-                        }}
-                    />
-                    <div className={styles["appointments-section"]}>
-                        {appointments.length > 0 ? (
-                            // If there are appointments, map through them and display each appointment
-                            <div>
-                                {appointments.map((appointment) => (
-                                    <div
-                                        key={appointment.id}
-                                        className={styles["appointment"]}
-                                    >
-                                        <div className={styles["subtitle"]}>
-                                            Paciente:{" "}
-                                            {appointment.patient.first_name +
-                                                " " +
-                                                appointment.patient.last_name}
-                                        </div>
-                                        <p>
-                                            Fecha y hora:{" "}
-                                            {new Date(
-                                                appointment.date * 1000
-                                            ).toLocaleString("es-AR")}
-                                        </p>
-                                        <div
-                                            className={
-                                                styles[
-                                                    "appointment-buttons-container"
-                                                ]
-                                            }
-                                        >
-                                            <button
+            {isLoading ? (
+                <p>Cargando...</p>
+            ) : (
+                <>
+                    <div className={styles["tab-content"]}>
+                        <div className={styles.form}>
+                            <div className={styles["title"]}>
+                                Mis Proximos Turnos
+                            </div>
+                            <Image
+                                src="/refresh_icon.png"
+                                alt="Notificaciones"
+                                className={styles["refresh-icon"]}
+                                width={200}
+                                height={200}
+                                onClick={() => {
+                                    fetchAppointments();
+                                    toast.info("Turnos actualizados");
+                                }}
+                            />
+                            <div className={styles["appointments-section"]}>
+                                {appointments.length > 0 ? (
+                                    // If there are appointments, map through them and display each appointment
+                                    <div>
+                                        {appointments.map((appointment) => (
+                                            <div
+                                                key={appointment.id}
                                                 className={
-                                                    styles["standard-button"]
+                                                    styles["appointment"]
                                                 }
-                                                onClick={() => {
-                                                    handleOpenObservationModal(
-                                                        appointment
-                                                    );
-                                                }}
                                             >
-                                                Agregar Observacion{" "}
-                                            </button>
-                                            <Link
-                                                href={{
-                                                    pathname:
-                                                        "/medical-records?patientId",
-                                                    query: appointment.patient
-                                                        .id,
-                                                }}
-                                                as={`medical-records?patientId=${appointment.patient.id}`}
-                                            >
-                                                <button
+                                                <div
+                                                    className={
+                                                        styles["subtitle"]
+                                                    }
+                                                >
+                                                    Paciente:{" "}
+                                                    {appointment.patient
+                                                        .first_name +
+                                                        " " +
+                                                        appointment.patient
+                                                            .last_name}
+                                                </div>
+                                                <p>
+                                                    Fecha y hora:{" "}
+                                                    {new Date(
+                                                        appointment.date * 1000
+                                                    ).toLocaleString("es-AR")}
+                                                </p>
+                                                <div
                                                     className={
                                                         styles[
-                                                            "standard-button"
+                                                            "appointment-buttons-container"
                                                         ]
                                                     }
                                                 >
-                                                    Ver Historia Clinica
-                                                </button>
-                                            </Link>
+                                                    <button
+                                                        className={
+                                                            styles[
+                                                                "standard-button"
+                                                            ]
+                                                        }
+                                                        onClick={() => {
+                                                            handleOpenObservationModal(
+                                                                appointment
+                                                            );
+                                                        }}
+                                                    >
+                                                        Agregar Observacion{" "}
+                                                    </button>
+                                                    <Link
+                                                        href={{
+                                                            pathname:
+                                                                "/medical-records?patientId",
+                                                            query: appointment
+                                                                .patient.id,
+                                                        }}
+                                                        as={`medical-records?patientId=${appointment.patient.id}`}
+                                                    >
+                                                        <button
+                                                            className={
+                                                                styles[
+                                                                    "standard-button"
+                                                                ]
+                                                            }
+                                                        >
+                                                            Ver Historia Clinica
+                                                        </button>
+                                                    </Link>
 
-                                            <button
-                                                className={
-                                                    styles["delete-button"]
-                                                }
-                                                onClick={() =>
-                                                    handleDeleteAppointment(
-                                                        appointment.id
-                                                    )
-                                                }
-                                            >
-                                                Eliminar
-                                            </button>
-                                        </div>
+                                                    <button
+                                                        className={
+                                                            styles[
+                                                                "delete-button"
+                                                            ]
+                                                        }
+                                                        onClick={() =>
+                                                            handleDeleteAppointment(
+                                                                appointment.id
+                                                            )
+                                                        }
+                                                    >
+                                                        Eliminar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
+                                ) : (
+                                    // If there are no appointments, display the message
+                                    <div className={styles["subtitle"]}>
+                                        No hay turnos pendientes
+                                    </div>
+                                )}
                             </div>
-                        ) : (
-                            // If there are no appointments, display the message
-                            <div className={styles["subtitle"]}>
-                                No hay turnos pendientes
-                            </div>
-                        )}
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <Footer />
+                    <Footer />
+                </>
+            )}
         </div>
     );
 };
