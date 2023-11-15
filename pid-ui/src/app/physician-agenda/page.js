@@ -211,7 +211,6 @@ const PhysicianAgenda = () => {
                     />
                     <div className={styles["appointments-section"]}>
                         {appointments.length > 0 ? (
-                            // If there are appointments, map through them and display each appointment
                             <div>
                                 {appointments.map((appointment) => (
                                     <div
@@ -286,7 +285,6 @@ const PhysicianAgenda = () => {
                                 ))}
                             </div>
                         ) : (
-                            // If there are no appointments, display the message
                             <div className={styles["subtitle"]}>
                                 No hay turnos pendientes
                             </div>
