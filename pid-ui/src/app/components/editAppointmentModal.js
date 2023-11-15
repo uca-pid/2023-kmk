@@ -1,6 +1,6 @@
 import React from "react";
 import styles from "../styles/styles.module.css";
-import DatePicker, { registerLocale } from "react-datepicker";
+import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Modal from "react-modal";
 import axios from "axios";
