@@ -52,7 +52,7 @@ jobs:
               working-directory: pid-be
               run: npm install -g firebase-tools
 
-            - name: Run emualtors and backend tests
+            - name: Run emulators and backend tests
               env:
                   ENV: ${{ secrets.ENV }}
                   REGISTER_URL: ${{ secrets.REGISTER_URL }}
