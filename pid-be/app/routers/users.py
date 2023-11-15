@@ -413,7 +413,6 @@ def show_score(
                 scores["price"] += score["price"]
                 ratings+=1
 
-        print(scores)
         return {
             "score_metrics": {
                 "puntuality": scores["puntuality"]/ratings,
