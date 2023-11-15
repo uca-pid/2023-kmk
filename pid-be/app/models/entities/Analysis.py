@@ -23,7 +23,6 @@ class Analysis:
     async def save(self):
         response_data = []
         bucket = storage.bucket()
-        print(len(self.analysis))
         for analysis_to_upload in self.analysis:
             id = (
                 db.collection("analysis")
@@ -58,3 +57,23 @@ class Analysis:
             .get()
         )
         return list(map(lambda analysis: analysis.to_dict(), uploaded_analysis))
+
+    @staticmethod
+    def delete(uid, id):
+        analysis_doc = (
+            db.collection("analysis")
+            .document(uid)
+            .collection("uploaded_analysis")
+            .document(id)
+            .get()
+        )
+        if not analysis_doc.exists:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="The file doesnt exists"
+            )
+        bucket = storage.bucket()
+        blobs = list(bucket.list_blobs(prefix=f"analysis/{uid}/{id}"))
+        blobs[0].delete()
+        db.collection("analysis").document(uid).collection(
+            "uploaded_analysis"
+        ).document(id).delete()

@@ -8,9 +8,13 @@ class SuccessfullAnalysisResponse(BaseModel):
     url: str
 
 
-class AnalysisUploadErrorResponse(BaseModel):
+class AnalysisErrorResponse(BaseModel):
     detail: str
 
 
 class AnalysisGetErrorResponse(BaseModel):
     detail: str
+
+
+class SuccessfulAnalysisDeletionResponse(BaseModel):
+    message: str
