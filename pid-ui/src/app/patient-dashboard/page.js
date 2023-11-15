@@ -186,6 +186,10 @@ const DashboardPatient = () => {
                 }
             );
             toast.info("Turno solicitado. Aguarde aprobacion del mismo");
+            setSelectedDoctor("");
+            setDate(new Date());
+            setSelectedSpecialty("");
+            setPhysiciansAgenda({});
             fetchAppointments();
         } catch (error) {
             console.error(error);
