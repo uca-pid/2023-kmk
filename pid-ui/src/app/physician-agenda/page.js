@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import styles from "../styles/styles.module.css";
 import { useRouter } from "next/navigation";
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Modal from "react-modal";
 import axios from "axios";
@@ -33,9 +32,12 @@ const PhysicianAgenda = () => {
 
     const fetchAppointments = async () => {
         try {
-            const response = await axios.get(`${apiURL}appointments/physician`, {
-                httpsAgent: agent,
-            });
+            const response = await axios.get(
+                `${apiURL}appointments/physician`,
+                {
+                    httpsAgent: agent,
+                }
+            );
             response.data.appointments == undefined
                 ? setAppointments([])
                 : setAppointments(response.data.appointments);
@@ -64,13 +66,13 @@ const PhysicianAgenda = () => {
                     appointment_id: observationPayload.id,
                     attended: appointmentAttended,
                     real_start_time: newObservationDate,
-                    observation: newObservationContent
+                    observation: newObservationContent,
                 },
                 {
                     httpsAgent: agent,
                 }
             );
-            console.log("************",response);
+            console.log("************", response);
             toast.info("Observación agregada exitosamente");
             handleCloseEditModal();
         } catch (error) {
@@ -89,18 +91,6 @@ const PhysicianAgenda = () => {
         } catch (error) {
             console.log(error);
         }
-    };
-
-    const customStyles = {
-        content: {
-            top: "50%",
-            left: "50%",
-            right: "auto",
-            bottom: "auto",
-            marginRight: "-50%",
-            transform: "translate(-50%, -50%)",
-            width: "80%",
-        },
     };
 
     const handleCloseEditModal = () => {
@@ -148,22 +138,18 @@ const PhysicianAgenda = () => {
                                 Horario real de atencion:{" "}
                             </div>
 
-                            <DatePicker
-                                selected={startDate}
+                            <input
+                                type="time"
+                                id="time"
+                                name="time"
                                 onChange={(date) => setStartDate(date)}
-                                showTimeSelect
-                                showTimeSelectOnly
-                                timeIntervals={15}
-                                timeCaption="Time"
-                                dateFormat="h:mm aa"
                             />
 
                             <div className={styles["subtitle"]}>
                                 Observaciones{" "}
                             </div>
 
-                            <input
-                                type="text"
+                            <textarea
                                 id="observation"
                                 value={newObservationContent}
                                 onChange={(e) =>
@@ -172,6 +158,8 @@ const PhysicianAgenda = () => {
                                 placeholder="Escribe una nueva observación"
                                 required
                                 className={styles.observationInput}
+                                wrap="soft"
+                                disabled={appointmentAttended == "no"}
                             />
                         </div>
 
@@ -191,7 +179,6 @@ const PhysicianAgenda = () => {
                     </form>
                 </Modal>
             )}
-
             <PhysicianTabBar highlight={"TurnosDelDia"} />
 
             <Header role="physician" />
@@ -238,18 +225,6 @@ const PhysicianAgenda = () => {
                                                 ]
                                             }
                                         >
-                                            <button
-                                                className={
-                                                    styles["standard-button"]
-                                                }
-                                                onClick={() => {
-                                                    handleOpenObservationModal(
-                                                        appointment
-                                                    );
-                                                }}
-                                            >
-                                                Agregar Observacion{" "}
-                                            </button>
                                             <Link
                                                 href={{
                                                     pathname:
@@ -269,6 +244,18 @@ const PhysicianAgenda = () => {
                                                     Ver Historia Clinica
                                                 </button>
                                             </Link>
+                                            <button
+                                                className={
+                                                    styles["edit-button"]
+                                                }
+                                                onClick={() => {
+                                                    handleOpenObservationModal(
+                                                        appointment
+                                                    );
+                                                }}
+                                            >
+                                                Finalizar Turno
+                                            </button>
 
                                             <button
                                                 className={
