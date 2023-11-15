@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import styles from "../styles/styles.module.css";
 import { useRouter } from "next/navigation";
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Modal from "react-modal";
 import axios from "axios";
@@ -68,13 +67,13 @@ const PhysicianAgenda = () => {
                     appointment_id: observationPayload.id,
                     attended: appointmentAttended,
                     real_start_time: newObservationDate,
-                    observation: newObservationContent
+                    observation: newObservationContent,
                 },
                 {
                     httpsAgent: agent,
                 }
             );
-            console.log("************",response);
+            console.log("************", response);
             toast.info("Observación agregada exitosamente");
             handleCloseEditModal();
         } catch (error) {
@@ -157,22 +156,18 @@ const PhysicianAgenda = () => {
                                 Horario real de atencion:{" "}
                             </div>
 
-                            <DatePicker
-                                selected={startDate}
+                            <input
+                                type="time"
+                                id="time"
+                                name="time"
                                 onChange={(date) => setStartDate(date)}
-                                showTimeSelect
-                                showTimeSelectOnly
-                                timeIntervals={15}
-                                timeCaption="Time"
-                                dateFormat="h:mm aa"
                             />
 
                             <div className={styles["subtitle"]}>
                                 Observaciones{" "}
                             </div>
 
-                            <input
-                                type="text"
+                            <textarea
                                 id="observation"
                                 value={newObservationContent}
                                 onChange={(e) =>
@@ -181,6 +176,8 @@ const PhysicianAgenda = () => {
                                 placeholder="Escribe una nueva observación"
                                 required
                                 className={styles.observationInput}
+                                wrap="soft"
+                                disabled={appointmentAttended == "no"}
                             />
                         </div>
 
@@ -200,7 +197,6 @@ const PhysicianAgenda = () => {
                     </form>
                 </Modal>
             )}
-
             <PhysicianTabBar highlight={"TurnosDelDia"} />
 
             <Header role="physician" />

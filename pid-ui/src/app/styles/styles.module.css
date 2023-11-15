@@ -365,7 +365,13 @@
 }
 
 .observationInput {
-    height: 100px;
+    height: 200px;
+    resize: none;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    width: 100%;
 }
 
 /* Estilos para la sección de "Fichas Medicas" */
