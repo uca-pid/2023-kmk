@@ -13,6 +13,7 @@ class AppointmentCreationRequest(BaseModel):
         description="The _physician_id_ must be the id of an existant physician"
     )
 
+
     @field_validator("date")
     def validate_date(cls, date_to_validate):
         if date_to_validate < time.time():

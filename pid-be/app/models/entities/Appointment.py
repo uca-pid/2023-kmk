@@ -75,7 +75,6 @@ class Appointment:
             db.collection("appointments")
             .where("physician_id", "==", uid)
             .where("approved", "==", "approved")
-            .where("closed", "==", False)
             .order_by("date")
             .get()
         )
@@ -150,7 +149,6 @@ class Appointment:
                 **updated_values,
                 "start_time": updated_values["start_time"],
                 "attended": updated_values["attended"],
-                "closed": True
             }
         )
 
@@ -164,9 +162,6 @@ class Appointment:
                 "patient_id": self.patient_id,
                 "created_at": round(time.time()),
                 "approved": self.approved,
-                "closed": False,
-                # "attended": self.attended,
-                # "start_time": self.start_time
             }
         )
         Physician.schedule_appointment(id=self.physician_id, date=self.date)
