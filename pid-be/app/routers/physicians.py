@@ -84,7 +84,7 @@ async def approve_appointment(appointment_id: str, uid=Depends(Auth.is_logged_in
                 content={"detail": "Can only approve appointments"},
             )
         Physician.approve_appointment(appointment_id)
-        return {"message": "Physician validated successfully"}
+        return {"message": "Appointment approved successfully"}
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -122,7 +122,7 @@ async def deny_appointment(appointment_id: str, uid=Depends(Auth.is_logged_in)):
                 content={"detail": "Can only deny appointments"},
             )
         Physician.deny_appointment(appointment_id)
-        return {"message": "Physician denied successfully"}
+        return {"message": "Appointment denied successfully"}
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
