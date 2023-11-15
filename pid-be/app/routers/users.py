@@ -20,7 +20,6 @@ from app.models.responses.UserResponses import (
     RegisterErrorResponse,
     UserRolesResponse,
     UserProfileErrorResponse,
-    UserInfoResponse,
     UserInfoErrorResponse,
     IsLoggedInResponse,
     SuccessfullChangePasswordResponse,
@@ -34,6 +33,8 @@ from app.models.responses.ScoreResponses import (
 from app.models.requests.ScoreRequests import (
     LoadScoreRequest
 )
+from app.models.responses.PatientResponses import PatientResponse
+from app.models.responses.PhysicianResponses import PhysicianResponse
 
 from app.models.entities.Auth import Auth
 from app.models.entities.Patient import Patient
@@ -119,7 +120,7 @@ async def register(
         Union[PatientRegisterRequest, PhysicianRegisterRequest],
         Body(discriminator="role"),
     ],
-    token=Depends(Auth.has_bearer_token),
+    #token=Depends(Auth.has_bearer_token),
 ):
     """
     Register a user.
@@ -231,7 +232,7 @@ def get_user_roles(user_id=Depends(Auth.is_logged_in)):
 @router.get(
     "/user-info",
     status_code=status.HTTP_200_OK,
-    response_model=UserInfoResponse,
+    response_model=Union[PhysicianResponse, PatientResponse],
     responses={
         401: {"model": UserInfoErrorResponse},
         403: {"model": UserInfoErrorResponse},

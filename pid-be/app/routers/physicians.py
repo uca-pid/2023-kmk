@@ -1,5 +1,8 @@
+from typing import Dict
 from fastapi import APIRouter, status, Depends
 from fastapi.responses import JSONResponse
+
+from app.models.requests.PhysicianRequests import AgendaUpdateRequest
 
 from app.models.entities.Auth import Auth
 from app.models.entities.Physician import Physician
@@ -14,7 +17,7 @@ from app.models.responses.ValidationResponses import (
 )
 from app.models.responses.AppointmentResponses import (
     AllAppointmentsResponse,
-    GetAppointmentError
+    GetAppointmentError,
 )
 
 router = APIRouter(
@@ -84,7 +87,7 @@ async def approve_appointment(appointment_id: str, uid=Depends(Auth.is_logged_in
                 content={"detail": "Can only approve appointments"},
             )
         Physician.approve_appointment(appointment_id)
-        return {"message": "Physician validated successfully"}
+        return {"message": "Appointment approved successfully"}
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -122,7 +125,7 @@ async def deny_appointment(appointment_id: str, uid=Depends(Auth.is_logged_in)):
                 content={"detail": "Can only deny appointments"},
             )
         Physician.deny_appointment(appointment_id)
-        return {"message": "Physician denied successfully"}
+        return {"message": "Appointment denied successfully"}
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -154,6 +157,23 @@ def get_all_pending_appointments(uid=Depends(Auth.is_logged_in)):
     try:
         appointments_to_validate = Appointment.get_pending_appointments(uid)
         return {"appointments": appointments_to_validate}
+    except:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "Internal server error"},
+        )
+
+
+@router.put("/agenda", status_code=status.HTTP_200_OK)
+def update_physicians_agenda(
+    agenda_update_request: Dict[str, AgendaUpdateRequest],
+    uid=Depends(Auth.is_logged_in),
+):
+    try:
+        for day in agenda_update_request:
+            agenda_update_request[day] = agenda_update_request[day].model_dump()
+        Physician.update_agenda(id=uid, agenda=agenda_update_request)
+        return {"message": "Agenda updated successfully"}
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
