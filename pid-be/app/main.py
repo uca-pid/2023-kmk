@@ -129,8 +129,8 @@ def custom_openapi():
     openapi_schema["info"]["x-logo"] = {
         "url": "https://firebasestorage.googleapis.com/v0/b/pid-kmk.appspot.com/o/appResources%2FmediSyncLogo.png?alt=media&token=5fa730e3-a5cb-4a65-ad71-88af0c72b65a"
     }
-    openapi_schema["paths"]["/users/login"]["post"].pop("security")
-    openapi_schema["paths"]["/users/register"]["post"].pop("security")
+    # openapi_schema["paths"]["/users/login"]["post"].pop("security")
+    # openapi_schema["paths"]["/users/register"]["post"].pop("security")
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 
