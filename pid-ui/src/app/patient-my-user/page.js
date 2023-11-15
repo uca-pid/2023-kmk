@@ -23,7 +23,6 @@ const UserProfile = () => {
     const [newPassword, setNewPassword] = useState("");
     const [confirmNewPassword, setConfirmNewPassword] = useState("");
     const [error, setError] = useState("");
-    const [successMessage, setSuccessMessage] = useState("");
 
     const validate = (value) => {
         if (
@@ -68,10 +67,13 @@ const UserProfile = () => {
             return;
         }
 
+        console.log(password);
+        console.log(newPassword);
+
         validate(newPassword);
 
         try {
-            // Realiza una solicitud a la API para cambiar la contraseña
+            toast.info("Cambiando contraseña...");
             const response = await axios.post(
                 `${apiURL}users/change-password`,
                 {
@@ -157,10 +159,7 @@ const UserProfile = () => {
                         </div>
 
                         {/* Cambio de Contraseña */}
-                        <form
-                            className={styles["form"]}
-                            onSubmit={handleChangePassword}
-                        >
+                        <div className={styles["form"]}>
                             <div className={styles["title"]}>
                                 Cambiar Contraseña
                             </div>
@@ -216,13 +215,14 @@ const UserProfile = () => {
                                         ? styles["disabled-button"]
                                         : ""
                                 }`}
+                                onClick={handleChangePassword}
                                 disabled={
                                     newPassword !== confirmNewPassword || error
                                 }
                             >
                                 Cambiar Contraseña
                             </button>
-                        </form>
+                        </div>
                     </div>
                     <Footer />
                 </>
