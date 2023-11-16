@@ -5,7 +5,7 @@ from fastapi import Query
 
 
 class LoadScoreRequest(BaseModel):
-    physician_id: str
+    appointment_id: str
     puntuality: float
     attention: float
     cleanliness: float

@@ -49,7 +49,7 @@ class BasicAppointmentResponse(BaseModel):
     physician: PhysicianResponse
     patient: PatientResponse
     created_at: int
-    approved: str = "pending"
+    status: str = "pending"
     attended: Union[bool, None] = None
     start_time: Union[str, None] = None
 

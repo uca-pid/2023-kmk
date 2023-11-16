@@ -15,7 +15,7 @@ class Appointment:
     patient_id: str
     created_at: int = None
     updated_at: int = None
-    approved: str
+    status: str
     attended: bool
     start_time: str
 
@@ -27,7 +27,7 @@ class Appointment:
         id: str = None,
         created_at: int = None,
         updated_at: int = None,
-        approved: str = "pending",
+        status: str = "pending",
         attended: bool = None,
         start_time: str = None,
     ):
@@ -43,7 +43,7 @@ class Appointment:
         self.id = id
         self.created_at = created_at
         self.updated_at = updated_at
-        self.approved = approved
+        self.status = status
         self.attended = attended
         self.start_time = start_time
 
@@ -57,7 +57,7 @@ class Appointment:
         appointments = (
             db.collection("appointments")
             .where("patient_id", "==", uid)
-            .where("approved", "==", "approved")
+            .where("status", "==", "approved")
             .order_by("date")
             .get()
         )
@@ -74,7 +74,7 @@ class Appointment:
         appointments = (
             db.collection("appointments")
             .where("physician_id", "==", uid)
-            .where("approved", "==", "approved")
+            .where("status", "==", "approved")
             .order_by("date")
             .get()
         )
@@ -119,10 +119,32 @@ class Appointment:
         appointments = (
             db.collection("appointments")
             .where("physician_id", "==", id)
-            .where("approved", "==", "pending")
+            .where("status", "==", "pending")
             .get()
         )
         return [appointment.to_dict() for appointment in appointments]
+    
+    @staticmethod
+    def update_rated_status(id):
+        db.collection("appointments").document(id).update({"status": "rated"})
+    
+    @staticmethod
+    def get_all_closed_appointments_for_patient_with(uid):
+        if not Patient.is_patient(uid):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only patients can access this resource",
+            )
+        appointments = (
+            db.collection("appointments")
+            .where("patient_id", "==", uid)
+            .where("status", "==", "closed")
+            .order_by("date")
+            .get()
+        )
+
+        return [appointment.to_dict() for appointment in appointments]
+
 
     def delete(self):
         db.collection("appointments").document(self.id).delete()
@@ -138,7 +160,7 @@ class Appointment:
             )
         Physician.free_agenda(self.physician_id, self.date)
         db.collection("appointments").document(self.id).update(
-            {**updated_values, "updated_at": round(time.time()), "approved": "pending"}
+            {**updated_values, "updated_at": round(time.time()), "status": "pending"}
         )
         self.date = updated_values["date"]
         Physician.schedule_appointment(id=self.physician_id, date=self.date)
@@ -149,10 +171,11 @@ class Appointment:
                 **updated_values,
                 "start_time": updated_values["start_time"],
                 "attended": updated_values["attended"],
-                "approved": "closed"
+                "status": "closed"
             }
         )
 
+    
     def create(self):
         id = db.collection("appointments").document().id
         db.collection("appointments").document(id).set(
@@ -162,7 +185,7 @@ class Appointment:
                 "physician_id": self.physician_id,
                 "patient_id": self.patient_id,
                 "created_at": round(time.time()),
-                "approved": self.approved,
+                "status": self.status,
             }
         )
         Physician.schedule_appointment(id=self.physician_id, date=self.date)

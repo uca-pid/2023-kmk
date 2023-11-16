@@ -247,13 +247,13 @@ def create_test_appointments(create_login_tokens):
 @pytest.fixture(scope="module", autouse=True)
 def approve_test_appointments(create_test_appointments):
     db.collection("appointments").document(an_appointment_data["id"]).update(
-        {"approved": "approved"}
+        {"status": "approved"}
     )
     db.collection("appointments").document(another_appointment_data["id"]).update(
-        {"approved": "approved"}
+        {"status": "approved"}
     )
     db.collection("appointments").document(other_appointment_data["id"]).update(
-        {"approved": "approved"}
+        {"status": "approved"}
     )
     yield
 

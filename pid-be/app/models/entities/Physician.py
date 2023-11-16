@@ -105,11 +105,11 @@ class Physician:
 
     @staticmethod
     def approve_appointment(id):
-        db.collection("appointments").document(id).update({"approved": "approved"})
+        db.collection("appointments").document(id).update({"status": "approved"})
 
     @staticmethod
     def deny_appointment(id):
-        db.collection("appointments").document(id).update({"approved": "denied"})
+        db.collection("appointments").document(id).update({"status": "denied"})
 
     @staticmethod
     def update_agenda(id, agenda):
