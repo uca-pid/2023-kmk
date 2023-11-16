@@ -76,14 +76,11 @@
     background-color: rgb(238, 238, 238);
     text-align: center;
     position: fixed;
-    top: 100px; /* Alinea la barra debajo del encabezado */
-    left: 0;
-    right: 0;
-    z-index: 999;
-    justify-content: center;
+    top: 100px;
+    justify-content: baseline;
     align-items: center;
-    height: 50px; /* Altura fija para la barra */
-    width: 100%; /* Ancho del 100% para ocupar toda la pantalla */
+    height: 5rem;
+    width: 100%;
     padding: 2rem;
     box-shadow: inset 0 -10px 10px -10px rgba(0, 0, 0, 0.1);
 }

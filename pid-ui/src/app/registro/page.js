@@ -83,18 +83,24 @@ const Registro = () => {
     };
 
     const handleSubmit = async (e) => {
+        toast.info("Registrando...");
         e.preventDefault();
 
         let userData = {
             name: nombre,
             last_name: apellido,
-            email,
-            password,
-            role,
-            gender,
-            blood_type,
-            birth_date,
+            email: email,
+            password: password,
+            role: role,
         };
+
+        if (role === "patient")
+            userData = {
+                ...userData,
+                gender: gender,
+                blood_type: blood_type,
+                birth_date: birth_date,
+            };
 
         if (role === "physician")
             userData = {
@@ -117,15 +123,7 @@ const Registro = () => {
             }
         } catch (error) {
             console.error(error);
-            setError("Error al registrarse: " + error.response.data.detail);
-
-            // Verificar si el elemento .error-message está presente en el DOM
-            const errorMessageElement =
-                document.querySelector(".error-message");
-            if (errorMessageElement) {
-                errorMessageElement.style.visibility = "visible"; // Muestra el mensaje de error
-            }
-            console.error(error);
+            toast.error("Ha ocurrido un error");
         }
     };
 
@@ -178,6 +176,16 @@ const Registro = () => {
                         required
                     />
                 </div>
+                <div className={styles["form-group"]}>
+                    <label htmlFor="email">Correo Electrónico</label>
+                    <input
+                        type="email"
+                        id="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
+                </div>
                 {role === "physician" && (
                     <>
                         <div className={styles["form-group"]}>
@@ -216,62 +224,60 @@ const Registro = () => {
                         </div>
                     </>
                 )}
-                <div className={styles["form-group"]}>
-                    <label htmlFor="birth_date">Fecha de Nacimiento</label>
-                    <input
-                        type="date"
-                        id="birth_date"
-                        value={birth_date}
-                        onChange={(e) => setBirthDate(e.target.value)}
-                        required
-                    />
-                </div>
-                <div className={styles["form-group"]}>
-                    <label htmlFor="gender">Género:</label>
-                    <select
-                        id="gender"
-                        value={gender}
-                        required
-                        onChange={(e) => {
-                            setGender(e.target.value);
-                        }}
-                    >
-                        <option value="">Selecciona tu género</option>
-                        {genders.map((gender) => (
-                            <option key={gender} value={gender}>
-                                {gender}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div className={styles["form-group"]}>
-                    <label htmlFor="blood_type">Grupo sanguíneo:</label>
-                    <select
-                        id="blood_type"
-                        value={blood_type}
-                        required
-                        onChange={(e) => {
-                            setBloodType(e.target.value);
-                        }}
-                    >
-                        <option value="">Selecciona tu grupo sanguíneo</option>
-                        {blood_types.map((blood_type) => (
-                            <option key={blood_type} value={blood_type}>
-                                {blood_type}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div className={styles["form-group"]}>
-                    <label htmlFor="email">Correo Electrónico</label>
-                    <input
-                        type="email"
-                        id="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
-                </div>
+                {role === "patient" && (
+                    <>
+                        <div className={styles["form-group"]}>
+                            <label htmlFor="birth_date">
+                                Fecha de Nacimiento
+                            </label>
+                            <input
+                                type="date"
+                                id="birth_date"
+                                value={birth_date}
+                                onChange={(e) => setBirthDate(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className={styles["form-group"]}>
+                            <label htmlFor="gender">Género:</label>
+                            <select
+                                id="gender"
+                                value={gender}
+                                required
+                                onChange={(e) => {
+                                    setGender(e.target.value);
+                                }}
+                            >
+                                <option value="">Selecciona tu género</option>
+                                {genders.map((gender) => (
+                                    <option key={gender} value={gender}>
+                                        {gender}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className={styles["form-group"]}>
+                            <label htmlFor="blood_type">Grupo sanguíneo:</label>
+                            <select
+                                id="blood_type"
+                                value={blood_type}
+                                required
+                                onChange={(e) => {
+                                    setBloodType(e.target.value);
+                                }}
+                            >
+                                <option value="">
+                                    Selecciona tu grupo sanguíneo
+                                </option>
+                                {blood_types.map((blood_type) => (
+                                    <option key={blood_type} value={blood_type}>
+                                        {blood_type}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </>
+                )}
                 <div className={styles["form-group"]}>
                     <label htmlFor="password">Contraseña</label>
                     <input

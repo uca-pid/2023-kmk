@@ -21,6 +21,8 @@ jobs:
               run: vercel pull --yes --environment=development --token=${{ secrets.VERCEL_TOKEN }}
             - name: Build Project Artifacts
               run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+            - name: Deploy Project Artifacts to Vercel
+              run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
 
     test-backend:
         runs-on: ubuntu-latest
@@ -52,7 +54,7 @@ jobs:
               working-directory: pid-be
               run: npm install -g firebase-tools
 
-            - name: Run emualtors and backend tests
+            - name: Run emulators and backend tests
               env:
                   ENV: ${{ secrets.ENV }}
                   REGISTER_URL: ${{ secrets.REGISTER_URL }}
