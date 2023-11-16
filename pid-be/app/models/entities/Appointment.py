@@ -149,6 +149,7 @@ class Appointment:
                 **updated_values,
                 "start_time": updated_values["start_time"],
                 "attended": updated_values["attended"],
+                "approved": "closed"
             }
         )
 
