@@ -395,7 +395,7 @@ def add_score(
 
 
 @router.get(
-    "/score",
+    "/score/{user_id}",
     status_code=status.HTTP_200_OK,
     response_model=SuccessfullScoreResponse,
     responses={
@@ -404,7 +404,8 @@ def add_score(
     },
 )
 def show_score(
-    user_id=Depends(Auth.is_logged_in)
+    user_id: str,
+    uid=Depends(Auth.is_logged_in)
 ):
     """
     Show scores from a physician.
@@ -418,9 +419,9 @@ def show_score(
     """
     try:
         if Patient.is_patient(user_id):
-            appointments = Appointment.get_all_appointments_for_patient_with(user_id)
+            appointments = Appointment.get_all_closed_appointments_for_patient_with(user_id)
         if Physician.is_physician(user_id):
-            appointments = Appointment.get_all_appointments_for_physician_with(user_id)
+            appointments = Appointment.get_all_closed_appointments_for_physician_with(user_id)
 
         scores = {
             "puntuality": 0,
@@ -441,12 +442,13 @@ def show_score(
                 ratings += 1
 
         return {
+
             "score_metrics": {
-                "puntuality": scores["puntuality"] / ratings,
-                "attention": scores["attention"] / ratings,
-                "cleanliness": scores["cleanliness"] / ratings,
-                "facilities": scores["facilities"] / ratings,
-                "price": scores["price"] / ratings,
+                "puntuality": 0 if ratings == 0 else scores["puntuality"] / ratings,
+                "attention": 0 if ratings == 0 else scores["attention"] / ratings,
+                "cleanliness": 0 if ratings == 0 else scores["cleanliness"] / ratings,
+                "facilities": 0 if ratings == 0 else scores["facilities"] / ratings,
+                "price": 0 if ratings == 0 else scores["price"] / ratings,
             }
         }
     except:
