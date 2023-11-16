@@ -214,26 +214,32 @@ def create_another_appointment(create_appointment):
 
 def test_put_apointment_returns_a_200_code():
     new_date = pytest.original_appointment_date.replace(hour=10)
-    response_from_put_appointment = client.put(
-        f"/appointments/{pytest.appointment_id}",
-        json={
-            "date": round(new_date.timestamp()),
-        },
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        response_from_put_appointment = client.put(
+            f"/appointments/{pytest.appointment_id}",
+            json={
+                "date": round(new_date.timestamp()),
+            },
+            headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+        )
 
     assert response_from_put_appointment.status_code == 200
 
 
 def test_put_apointment_returns_a_message():
     new_date = pytest.original_appointment_date.replace(hour=10)
-    response_from_put_appointment = client.put(
-        f"/appointments/{pytest.appointment_id}",
-        json={
-            "date": round(new_date.timestamp()),
-        },
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        response_from_put_appointment = client.put(
+            f"/appointments/{pytest.appointment_id}",
+            json={
+                "date": round(new_date.timestamp()),
+            },
+            headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+        )
 
     assert (
         response_from_put_appointment.json()["message"]
@@ -246,13 +252,16 @@ def test_put_apointment_updates_the_date_in_firebase_object():
         pytest.appointment_id
     ).get().to_dict()["date"] == round(pytest.original_appointment_date.timestamp())
     new_date = pytest.original_appointment_date.replace(hour=10)
-    client.put(
-        f"/appointments/{pytest.appointment_id}",
-        json={
-            "date": round(new_date.timestamp()),
-        },
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        client.put(
+            f"/appointments/{pytest.appointment_id}",
+            json={
+                "date": round(new_date.timestamp()),
+            },
+            headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+        )
 
     assert db.collection("appointments").document(
         pytest.appointment_id
@@ -264,13 +273,16 @@ def test_put_apointment_doenst_update_the_other_fields_in_firebase_object():
         db.collection("appointments").document(pytest.appointment_id).get().to_dict()
     )
     new_date = pytest.original_appointment_date.replace(hour=10)
-    client.put(
-        f"/appointments/{pytest.appointment_id}",
-        json={
-            "date": round(new_date.timestamp()),
-        },
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        client.put(
+            f"/appointments/{pytest.appointment_id}",
+            json={
+                "date": round(new_date.timestamp()),
+            },
+            headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+        )
 
     appointment_after_update = (
         db.collection("appointments").document(pytest.appointment_id).get().to_dict()
@@ -301,13 +313,16 @@ def test_put_apointment_adds_the_updated_at_property_in_firestore():
         == None
     )
     new_date = pytest.original_appointment_date.replace(hour=10)
-    client.put(
-        f"/appointments/{pytest.appointment_id}",
-        json={
-            "date": round(new_date.timestamp()),
-        },
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        client.put(
+            f"/appointments/{pytest.appointment_id}",
+            json={
+                "date": round(new_date.timestamp()),
+            },
+            headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+        )
 
     assert (
         db.collection("appointments")
@@ -497,13 +512,16 @@ def test_valid_appointment_update_saves_slot_in_physicians_agenda():
         db.collection("physicians").document(pytest.physician_uid).get().to_dict()
     )
     assert physician_doc["appointments"].get(str(round(new_date.timestamp()))) == None
-    client.put(
-        f"/appointments/{pytest.appointment_id}",
-        json={
-            "date": round(new_date.timestamp()),
-        },
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        client.put(
+            f"/appointments/{pytest.appointment_id}",
+            json={
+                "date": round(new_date.timestamp()),
+            },
+            headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+        )
 
     physician_doc = (
         db.collection("physicians").document(pytest.physician_uid).get().to_dict()
@@ -522,13 +540,16 @@ def test_valid_appointment_update_removes_previously_saved_time_slot_in_physicia
         != None
     )
     new_date = pytest.original_appointment_date.replace(hour=10)
-    client.put(
-        f"/appointments/{pytest.appointment_id}",
-        json={
-            "date": round(new_date.timestamp()),
-        },
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        client.put(
+            f"/appointments/{pytest.appointment_id}",
+            json={
+                "date": round(new_date.timestamp()),
+            },
+            headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+        )
 
     physician_doc = (
         db.collection("physicians").document(pytest.physician_uid).get().to_dict()

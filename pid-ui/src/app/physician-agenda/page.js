@@ -21,8 +21,7 @@ const PhysicianAgenda = () => {
     const [isAddObservationModalOpen, setIsAddObervationModalOpen] =
         useState(false);
     const [patientId, setPatientId] = useState("");
-    const [newObservationDate, setNewObservationDate] = useState(new Date());
-    const [startTime, setStartTime] = useState(new Date());
+    const [startTime, setStartTime] = useState("");
     const [newObservationContent, setNewObservationContent] = useState("");
     const [appointmentAttended, setAppointmentAttended] = useState(true);
 
@@ -50,19 +49,24 @@ const PhysicianAgenda = () => {
 
     const handleOpenAppointmentClosureModal = (appointment) => {
         console.log(appointment);
+        setStartTime(new Date(appointment.date * 1000));
+        console.log(startTime);
         setIsAddObervationModalOpen(true);
         setAppointmentToClose(appointment);
         setPatientId(appointment.patient.id);
-        setNewObservationDate(appointment.date.toLocaleString("es-AR"));
+        // setStartTime(appointment.date.toLocaleString("es-AR"));
     };
 
     const handleAppointmentClosure = async () => {
+        console.log(appointmentToClose.id);
+        console.log(appointmentAttended);
+        console.log(startTime);
         try {
             const response = await axios.post(
                 `${apiURL}appointments/close-appointment/${appointmentToClose.id}`,
                 {
                     attended: appointmentAttended,
-                    start_time: newObservationDate,
+                    start_time: startTime,
                 },
                 {
                     httpsAgent: agent,
@@ -194,14 +198,12 @@ const PhysicianAgenda = () => {
 
                         <button
                             className={`${styles["submit-button"]} ${
-                                !newObservationContent || !newObservationDate
+                                !newObservationContent || !startTime
                                     ? styles["disabled-button"]
                                     : ""
                             }`}
                             type="submit"
-                            disabled={
-                                !newObservationContent || !newObservationDate
-                            }
+                            disabled={!newObservationContent || !startTime}
                         >
                             Agregar
                         </button>
@@ -314,7 +316,7 @@ const PhysicianAgenda = () => {
                                                             )
                                                         }
                                                     >
-                                                        Eliminar
+                                                        Cancelar
                                                     </button>
                                                 </div>
                                             </div>

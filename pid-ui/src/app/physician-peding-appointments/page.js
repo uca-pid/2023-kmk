@@ -30,6 +30,7 @@ const PhysicianPendingAppointments = () => {
                 ? setAppointments([])
                 : setAppointments(response.data.appointments);
         } catch (error) {
+            toast.error("Error al obtener los turnos");
             console.log(error);
         }
     };
@@ -97,8 +98,8 @@ const PhysicianPendingAppointments = () => {
                                 width={200}
                                 height={200}
                                 onClick={() => {
+                                    toast.info("Actualizando turnos...");
                                     fetchAppointments();
-                                    toast.info("Turnos actualizados");
                                 }}
                             />
                             <div className={styles["appointments-section"]}>
