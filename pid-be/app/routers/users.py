@@ -20,7 +20,6 @@ from app.models.responses.UserResponses import (
     RegisterErrorResponse,
     UserRolesResponse,
     UserProfileErrorResponse,
-    UserInfoResponse,
     UserInfoErrorResponse,
     IsLoggedInResponse,
     SuccessfullChangePasswordResponse,
@@ -34,6 +33,8 @@ from app.models.responses.ScoreResponses import (
 from app.models.requests.ScoreRequests import (
     LoadScoreRequest
 )
+from app.models.responses.PatientResponses import PatientResponse
+from app.models.responses.PhysicianResponses import PhysicianResponse
 
 from app.models.entities.Auth import Auth
 from app.models.entities.Patient import Patient
@@ -41,6 +42,7 @@ from app.models.entities.Physician import Physician
 from app.models.entities.Admin import Admin
 from app.models.entities.Record import Record
 from app.models.entities.Score import Score
+from app.models.entities.Appointment import Appointment
 
 from firebase_admin import firestore, auth
 
@@ -243,7 +245,7 @@ def get_user_roles(user_id=Depends(Auth.is_logged_in)):
 @router.get(
     "/user-info",
     status_code=status.HTTP_200_OK,
-    response_model=UserInfoResponse,
+    response_model=Union[PhysicianResponse, PatientResponse],
     responses={
         401: {"model": UserInfoErrorResponse},
         403: {"model": UserInfoErrorResponse},
@@ -360,7 +362,7 @@ def change_password(
     },
 )
 def add_score(
-    add_score_request: LoadScoreRequest, uid=Depends(Auth.is_logged_in)
+    add_score_request: LoadScoreRequest, #uid=Depends(Auth.is_logged_in)
 ):
     """
     Add score.
@@ -373,9 +375,8 @@ def add_score(
     * Raise an error if password change fails.
     """
     try:
-        print(add_score_request)
-        print(add_score_request.cleanliness)
-        Score.add_scores(add_score_request)
+        score = Score(**{**add_score_request.model_dump()})
+        score.create()
         return {"message": "Scores added successfully"}
     except:
         return JSONResponse(
@@ -385,7 +386,7 @@ def add_score(
     
 
 @router.get(
-    "/score/{physician_id}",
+    "/score/{user_id}",
     status_code=status.HTTP_200_OK,
     response_model=SuccessfullScoreResponse,
     responses={
@@ -394,7 +395,7 @@ def add_score(
     },
 )
 def show_score(
-    physician_id: str, uid=Depends(Auth.is_logged_in)
+    user_id: str, #uid=Depends(Auth.is_logged_in)
 ):
     """
     Show scores from a physician.
@@ -407,9 +408,31 @@ def show_score(
     * Raise an error if password change fails.
     """
     try:
-        scores = Score.get_scores(physician_id)
+        if(Patient.is_patient(user_id)):
+            appointments = Appointment.get_all_appointments_for_patient_with(user_id)
+        if(Physician.is_physician(user_id)):
+            appointments = Appointment.get_all_appointments_for_physician_with(user_id)
+        
+        scores = {"puntuality": 0, "attention": 0, "cleanliness": 0, "facilities": 0, "price": 0}
+        ratings = 0
+        for appointment in appointments:
+            score = Score.get_score(appointment["id"])
+            if(score != None):
+                scores["puntuality"] += score["puntuality"]
+                scores["attention"] += score["attention"]
+                scores["cleanliness"] += score["cleanliness"]
+                scores["facilities"] += score["facilities"]
+                scores["price"] += score["price"]
+                ratings+=1
+
         return {
-            "score_metrics": scores
+            "score_metrics": {
+                "puntuality": scores["puntuality"]/ratings,
+                "attention": scores["attention"]/ratings,
+                "cleanliness": scores["cleanliness"]/ratings,
+                "facilities": scores["facilities"]/ratings,
+                "price": scores["price"]/ratings,
+            }
         }
     except:
         return JSONResponse(

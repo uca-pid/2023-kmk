@@ -15,7 +15,6 @@ const Header = (props) => {
             <ToastContainer
                 limit={3}
                 position={"top-right"}
-                autoClose={5000}
                 hideProgressBar={false}
                 closeOnClick={true}
                 pauseOnHover={true}
@@ -44,14 +43,6 @@ const Header = (props) => {
                     router.push("/");
                 }}
             />
-            {/* <Image
-                src="/bell_icon.png"
-                alt="Notificaciones"
-                className={styles["bell-icon"]}
-                width={200}
-                height={200}
-                onClick={() => {}}
-            /> */}
             <Image
                 src="/user_icon.png"
                 alt="Usuario"
@@ -72,7 +63,7 @@ const HeaderSlim = () => {
     return (
         <div className={styles.header}>
             <ToastContainer
-                limit={1}
+                limit={3}
                 position={"top-right"}
                 hideProgressBar={false}
                 closeOnClick={true}
