@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { Pie } from "react-chartjs-2";
+import Chart from "chart.js/auto";
 import styles from "../styles/styles.module.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -19,6 +21,7 @@ const Admin = () => {
     const [physicians, setPhysicians] = useState([]);
     const [pendingPhysicians, setPendingPhysicians] = useState([]);
     const [blockedPhysicians, setBlockedPhysicians] = useState([]);
+    const [metrics, setMetrics] = useState({});
 
     const agent = new https.Agent({
         rejectUnauthorized: false,
@@ -163,6 +166,19 @@ const Admin = () => {
         }
     };
 
+    const fetchMetrics = async () => {
+        try {
+            const response = await axios.get(`${apiURL}dashboard/admin`, {
+                httpsAgent: agent,
+            });
+            response.data.dashboard_metrics == undefined
+                ? setMetrics({})
+                : setMetrics(response.data.dashboard_metrics);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     useEffect(() => {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
@@ -171,6 +187,7 @@ const Admin = () => {
         // fetchBlockedPhysicians();
         // fetchPhysicians();
         fetchSpecialties();
+        fetchMetrics();
         redirect(router);
         fetchPendingPhysicians();
         setFirstLoad(false);
@@ -184,8 +201,8 @@ const Admin = () => {
                 <div className={styles.form}>
                     <div className={styles["title"]}>Especialidades</div>
                     <Image
-                        src="/refresh_icon.png"
-                        alt="Notificaciones"
+                        src='/refresh_icon.png'
+                        alt='Notificaciones'
                         className={styles["refresh-icon"]}
                         width={200}
                         height={200}
@@ -198,10 +215,10 @@ const Admin = () => {
                         Agregar Especialidad
                     </div>
                     <input
-                        type="text"
-                        id="specialty"
-                        name="specialty"
-                        placeholder="Especialidad"
+                        type='text'
+                        id='specialty'
+                        name='specialty'
+                        placeholder='Especialidad'
                         value={newSpecialty}
                         onChange={(e) => setNewSpecialty(e.target.value)}
                     />
@@ -230,8 +247,8 @@ const Admin = () => {
                                             }
                                         >
                                             <Image
-                                                src="/trash_icon.png"
-                                                alt="borrar"
+                                                src='/trash_icon.png'
+                                                alt='borrar'
                                                 className={styles.logo}
                                                 width={25}
                                                 height={25}
@@ -258,8 +275,8 @@ const Admin = () => {
                         Profesionales pendientes de aprobación
                     </div>
                     <Image
-                        src="/refresh_icon.png"
-                        alt="Notificaciones"
+                        src='/refresh_icon.png'
+                        alt='Notificaciones'
                         className={styles["refresh-icon"]}
                         width={200}
                         height={200}
@@ -330,8 +347,8 @@ const Admin = () => {
                         Profesionales en funciones
                     </div>
                     <Image
-                        src="/refresh_icon.png"
-                        alt="Notificaciones"
+                        src='/refresh_icon.png'
+                        alt='Notificaciones'
                         className={styles["refresh-icon"]}
                         width={200}
                         height={200}
@@ -402,8 +419,8 @@ const Admin = () => {
                         Profesionales bloqueados
                     </div>
                     <Image
-                        src="/refresh_icon.png"
-                        alt="Notificaciones"
+                        src='/refresh_icon.png'
+                        alt='Notificaciones'
                         className={styles["refresh-icon"]}
                         width={200}
                         height={200}
@@ -469,6 +486,39 @@ const Admin = () => {
                             </div>
                         )}
                     </div>
+                </div>
+
+                <div className={styles.form}>
+                    <div className={styles["title"]}>Metricas</div>
+                    {metrics.all_appointments_by_specialty ? (
+                        <div>
+                            <div className={styles["title"]}>
+                                Turnos por especialidad
+                            </div>
+                            <div>
+                                <Pie
+                                    data={{
+                                        labels: Object.keys(
+                                            metrics.all_appointments_by_specialty
+                                        ),
+                                        datasets: [
+                                            {
+                                                label: "Cantidad de turnos",
+                                                data: Object.values(
+                                                    metrics.all_appointments_by_specialty
+                                                ),
+                                            },
+                                        ],
+                                    }}
+                                    height={300}
+                                    width={500}
+                                    options={{
+                                        maintainAspectRatio: false,
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    ) : null}
                 </div>
             </div>
             <Footer />

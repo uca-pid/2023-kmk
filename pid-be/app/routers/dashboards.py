@@ -1,8 +1,4 @@
-import os
-import requests
 import json
-from dotenv import load_dotenv
-from firebase_admin import auth
 from fastapi import APIRouter, status, Depends
 from fastapi.responses import JSONResponse
 
@@ -14,7 +10,7 @@ from app.models.responses.DashboardResponses import (
     DashboardErrorResponse,
 )
 
-load_dotenv()
+from app.helpers.MetricParserHelper import MetricParserHelper
 
 router = APIRouter(
     prefix="/dashboard",
@@ -48,15 +44,18 @@ def get_admin_dashboard(uid=Depends(Auth.is_admin)):
     * Throw an error if dashboard retrieving fails.
     """
     try:
-        all_appointments = len(Appointment.get_all_appointments())
-        updated_appointments = len(Appointment.get_all_appointments_updtated())
+        all_appointments = Appointment.get_all_appointments()
+        all_appointments_per_specialty = (
+            MetricParserHelper.filter_appointments_per_specialty(all_appointments)
+        )
+        # updated_appointments = len(Appointment.get_all_appointments_updtated())
         return {
             "dashboard_metrics": {
-                "all_appointments": all_appointments,
-                "updated_appointments": updated_appointments,
+                "all_appointments_by_specialty": all_appointments_per_specialty
             }
         }
-    except:
+    except Exception as e:
+        print(e)
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal server error"},
@@ -85,14 +84,25 @@ def get_physician_dashboard(uid=Depends(Auth.is_logged_in)):
     * Throw an error if dashboard retrieving fails.
     """
     try:
-        all_appointments = len(Appointment.get_all_appointments_for_physician_with(uid))
-        updated_appointments = len(
-            Appointment.get_all_appointments_updtated_for_physician(uid)
+        all_appointments = Appointment.get_all_appointments_for_physician_with(uid)
+        all_appointments_per_month = (
+            MetricParserHelper.filter_appointments_for_current_year_by_month_and_key(
+                all_appointments, "date"
+            )
+        )
+        updated_appointments = Appointment.get_all_appointments_updtated_for_physician(
+            uid
+        )
+
+        updated_appointments_per_month = (
+            MetricParserHelper.filter_appointments_for_current_year_by_month_and_key(
+                updated_appointments, "updated_at"
+            )
         )
         return {
             "dashboard_metrics": {
-                "all_appointments": all_appointments,
-                "updated_appointments": updated_appointments,
+                "all_appointments": all_appointments_per_month,
+                "updated_appointments": updated_appointments_per_month,
             }
         }
     except:

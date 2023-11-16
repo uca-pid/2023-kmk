@@ -1,10 +1,11 @@
 from pydantic import BaseModel
-from typing import Union
+from typing import Dict, Optional
 
 
 class BasicDashboardResponse(BaseModel):
-    turnos_totales: int
-    turnos_modificados: int
+    all_appointments: Optional[Dict[str, int]] = None
+    all_appointments_by_specialty: Optional[Dict[str, int]] = None
+    updated_appointments: Optional[Dict[str, int]] = None
 
 
 class SuccessfullDashboardResponse(BaseModel):

@@ -91,7 +91,7 @@ class Appointment:
         updated_appointments = (
             db.collection("appointments")
             .where("physician_id", "==", uid)
-            .where("updated_at", "!=", None)
+            .where("updated_at", ">", 0)
             .get()
         )
         return [appointment.to_dict() for appointment in updated_appointments]
@@ -99,7 +99,7 @@ class Appointment:
     @staticmethod
     def get_all_appointments_updtated(uid):
         updated_appointments = (
-            db.collection("appointments").where("updated_at", "!=", None).get()
+            db.collection("appointments").where("updated_at", ">", 0).get()
         )
         return [appointment.to_dict() for appointment in updated_appointments]
 
