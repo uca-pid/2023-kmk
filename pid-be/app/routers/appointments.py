@@ -147,7 +147,9 @@ def get_all_appointments_for_physician(uid=Depends(Auth.is_logged_in)):
     """
     try:
         appointments = Appointment.get_all_appointments_for_physician_with(uid)
+        print (appointments)
         return {"appointments": appointments}
+    
     except HTTPException as http_exception:
         raise http_exception
     except:

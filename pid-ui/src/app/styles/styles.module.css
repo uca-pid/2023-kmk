@@ -364,7 +364,7 @@
     width: 100%;
 }
 
-.observationInput {
+.observation-input {
     height: 200px;
     resize: none;
     border: 1px solid #ccc;
@@ -485,6 +485,11 @@
     cursor: not-allowed;
 }
 .disabled-button:hover {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.disabled-input {
     background-color: #ccc;
     cursor: not-allowed;
 }

@@ -21,15 +21,22 @@ const PhysicianAgenda = () => {
     const [isAddObservationModalOpen, setIsAddObervationModalOpen] =
         useState(false);
     const [patientId, setPatientId] = useState("");
-    const [newObservationDate, setNewObservationDate] = useState(new Date());
-    const [startTime, setStartTime] = useState(new Date());
+    const [startTime, setStartTime] = useState("");
     const [newObservationContent, setNewObservationContent] = useState("");
     const [appointmentAttended, setAppointmentAttended] = useState(true);
+    const [appointmentToClose, setAppointmentToClose] = useState("");
+
+    const [reviews, setReviews] = useState([
+        { id: 1, type: "Puntualidad", rating: 5 },
+        { id: 2, type: "Atencion", rating: 4.5 },
+        { id: 3, type: "Limpieza", rating: 4.5 },
+        { id: 4, type: "Instalaciones", rating: 3 },
+        { id: 5, type: "Precio", rating: 4.5 },
+    ]);
 
     const agent = new https.Agent({
         rejectUnauthorized: false,
     });
-    const [appointmentToClose, setAppointmentToClose] = useState("");
 
     const fetchAppointments = async () => {
         try {
@@ -44,25 +51,33 @@ const PhysicianAgenda = () => {
                 : setAppointments(response.data.appointments);
         } catch (error) {
             toast.error("Error al obtener los turnos");
-            console.log(error);
+            console.error(error);
         }
     };
 
     const handleOpenAppointmentClosureModal = (appointment) => {
-        console.log(appointment);
         setIsAddObervationModalOpen(true);
         setAppointmentToClose(appointment);
         setPatientId(appointment.patient.id);
-        setNewObservationDate(appointment.date.toLocaleString("es-AR"));
     };
 
     const handleAppointmentClosure = async () => {
+        console.log(appointmentToClose.id);
+        console.log(appointmentAttended);
+        console.log(startTime);
+        let hour = startTime.split(":")[0];
+        let minutes = startTime.split(":")[1];
+        let date = new Date(appointmentToClose.date * 1000);
+        date.setHours(hour);
+        date.setMinutes(minutes);
+        console.log(date.getTime() / 1000);
+
         try {
-            const response = await axios.post(
+            const response = await axios.put(
                 `${apiURL}appointments/close-appointment/${appointmentToClose.id}`,
                 {
                     attended: appointmentAttended,
-                    start_time: newObservationDate,
+                    start_time: date.getTime() / 1000,
                 },
                 {
                     httpsAgent: agent,
@@ -75,8 +90,11 @@ const PhysicianAgenda = () => {
 
         try {
             const response = await axios.post(
-                `${apiURL}records/update/${patientId}`,
+                `${apiURL}records/update`,
                 {
+                    appointment_id: appointmentToClose.id,
+                    attended: appointmentAttended,
+                    real_start_time: date.getTime() / 1000,
                     observation: newObservationContent,
                 },
                 {
@@ -102,7 +120,7 @@ const PhysicianAgenda = () => {
             fetchAppointments();
         } catch (error) {
             toast.error("Error al eliminar el turno");
-            console.log(error);
+            console.error(error);
         }
     };
 
@@ -144,7 +162,7 @@ const PhysicianAgenda = () => {
                     onRequestClose={handleCloseEditModal}
                     style={customStyles}
                 >
-                    <form
+                    <div
                         className={styles["new-record-section"]}
                         onSubmit={handleAppointmentClosure}
                     >
@@ -157,7 +175,10 @@ const PhysicianAgenda = () => {
                                 className={styles["select"]}
                                 name="attended"
                                 id="attended"
-                                onChange={(e) => setAppointmentAttended(e)}
+                                onChange={(e) => {
+                                    console.log(e.target.value);
+                                    setAppointmentAttended(e.target.value);
+                                }}
                             >
                                 <option value={true}>Si</option>
                                 <option value={false}>No</option>
@@ -171,7 +192,17 @@ const PhysicianAgenda = () => {
                                 type="time"
                                 id="time"
                                 name="time"
-                                onChange={(date) => setStartTime(date)}
+                                onChange={(date) => {
+                                    setStartTime(date.target.value.toString());
+                                    console.log(date.target.value.toString());
+                                }}
+                                disabled={appointmentAttended == "false"}
+                                required
+                                className={`${
+                                    appointmentAttended == "false"
+                                        ? styles["disabled-input"]
+                                        : ""
+                                }`}
                             />
 
                             <div className={styles["subtitle"]}>
@@ -181,33 +212,91 @@ const PhysicianAgenda = () => {
                             <textarea
                                 id="observation"
                                 value={newObservationContent}
-                                onChange={(e) =>
-                                    setNewObservationContent(e.target.value)
-                                }
+                                onChange={(e) => {
+                                    console.log(e.target.value);
+                                    setNewObservationContent(e.target.value);
+                                }}
                                 placeholder="Escribe una nueva observación"
                                 required
-                                className={styles.observationInput}
+                                className={`${styles["observation-input"]} ${
+                                    appointmentAttended === "false"
+                                        ? styles["disabled-input"]
+                                        : ""
+                                }`}
                                 wrap="soft"
-                                disabled={appointmentAttended == "no"}
+                                disabled={appointmentAttended == "false"}
                             />
                         </div>
 
+                        <div
+                            key={reviews.key}
+                            className={styles["reviews-container"]}
+                        >
+                            {reviews.length > 0 ? (
+                                <>
+                                    {reviews.map((review) => (
+                                        <div
+                                            key={review.id}
+                                            className={styles["review"]}
+                                        >
+                                            <div
+                                                className={
+                                                    styles[
+                                                        "review-cards-container"
+                                                    ]
+                                                }
+                                            >
+                                                <div
+                                                    className={
+                                                        styles["review-card"]
+                                                    }
+                                                >
+                                                    <div
+                                                        className={
+                                                            styles[
+                                                                "review-card-title"
+                                                            ]
+                                                        }
+                                                    >
+                                                        {review.type}
+                                                    </div>
+                                                    <div
+                                                        className={
+                                                            styles[
+                                                                "review-card-content"
+                                                            ]
+                                                        }
+                                                    >
+                                                        {review.rating}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </>
+                            ) : (
+                                // If there are no reviews, display the message
+                                <div className={styles["subtitle"]}>
+                                    No hay reviews
+                                </div>
+                            )}
+                        </div>
+
                         <button
-                            className={`${styles["submit-button"]} ${
-                                !newObservationContent || !newObservationDate
+                            className={`${styles["edit-button"]} ${
+                                !newObservationContent || !startTime
                                     ? styles["disabled-button"]
                                     : ""
                             }`}
-                            type="submit"
-                            disabled={
-                                !newObservationContent || !newObservationDate
-                            }
+                            onClick={handleAppointmentClosure}
+                            disabled={!newObservationContent || !startTime}
                         >
                             Agregar
                         </button>
-                    </form>
+                    </div>
                 </Modal>
             )}
+
             <PhysicianTabBar highlight={"TurnosDelDia"} />
 
             <Header role="physician" />
@@ -314,7 +403,7 @@ const PhysicianAgenda = () => {
                                                             )
                                                         }
                                                     >
-                                                        Eliminar
+                                                        Cancelar
                                                     </button>
                                                 </div>
                                             </div>
