@@ -38,13 +38,28 @@ const PhysicianAgenda = () => {
         rejectUnauthorized: false,
     });
 
-    const getScores = async () => {
+    const getScores = async (id) => {
         try {
-            const response = await axios.get(`${apiURL}users/score`, {
+            const response = await axios.get(`${apiURL}users/score/${id}`, {
                 httpsAgent: agent,
             });
-            console.log(response.data.scores);
-            setReviews(response.data.scores);
+            console.log(response.data.score_metrics);
+
+            let tempReviews = [
+                { id: 1, type: "Puntualidad", rating: 5 },
+                { id: 2, type: "Atencion", rating: 4.5 },
+                { id: 3, type: "Limpieza", rating: 4.5 },
+                { id: 4, type: "Instalaciones", rating: 3 },
+                { id: 5, type: "Precio", rating: 4.5 },
+            ];
+
+            tempReviews[0].rating = response.data.score_metrics.puntuality;
+            tempReviews[1].rating = response.data.score_metrics.attention;
+            tempReviews[2].rating = response.data.score_metrics.cleanliness;
+            tempReviews[3].rating = response.data.score_metrics.facilities;
+            tempReviews[4].rating = response.data.score_metrics.price;
+
+            setReviews(tempReviews);
         } catch (error) {
             toast.error("Error al obtener los puntajes");
             console.error(error);
@@ -69,6 +84,7 @@ const PhysicianAgenda = () => {
     };
 
     const handleOpenAppointmentClosureModal = (appointment) => {
+        getScores(appointment.patient.id);
         setIsAddObervationModalOpen(true);
         setAppointmentToClose(appointment);
         setPatientId(appointment.patient.id);
@@ -158,16 +174,29 @@ const PhysicianAgenda = () => {
         }
     };
 
-    const customStyles = {
-        content: {
-            top: "50%",
-            left: "50%",
-            right: "auto",
-            bottom: "auto",
-            marginRight: "-50%",
-            transform: "translate(-50%, -50%)",
-            width: "80%",
-        },
+    const MODAL_STYLES = {
+        top: "50%",
+        left: "50%",
+        right: "auto",
+        bottom: "auto",
+        marginRight: "-50%",
+        transform: "translate(-50%, -50%)",
+        width: "80%",
+        marginTop: "6rem",
+    };
+
+    const OVERLAY_STYLE = {
+        position: "fixed",
+        display: "flex",
+        justifyContent: "center",
+        top: "0",
+        left: "0",
+        width: "100%",
+        height: "100%",
+        backgroundColor: "rgba(0,0,0, .8)",
+        zIndex: "1000",
+        overflowY: "auto",
+        marginTop: "6rem",
     };
 
     const handleCloseEditModal = () => {
@@ -195,7 +224,7 @@ const PhysicianAgenda = () => {
                     ariaHideApp={false}
                     isOpen={isAddObservationModalOpen}
                     onRequestClose={handleCloseEditModal}
-                    style={customStyles}
+                    // style={customStyles}
                 >
                     <div
                         className={styles["new-record-section"]}
