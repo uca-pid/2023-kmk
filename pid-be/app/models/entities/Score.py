@@ -6,7 +6,7 @@ db = firestore.client()
 
 
 class Score:
-    appointment_id: str
+    physician_id: str
     puntuality: list
     attention: list
     cleanliness: list
@@ -15,14 +15,14 @@ class Score:
 
     def __init__(
         self,
-        appointment_id: str,
+        physician_id: str,
         puntuality: list,
         attention: list,
         cleanliness: list,
         facilities: list,
         price: list,
     ):
-        self.appointment_id = appointment_id
+        self.physician_id = physician_id
         self.puntuality = puntuality
         self.attention = attention
         self.cleanliness = cleanliness
@@ -32,19 +32,18 @@ class Score:
     @staticmethod
     def get_score(id):
         return db.collection("scores").document(id).get().to_dict()
-    
 
     def create(self):
-        id = db.collection("scores").document(self.appointment_id).id
+        id = db.collection("scores").document(self.physician_id).id
         db.collection("scores").document(id).set(
             {
-             "appointment_id": self.appointment_id,
-             "puntuality": self.puntuality,
-             "attention": self.attention,
-             "cleanliness": self.cleanliness,
-             "facilities": self.facilities,
-             "price": self.price  
+                "physician_id": self.physician_id,
+                "puntuality": self.puntuality,
+                "attention": self.attention,
+                "cleanliness": self.cleanliness,
+                "facilities": self.facilities,
+                "price": self.price,
             }
         )
-        print('listo')
-        return self.appointment_id
+        print("listo")
+        return self.physician_id
