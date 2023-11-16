@@ -38,6 +38,19 @@ const PhysicianAgenda = () => {
         rejectUnauthorized: false,
     });
 
+    const getScores = async () => {
+        try {
+            const response = await axios.get(`${apiURL}users/score`, {
+                httpsAgent: agent,
+            });
+            console.log(response.data.scores);
+            setReviews(response.data.scores);
+        } catch (error) {
+            toast.error("Error al obtener los puntajes");
+            console.error(error);
+        }
+    };
+
     const fetchAppointments = async () => {
         try {
             const response = await axios.get(
@@ -70,14 +83,14 @@ const PhysicianAgenda = () => {
         let date = new Date(appointmentToClose.date * 1000);
         date.setHours(hour);
         date.setMinutes(minutes);
-        console.log(date.getTime() / 1000);
+        console.log((date.getTime() / 1000).toString());
 
         try {
             const response = await axios.put(
                 `${apiURL}appointments/close-appointment/${appointmentToClose.id}`,
                 {
                     attended: appointmentAttended,
-                    start_time: date.getTime() / 1000,
+                    start_time: (date.getTime() / 1000).toString(),
                 },
                 {
                     httpsAgent: agent,
@@ -93,8 +106,8 @@ const PhysicianAgenda = () => {
                 `${apiURL}records/update`,
                 {
                     appointment_id: appointmentToClose.id,
-                    attended: appointmentAttended,
-                    real_start_time: date.getTime() / 1000,
+                    attended: appointmentAttended.toString(),
+                    real_start_time: (date.getTime() / 1000).toString(),
                     observation: newObservationContent,
                 },
                 {
@@ -106,6 +119,27 @@ const PhysicianAgenda = () => {
             setIsAddObervationModalOpen(false);
         } catch (error) {
             toast.error("Error al agregar la observación");
+            console.error(error);
+        }
+
+        try {
+            const response = await axios.post(
+                `${apiURL}users/add-score`,
+                {
+                    appointment_id: appointmentToClose.id,
+                    puntuality: reviews[0].rating,
+                    attention: reviews[1].rating,
+                    cleanliness: reviews[2].rating,
+                    facilities: reviews[3].rating,
+                    price: reviews[4].rating,
+                },
+                {
+                    httpsAgent: agent,
+                }
+            );
+            toast.info("Puntaje cargado exitosamente");
+        } catch (error) {
+            toast.error("Error al agregar la puntaje");
             console.error(error);
         }
     };
@@ -146,6 +180,7 @@ const PhysicianAgenda = () => {
         };
 
         redirect(router);
+        getScores();
         fetchAppointments()
             .then(() => setIsLoading(false)) // Marcar como cargado cuando la respuesta llega
             .catch(() => {
@@ -267,7 +302,34 @@ const PhysicianAgenda = () => {
                                                             ]
                                                         }
                                                     >
-                                                        {review.rating}
+                                                        <input
+                                                            type="number"
+                                                            id="points"
+                                                            name="points"
+                                                            min="0"
+                                                            max="5"
+                                                            placeholder={
+                                                                review.rating
+                                                            }
+                                                            onChange={(e) => {
+                                                                setReviews(
+                                                                    reviews.map(
+                                                                        (
+                                                                            item
+                                                                        ) =>
+                                                                            item.id ===
+                                                                            review.id
+                                                                                ? {
+                                                                                      ...item,
+                                                                                      rating: e
+                                                                                          .target
+                                                                                          .value,
+                                                                                  }
+                                                                                : item
+                                                                    )
+                                                                );
+                                                            }}
+                                                        ></input>
                                                     </div>
                                                 </div>
                                             </div>
@@ -345,7 +407,7 @@ const PhysicianAgenda = () => {
                                                             .last_name}
                                                 </div>
                                                 <p>
-                                                    Fecha y hora:{" "}
+                                                    Fecha y hora:
                                                     {new Date(
                                                         appointment.date * 1000
                                                     ).toLocaleString("es-AR")}
