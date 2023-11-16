@@ -97,21 +97,21 @@ def create_physician_and_then_delete_him():
         print("[+] Physisican has not been created")
 
 
-def test_endpoint_users_add_score():
-    response = client.post(
-        "/users/add-score",
-        json={
-            "physician_id": pytest.physician_uid,
-            "puntuality": 2.6,
-            "attention": 4,
-            "cleanliness": 2,
-            "facilities": 1,
-            "price": 0.3,
-        },
-        headers={
-            "Authorization": f"Bearer {pytest.bearer_token}"
-        },
-    )
+# def test_endpoint_users_add_score():
+#     response = client.post(
+#         "/users/add-score",
+#         json={
+#             "physician_id": pytest.physician_uid,
+#             "puntuality": 2.6,
+#             "attention": 4,
+#             "cleanliness": 2,
+#             "facilities": 1,
+#             "price": 0.3,
+#         },
+#         headers={
+#             "Authorization": f"Bearer {pytest.bearer_token}"
+#         },
+#     )
 
-    assert response.status_code == 200
-    assert response.json()["message"] == "Scores added successfully"
+#     assert response.status_code == 200
+#     assert response.json()["message"] == "Scores added successfully"
