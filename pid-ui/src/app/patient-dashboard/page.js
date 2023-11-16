@@ -34,6 +34,7 @@ const DashboardPatient = () => {
     const [editingAppointment, setEditingAppointment] = useState({});
 
     const [reviews, setReviews] = useState([]);
+    const [rating, setRating] = useState([]);
 
     const agent = new https.Agent({
         rejectUnauthorized: false,
@@ -61,6 +62,34 @@ const DashboardPatient = () => {
             tempReviews[4].rating = response.data.score_metrics.price;
 
             setReviews(tempReviews);
+        } catch (error) {
+            toast.error("Error al obtener los puntajes");
+            console.error(error);
+        }
+    };
+
+    const getRating = async (id) => {
+        try {
+            const response = await axios.get(`${apiURL}users/score/${id}`, {
+                httpsAgent: agent,
+            });
+            console.log(response.data.score_metrics);
+
+            let tempReviews = [
+                { id: 1, type: "Puntualidad", rating: 5 },
+                { id: 2, type: "Atencion", rating: 4.5 },
+                { id: 3, type: "Limpieza", rating: 4.5 },
+                { id: 4, type: "Instalaciones", rating: 3 },
+                { id: 5, type: "Precio", rating: 4.5 },
+            ];
+
+            tempReviews[0].rating = response.data.score_metrics.puntuality;
+            tempReviews[1].rating = response.data.score_metrics.attention;
+            tempReviews[2].rating = response.data.score_metrics.cleanliness;
+            tempReviews[3].rating = response.data.score_metrics.facilities;
+            tempReviews[4].rating = response.data.score_metrics.price;
+
+            setRating(tempReviews);
         } catch (error) {
             toast.error("Error al obtener los puntajes");
             console.error(error);
@@ -164,6 +193,7 @@ const DashboardPatient = () => {
     };
 
     const handleOpenRatingModal = (doctorId) => {
+        getRating(doctorId);
         setIsRatingModalOpen(true);
 
         console.log(doctorId);
@@ -171,6 +201,7 @@ const DashboardPatient = () => {
     };
 
     const handleCloseRatingModal = () => {
+        setRating([]);
         setIsRatingModalOpen(false);
     };
 
@@ -361,12 +392,12 @@ const DashboardPatient = () => {
                     contentLabel="Example Modal"
                 >
                     <div
-                        key={reviews.key}
+                        key={rating.key}
                         className={styles["reviews-container"]}
                     >
-                        {reviews.length > 0 ? (
+                        {rating.length > 0 ? (
                             <>
-                                {reviews.map((review) => (
+                                {rating.map((review) => (
                                     <div
                                         key={review.id}
                                         className={styles["review"]}
@@ -419,7 +450,7 @@ const DashboardPatient = () => {
                     </button>
                     <button
                         className={styles["standard-button"]}
-                        onClick={handleCloseRatingModal}
+                        onClick={() => handleCloseRatingModal()}
                     >
                         Cerrar
                     </button>
