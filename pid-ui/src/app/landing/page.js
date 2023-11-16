@@ -21,16 +21,15 @@ const Landing = () => {
     });
 
     useEffect(() => {
-        // localStorage.removeItem("token");
-        // axios.defaults.headers.common = {
-        //     Authorization: `bearer`,
-        // };
+        console.log(process.env.NEXT_PUBLIC_API_URL);
+        console.log(apiURL);
+
         loginCheck(router);
     }, []);
 
     const handleLogin = async (e) => {
         e.preventDefault();
-
+        toast.info("Iniciando sesión...");
         localStorage.removeItem("token");
         axios.defaults.headers.common = {
             Authorization: `bearer`,

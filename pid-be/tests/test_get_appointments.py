@@ -76,13 +76,19 @@ def create_test_users():
     other_KMK_user_information["uid"] = third_created_user.uid
 
     db.collection("patients").document(a_KMK_user_information["uid"]).set(
-        {"id": a_KMK_user_information["uid"], "first_name": "KMK", "last_name": "First"}
+        {
+            "id": a_KMK_user_information["uid"],
+            "first_name": "KMK",
+            "last_name": "First",
+            "email": a_KMK_user_information["email"],
+        }
     )
     db.collection("patients").document(another_KMK_user_information["uid"]).set(
         {
             "id": another_KMK_user_information["uid"],
             "first_name": "KMK",
             "last_name": "Second",
+            "email": another_KMK_user_information["email"],
         }
     )
     db.collection("patients").document(other_KMK_user_information["uid"]).set(
@@ -90,6 +96,7 @@ def create_test_users():
             "id": other_KMK_user_information["uid"],
             "first_name": "KMK",
             "last_name": "Third",
+            "email": other_KMK_user_information["email"],
         }
     )
     yield
@@ -327,6 +334,7 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects():
         "id": a_KMK_user_information["uid"],
         "first_name": "KMK",
         "last_name": "First",
+        "email": a_KMK_user_information["email"],
     }
     assert type(first_appointment_to_validate["created_at"]) == int
 
@@ -363,6 +371,7 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects():
         "id": a_KMK_user_information["uid"],
         "first_name": "KMK",
         "last_name": "First",
+        "email": a_KMK_user_information["email"],
     }
     assert type(second_appointment_to_validate["created_at"]) == int
 
@@ -499,6 +508,7 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects_for
         "id": a_KMK_user_information["uid"],
         "first_name": "KMK",
         "last_name": "First",
+        "email": a_KMK_user_information["email"],
     }
     assert type(first_appointment_to_validate["created_at"]) == int
 
@@ -535,6 +545,7 @@ def test_valid_request_to_get_endpoint_returns_populated_appointment_objects_for
         "id": another_KMK_user_information["uid"],
         "first_name": "KMK",
         "last_name": "Second",
+        "email": another_KMK_user_information["email"],
     }
     assert type(second_appointment_to_validate["created_at"]) == int
 
