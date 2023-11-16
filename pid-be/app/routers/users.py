@@ -133,7 +133,7 @@ async def register(
         Union[PatientRegisterRequest, PhysicianRegisterRequest],
         Body(discriminator="role"),
     ],
-    #token=Depends(Auth.has_bearer_token),
+    token=Depends(Auth.has_bearer_token),
 ):
     """
     Register a user.
