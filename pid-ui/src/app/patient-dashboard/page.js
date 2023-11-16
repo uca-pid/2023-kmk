@@ -26,7 +26,7 @@ const DashboardPatient = () => {
     const [selectedSpecialty, setSelectedSpecialty] = useState("");
     const [selectedDoctor, setSelectedDoctor] = useState("");
     const [physiciansAgenda, setPhysiciansAgenda] = useState({});
-    const [date, setDate] = useState(new Date());
+    const [date, setDate] = useState();
     const [dateToEdit, setDateToEdit] = useState(new Date());
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingAppointment, setEditingAppointment] = useState({
@@ -123,11 +123,11 @@ const DashboardPatient = () => {
     };
 
     const saveAgenda = (doctorId) => {
-        if (doctorId)
+        if (doctorId) {
             setPhysiciansAgenda(
                 doctors.filter((doctor) => doctor.id == doctorId)[0].agenda
             );
-        else setPhysiciansAgenda({});
+        } else setPhysiciansAgenda({});
     };
 
     const handleSaveAppointment = async () => {
@@ -217,7 +217,7 @@ const DashboardPatient = () => {
                     isOpen={isEditModalOpen}
                     onRequestClose={handleCloseEditModal}
                     style={customStyles}
-                    contentLabel="Example Modal"
+                    contentLabel='Example Modal'
                 >
                     {/* Campos de edición de especialidad, médico y fecha */}
 
@@ -225,15 +225,15 @@ const DashboardPatient = () => {
                         <div className={styles["title"]}>Editar Cita</div>
 
                         {/* Selector de fechas */}
-                        <label htmlFor="fecha">Fechas disponibles:</label>
+                        <label htmlFor='fecha'>Fechas disponibles:</label>
 
                         <DatePicker
-                            locale="es"
+                            locale='es'
                             selected={dateToEdit}
                             onChange={(date) => {
                                 setDateToEdit(date);
                             }}
-                            timeCaption="Hora"
+                            timeCaption='Hora'
                             timeIntervals={30}
                             showPopperArrow={false}
                             showTimeSelect
@@ -296,16 +296,16 @@ const DashboardPatient = () => {
                 </Modal>
             )}
 
-            <TabBar highlight="Turnos" />
+            <TabBar highlight='Turnos' />
 
-            <Header role="patient" />
+            <Header role='patient' />
 
             <div className={styles["tab-content"]}>
                 <div className={styles.form}>
                     <div className={styles["title"]}>Mis Proximos Turnos</div>
                     <Image
-                        src="/refresh_icon.png"
-                        alt="Notificaciones"
+                        src='/refresh_icon.png'
+                        alt='Notificaciones'
                         className={styles["refresh-icon"]}
                         width={200}
                         height={200}
@@ -332,7 +332,7 @@ const DashboardPatient = () => {
                                                 " " +
                                                 appointment.physician.last_name}
                                             <Link
-                                                href="google.com"
+                                                href='google.com'
                                                 style={{
                                                     textDecoration: "none",
                                                     color: "blue",
@@ -404,7 +404,7 @@ const DashboardPatient = () => {
                         Seleccione una especialidad
                     </div>
                     <select
-                        id="specialty"
+                        id='specialty'
                         value={selectedSpecialty}
                         required
                         onChange={(e) => {
@@ -412,7 +412,7 @@ const DashboardPatient = () => {
                             fetchPhysicians(e.target.value);
                         }}
                     >
-                        <option value="">Especialidad</option>
+                        <option value=''>Especialidad</option>
                         {specialties.map((specialty) => (
                             <option key={specialty} value={specialty}>
                                 {specialty}
@@ -425,7 +425,7 @@ const DashboardPatient = () => {
                         Seleccione un médico
                     </div>
                     <select
-                        id="doctor"
+                        id='doctor'
                         value={selectedDoctor}
                         required
                         onChange={(e) => {
@@ -434,7 +434,7 @@ const DashboardPatient = () => {
                         }}
                         disabled={!selectedSpecialty} // Deshabilita si no se ha seleccionado una especialidad
                     >
-                        <option value="">Médico</option>
+                        <option value=''>Médico</option>
                         {doctors.map((doctor) => (
                             <option
                                 key={doctor.id}
@@ -509,12 +509,12 @@ const DashboardPatient = () => {
                     <div className={styles["physician-info-container"]}>
                         <div className={styles["datepicker-container"]}>
                             <DatePicker
-                                locale="es"
+                                locale='es'
                                 selected={date}
                                 onChange={(date) => {
                                     setDate(date);
                                 }}
-                                timeCaption="Hora"
+                                timeCaption='Hora'
                                 timeIntervals={30}
                                 showPopperArrow={false}
                                 showTimeSelect
@@ -535,7 +535,8 @@ const DashboardPatient = () => {
                                             Math.round(time.getTime() / 1000)
                                         ) &&
                                         physiciansAgenda.working_hours &&
-                                        time >= new Date()
+                                        time >= new Date() &&
+                                        date
                                     ) {
                                         let workingHour =
                                             physiciansAgenda.working_hours.filter(
@@ -559,7 +560,7 @@ const DashboardPatient = () => {
                     </div>
 
                     <button
-                        type="submit"
+                        type='submit'
                         className={`${styles["submit-button"]} ${
                             !selectedDoctor ? styles["disabled-button"] : ""
                         }`}
