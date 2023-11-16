@@ -18,6 +18,7 @@ import { toast } from "react-toastify";
 registerLocale("es", es);
 
 const DashboardPatient = () => {
+    const [isLoading, setIsLoading] = useState(true);
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
     const router = useRouter();
     const [appointments, setAppointments] = useState([]);
@@ -29,14 +30,8 @@ const DashboardPatient = () => {
     const [date, setDate] = useState();
     const [dateToEdit, setDateToEdit] = useState(new Date());
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [editingAppointment, setEditingAppointment] = useState({
-        id: null,
-        specialty: "",
-        doctor: doctors[0],
-        date: new Date(),
-        patient: "",
-        agenda: {},
-    });
+    const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
+    const [editingAppointment, setEditingAppointment] = useState({});
 
     const [reviews, setReviews] = useState([
         { id: 1, type: "Puntualidad", rating: 5 },
@@ -59,6 +54,7 @@ const DashboardPatient = () => {
                 ? setAppointments([])
                 : setAppointments(response.data.appointments);
         } catch (error) {
+            toast.error("Error al cargar turnos");
             console.error(error);
         }
     };
@@ -99,7 +95,8 @@ const DashboardPatient = () => {
         }
     };
 
-    const handleEditAppointment = (appointment) => {
+    const handleOpenEditModal = (appointment) => {
+        setEditingAppointment({});
         console.log(appointment);
         console.log(editingAppointment);
 
@@ -115,22 +112,12 @@ const DashboardPatient = () => {
             patient: appointment.patient,
             agenda: appointment.physician.agenda,
         });
-        console.log(editingAppointment);
-    };
-
-    const handleCloseEditModal = () => {
-        setIsEditModalOpen(false);
-    };
-
-    const saveAgenda = (doctorId) => {
-        if (doctorId) {
-            setPhysiciansAgenda(
-                doctors.filter((doctor) => doctor.id == doctorId)[0].agenda
-            );
-        } else setPhysiciansAgenda({});
     };
 
     const handleSaveAppointment = async () => {
+        console.log(dateToEdit);
+        console.log(editingAppointment);
+
         try {
             await axios.put(
                 `${apiURL}appointments/${editingAppointment.id}`,
@@ -150,6 +137,34 @@ const DashboardPatient = () => {
         }
     };
 
+    const handleCloseEditModal = () => {
+        setIsEditModalOpen(false);
+    };
+
+    const handleOpenRatingModal = (doctorId) => {
+        setIsRatingModalOpen(true);
+
+        console.log(doctorId);
+        //Logica de fecth review para el doctorID pasado por parametro
+    };
+
+    const handleCloseRatingModal = () => {
+        setIsRatingModalOpen(false);
+    };
+
+    const saveAgenda = (doctorId) => {
+        if (doctorId) {
+            console.log(
+                doctors.filter((doctor) => doctor.id == doctorId)[0].agenda
+            );
+            setPhysiciansAgenda(
+                doctors.filter((doctor) => doctor.id == doctorId)[0].agenda
+            );
+        } else {
+            setPhysiciansAgenda({});
+        }
+    };
+
     const handleDeleteAppointment = async (appointmentId) => {
         try {
             await axios.delete(`${apiURL}appointments/${appointmentId}`, {
@@ -166,9 +181,6 @@ const DashboardPatient = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            console.log(selectedDoctor);
-            console.log(Math.round(date.getTime() / 1000));
-
             const response = await axios.post(
                 `${apiURL}appointments/`,
                 {
@@ -180,6 +192,10 @@ const DashboardPatient = () => {
                 }
             );
             toast.info("Turno solicitado. Aguarde aprobacion del mismo");
+            setSelectedDoctor("");
+            setDate(new Date());
+            setSelectedSpecialty("");
+            setPhysiciansAgenda({});
             fetchAppointments();
         } catch (error) {
             console.error(error);
@@ -198,6 +214,18 @@ const DashboardPatient = () => {
         },
     };
 
+    const ratingModalStyles = {
+        content: {
+            top: "50%",
+            left: "50%",
+            right: "auto",
+            bottom: "auto",
+            marginRight: "-50%",
+            transform: "translate(-50%, -50%)",
+            width: "70%",
+        },
+    };
+
     useEffect(() => {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
@@ -205,7 +233,7 @@ const DashboardPatient = () => {
 
         redirect(router);
         fetchSpecialties();
-        fetchAppointments();
+        fetchAppointments().then(() => setIsLoading(false));
     }, []);
 
     return (
@@ -217,7 +245,7 @@ const DashboardPatient = () => {
                     isOpen={isEditModalOpen}
                     onRequestClose={handleCloseEditModal}
                     style={customStyles}
-                    contentLabel='Example Modal'
+                    contentLabel="Example Modal"
                 >
                     {/* Campos de edición de especialidad, médico y fecha */}
 
@@ -225,15 +253,15 @@ const DashboardPatient = () => {
                         <div className={styles["title"]}>Editar Cita</div>
 
                         {/* Selector de fechas */}
-                        <label htmlFor='fecha'>Fechas disponibles:</label>
+                        <label htmlFor="fecha">Fechas disponibles:</label>
 
                         <DatePicker
-                            locale='es'
+                            locale="es"
                             selected={dateToEdit}
                             onChange={(date) => {
                                 setDateToEdit(date);
                             }}
-                            timeCaption='Hora'
+                            timeCaption="Hora"
                             timeIntervals={30}
                             showPopperArrow={false}
                             showTimeSelect
@@ -283,173 +311,33 @@ const DashboardPatient = () => {
                     {/* Botones de Guardar y Cerrar */}
                     <button
                         className={styles["standard-button"]}
-                        onClick={handleSaveAppointment}
+                        onClick={() => {
+                            handleSaveAppointment();
+                        }}
                     >
                         Guardar
                     </button>
                     <button
                         className={styles["standard-button"]}
-                        onClick={handleCloseEditModal}
+                        onClick={() => {
+                            handleCloseEditModal();
+                            console.log(editingAppointment);
+                        }}
                     >
                         Cerrar
                     </button>
                 </Modal>
             )}
 
-            <TabBar highlight='Turnos' />
-
-            <Header role='patient' />
-
-            <div className={styles["tab-content"]}>
-                <div className={styles.form}>
-                    <div className={styles["title"]}>Mis Proximos Turnos</div>
-                    <Image
-                        src='/refresh_icon.png'
-                        alt='Notificaciones'
-                        className={styles["refresh-icon"]}
-                        width={200}
-                        height={200}
-                        onClick={() => {
-                            fetchAppointments();
-                            toast.info("Turnos actualizados");
-                        }}
-                    />
-                    <div className={styles["appointments-section"]}>
-                        {appointments.length > 0 ? (
-                            // If there are appointments, map through them and display each appointment
-                            <div>
-                                {appointments.map((appointment) => (
-                                    <div
-                                        key={appointment.id}
-                                        className={styles["appointment"]}
-                                    >
-                                        <div className={styles["subtitle"]}>
-                                            {appointment.physician.specialty}
-                                        </div>
-                                        <p>
-                                            Profesional:{" "}
-                                            {appointment.physician.first_name +
-                                                " " +
-                                                appointment.physician.last_name}
-                                            <Link
-                                                href='google.com'
-                                                style={{
-                                                    textDecoration: "none",
-                                                    color: "blue",
-                                                }}
-                                            >
-                                                {"    "} (Ver Puntuacion)
-                                            </Link>
-                                        </p>
-
-                                        <p>
-                                            Fecha y hora:{" "}
-                                            {new Date(
-                                                appointment.date * 1000
-                                            ).toLocaleString("es-AR")}
-                                        </p>
-                                        <div
-                                            className={
-                                                styles[
-                                                    "appointment-buttons-container"
-                                                ]
-                                            }
-                                        >
-                                            <button
-                                                className={
-                                                    styles["edit-button"]
-                                                }
-                                                onClick={() =>
-                                                    handleEditAppointment(
-                                                        appointment
-                                                    )
-                                                }
-                                            >
-                                                Modificar
-                                            </button>
-
-                                            <button
-                                                className={
-                                                    styles["delete-button"]
-                                                }
-                                                onClick={() =>
-                                                    handleDeleteAppointment(
-                                                        appointment.id
-                                                    )
-                                                }
-                                            >
-                                                Eliminar
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            // If there are no appointments, display the message
-                            <div className={styles["subtitle"]}>
-                                No hay turnos pendientes
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Formulario de selección de especialidad y doctor */}
-                <form className={styles.form} onSubmit={handleSubmit}>
-                    <div className={styles["title"]}>
-                        Solicitar un nuevo turno
-                    </div>
-
-                    {/* Selector de especialidades */}
-                    <div className={styles["subtitle"]}>
-                        Seleccione una especialidad
-                    </div>
-                    <select
-                        id='specialty'
-                        value={selectedSpecialty}
-                        required
-                        onChange={(e) => {
-                            setSelectedSpecialty(e.target.value);
-                            fetchPhysicians(e.target.value);
-                        }}
-                    >
-                        <option value=''>Especialidad</option>
-                        {specialties.map((specialty) => (
-                            <option key={specialty} value={specialty}>
-                                {specialty}
-                            </option>
-                        ))}
-                    </select>
-
-                    {/* Selector de médicos */}
-                    <div className={styles["subtitle"]}>
-                        Seleccione un médico
-                    </div>
-                    <select
-                        id='doctor'
-                        value={selectedDoctor}
-                        required
-                        onChange={(e) => {
-                            setSelectedDoctor(e.target.value);
-                            saveAgenda(e.target.value);
-                        }}
-                        disabled={!selectedSpecialty} // Deshabilita si no se ha seleccionado una especialidad
-                    >
-                        <option value=''>Médico</option>
-                        {doctors.map((doctor) => (
-                            <option
-                                key={doctor.id}
-                                value={doctor.id}
-                                agenda={doctor.agenda}
-                            >
-                                {doctor.first_name} {doctor.last_name}
-                            </option>
-                        ))}
-                    </select>
-
-                    <div className={styles["subtitle"]}>
-                        Puntuaciones del médico{" "}
-                    </div>
-
+            {/* Modal de ratings */}
+            {isRatingModalOpen && (
+                <Modal
+                    ariaHideApp={false}
+                    isOpen={isRatingModalOpen}
+                    onRequestClose={handleCloseRatingModal}
+                    style={ratingModalStyles}
+                    contentLabel="Example Modal"
+                >
                     <div
                         key={reviews.key}
                         className={styles["reviews-container"]}
@@ -502,75 +390,336 @@ const DashboardPatient = () => {
                         )}
                     </div>
 
-                    {/* Selector de fechas */}
-                    <div className={styles["subtitle"]}>
-                        Seleccione una fecha
-                    </div>
-                    <div className={styles["physician-info-container"]}>
-                        <div className={styles["datepicker-container"]}>
-                            <DatePicker
-                                locale='es'
-                                selected={date}
-                                onChange={(date) => {
-                                    setDate(date);
-                                }}
-                                timeCaption='Hora'
-                                timeIntervals={30}
-                                showPopperArrow={false}
-                                showTimeSelect
-                                inline
-                                filterDate={(date) => {
-                                    if (physiciansAgenda.working_days) {
-                                        return physiciansAgenda.working_days.includes(
-                                            date.getDay()
-                                        );
-                                    }
-                                    return false;
-                                }}
-                                minDate={new Date()}
-                                filterTime={(time) => {
-                                    if (
-                                        physiciansAgenda.appointments &&
-                                        !physiciansAgenda.appointments.includes(
-                                            Math.round(time.getTime() / 1000)
-                                        ) &&
-                                        physiciansAgenda.working_hours &&
-                                        time >= new Date() &&
-                                        date
-                                    ) {
-                                        let workingHour =
-                                            physiciansAgenda.working_hours.filter(
-                                                (workingHour) =>
-                                                    workingHour.day_of_week ===
-                                                    date.getDay()
-                                            )[0];
-                                        let parsedTime =
-                                            time.getHours() +
-                                            time.getMinutes() / 60;
-                                        return (
-                                            workingHour.start_time <=
-                                                parsedTime &&
-                                            workingHour.finish_time > parsedTime
-                                        );
-                                    }
-                                    return false;
+                    {/* Botones de Guardar y Cerrar */}
+                    <button
+                        className={styles["standard-button"]}
+                        onClick={() => {}}
+                    >
+                        Guardar
+                    </button>
+                    <button
+                        className={styles["standard-button"]}
+                        onClick={handleCloseRatingModal}
+                    >
+                        Cerrar
+                    </button>
+                </Modal>
+            )}
+
+            <TabBar highlight="Turnos" />
+
+            <Header role="patient" />
+
+            {isLoading ? (
+                <p>Cargando...</p>
+            ) : (
+                <>
+                    <div className={styles["tab-content"]}>
+                        <div className={styles.form}>
+                            <div className={styles["title"]}>
+                                Mis Proximos Turnos
+                            </div>
+                            <Image
+                                src="/refresh_icon.png"
+                                alt="Notificaciones"
+                                className={styles["refresh-icon"]}
+                                width={200}
+                                height={200}
+                                onClick={() => {
+                                    fetchAppointments();
+                                    toast.info("Actualizando turnos...");
                                 }}
                             />
-                        </div>
-                    </div>
+                            <div className={styles["appointments-section"]}>
+                                {appointments.length > 0 ? (
+                                    // If there are appointments, map through them and display each appointment
+                                    <div>
+                                        {appointments.map((appointment) => (
+                                            <div
+                                                key={appointment.id}
+                                                className={
+                                                    styles["appointment"]
+                                                }
+                                            >
+                                                <div
+                                                    className={
+                                                        styles["subtitle"]
+                                                    }
+                                                >
+                                                    {
+                                                        appointment.physician
+                                                            .specialty
+                                                    }
+                                                </div>
+                                                <p>
+                                                    Profesional:{" "}
+                                                    {appointment.physician
+                                                        .first_name +
+                                                        " " +
+                                                        appointment.physician
+                                                            .last_name}
+                                                    <a
+                                                        onClick={() => {
+                                                            handleOpenRatingModal(
+                                                                appointment
+                                                                    .physician
+                                                                    .id
+                                                            );
+                                                        }}
+                                                        style={{
+                                                            textDecoration:
+                                                                "none",
+                                                            color: "blue",
+                                                        }}
+                                                    >
+                                                        {"    "} (Ver
+                                                        Puntuacion)
+                                                    </a>
+                                                </p>
 
-                    <button
-                        type='submit'
-                        className={`${styles["submit-button"]} ${
-                            !selectedDoctor ? styles["disabled-button"] : ""
-                        }`}
-                        disabled={!selectedDoctor}
-                    >
-                        Solicitar turno
-                    </button>
-                </form>
-            </div>
-            <Footer />
+                                                <p>
+                                                    Fecha y hora:{" "}
+                                                    {new Date(
+                                                        appointment.date * 1000
+                                                    ).toLocaleString("es-AR")}
+                                                </p>
+                                                <div
+                                                    className={
+                                                        styles[
+                                                            "appointment-buttons-container"
+                                                        ]
+                                                    }
+                                                >
+                                                    <button
+                                                        className={
+                                                            styles[
+                                                                "edit-button"
+                                                            ]
+                                                        }
+                                                        onClick={() =>
+                                                            handleOpenEditModal(
+                                                                appointment
+                                                            )
+                                                        }
+                                                    >
+                                                        Modificar
+                                                    </button>
+
+                                                    <button
+                                                        className={
+                                                            styles[
+                                                                "delete-button"
+                                                            ]
+                                                        }
+                                                        onClick={() =>
+                                                            handleDeleteAppointment(
+                                                                appointment.id
+                                                            )
+                                                        }
+                                                    >
+                                                        Eliminar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    // If there are no appointments, display the message
+                                    <div className={styles["subtitle"]}>
+                                        No hay turnos pendientes
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Formulario de selección de especialidad y doctor */}
+                        <form className={styles.form} onSubmit={handleSubmit}>
+                            <div className={styles["title"]}>
+                                Solicitar un nuevo turno
+                            </div>
+
+                            {/* Selector de especialidades */}
+                            <div className={styles["subtitle"]}>
+                                Seleccione una especialidad
+                            </div>
+                            <select
+                                id="specialty"
+                                value={selectedSpecialty}
+                                required
+                                onChange={(e) => {
+                                    setSelectedSpecialty(e.target.value);
+                                    fetchPhysicians(e.target.value);
+                                }}
+                            >
+                                <option value="">Especialidad</option>
+                                {specialties.map((specialty) => (
+                                    <option key={specialty} value={specialty}>
+                                        {specialty}
+                                    </option>
+                                ))}
+                            </select>
+
+                            {/* Selector de médicos */}
+                            <div className={styles["subtitle"]}>
+                                Seleccione un médico
+                            </div>
+                            <select
+                                id="doctor"
+                                value={selectedDoctor}
+                                required
+                                onChange={(e) => {
+                                    setSelectedDoctor(e.target.value);
+                                    saveAgenda(e.target.value);
+                                }}
+                                disabled={!selectedSpecialty}
+                            >
+                                <option value="">Médico</option>
+                                {doctors.map((doctor) => (
+                                    <option
+                                        key={doctor.id}
+                                        value={doctor.id}
+                                        agenda={doctor.agenda}
+                                    >
+                                        {doctor.first_name} {doctor.last_name}
+                                    </option>
+                                ))}
+                            </select>
+
+                            <div className={styles["subtitle"]}>
+                                Puntuaciones del médico{" "}
+                            </div>
+
+                            <div
+                                key={reviews.key}
+                                className={styles["reviews-container"]}
+                            >
+                                {reviews.length > 0 ? (
+                                    <>
+                                        {reviews.map((review) => (
+                                            <div
+                                                key={review.id}
+                                                className={styles["review"]}
+                                            >
+                                                <div
+                                                    className={
+                                                        styles[
+                                                            "review-cards-container"
+                                                        ]
+                                                    }
+                                                >
+                                                    <div
+                                                        className={
+                                                            styles[
+                                                                "review-card"
+                                                            ]
+                                                        }
+                                                    >
+                                                        <div
+                                                            className={
+                                                                styles[
+                                                                    "review-card-title"
+                                                                ]
+                                                            }
+                                                        >
+                                                            {review.type}
+                                                        </div>
+                                                        <div
+                                                            className={
+                                                                styles[
+                                                                    "review-card-content"
+                                                                ]
+                                                            }
+                                                        >
+                                                            {review.rating}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </>
+                                ) : (
+                                    // If there are no reviews, display the message
+                                    <div className={styles["subtitle"]}>
+                                        No hay reviews
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Selector de fechas */}
+                            <div className={styles["subtitle"]}>
+                                Seleccione una fecha
+                            </div>
+                            <div className={styles["physician-info-container"]}>
+                                <div className={styles["datepicker-container"]}>
+                                    <DatePicker
+                                        locale="es"
+                                        selected={date}
+                                        onChange={(date) => {
+                                            setDate(date);
+                                        }}
+                                        timeCaption="Hora"
+                                        timeIntervals={30}
+                                        showPopperArrow={false}
+                                        showTimeSelect
+                                        inline
+                                        filterDate={(date) => {
+                                            if (physiciansAgenda.working_days) {
+                                                return physiciansAgenda.working_days.includes(
+                                                    date.getDay()
+                                                );
+                                            }
+                                            return false;
+                                        }}
+                                        minDate={new Date()}
+                                        filterTime={(time) => {
+                                            if (
+                                                physiciansAgenda.appointments &&
+                                                !physiciansAgenda.appointments.includes(
+                                                    Math.round(
+                                                        time.getTime() / 1000
+                                                    )
+                                                ) &&
+                                                physiciansAgenda.working_hours &&
+                                                time >= new Date()
+                                            ) {
+                                                let workingHour =
+                                                    physiciansAgenda.working_hours.filter(
+                                                        (workingHour) =>
+                                                            workingHour.day_of_week ===
+                                                            date.getDay()
+                                                    )[0];
+                                                let parsedTime =
+                                                    time.getHours() +
+                                                    time.getMinutes() / 60;
+                                                return (
+                                                    workingHour.start_time <=
+                                                        parsedTime &&
+                                                    workingHour.finish_time >
+                                                        parsedTime
+                                                );
+                                            }
+                                            return false;
+                                        }}
+                                    />
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                className={`${styles["submit-button"]} ${
+                                    !selectedDoctor
+                                        ? styles["disabled-button"]
+                                        : ""
+                                }`}
+                                disabled={!selectedDoctor}
+                            >
+                                Solicitar turno
+                            </button>
+                        </form>
+                    </div>
+                    <Footer />
+                </>
+            )}
         </div>
     );
 };
