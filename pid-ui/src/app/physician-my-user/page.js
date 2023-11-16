@@ -20,13 +20,15 @@ const UserProfile = () => {
         email: "",
         bloodtype: "",
         agenda: {
-            working_days: [1, 2, 3, 4, 5],
+            working_days: [0, 1, 2, 3, 4, 5, 6],
             working_hours: [
+                { day_of_week: 0, start_time: 0, finish_time: 0 },
                 { day_of_week: 1, start_time: 0, finish_time: 0 },
                 { day_of_week: 2, start_time: 0, finish_time: 0 },
                 { day_of_week: 3, start_time: 0, finish_time: 0 },
                 { day_of_week: 4, start_time: 0, finish_time: 0 },
                 { day_of_week: 5, start_time: 0, finish_time: 0 },
+                { day_of_week: 6, start_time: 0, finish_time: 0 },
             ],
             appointments: [],
         },
@@ -55,15 +57,12 @@ const UserProfile = () => {
             };
 
             response.data.agenda.working_hours.forEach((element) => {
-                userData.agenda.working_hours[
-                    element.day_of_week - 1
-                ].start_time = element.start_time;
-                userData.agenda.working_hours[
-                    element.day_of_week - 1
-                ].finish_time = element.finish_time;
-                userData.agenda.working_hours[
-                    element.day_of_week - 1
-                ].day_of_week = element.day_of_week;
+                userData.agenda.working_hours[element.day_of_week].start_time =
+                    element.start_time;
+                userData.agenda.working_hours[element.day_of_week].finish_time =
+                    element.finish_time;
+                userData.agenda.working_hours[element.day_of_week].day_of_week =
+                    element.day_of_week;
             });
 
             console.log(userData);
@@ -73,6 +72,17 @@ const UserProfile = () => {
             console.error(error);
             toast.error("Error al obtener los datos del usuario");
         }
+    };
+
+    const addTimeToAgenda = (day) => {};
+
+    const removeTimeFromAgenda = (day) => {
+        user.agenda.working_hours.map((item) => {
+            if (item.day_of_week == day) {
+                item.start_time = 0;
+                item.finish_time = 0;
+            }
+        });
     };
 
     const convertTime = (time) => {
@@ -110,7 +120,7 @@ const UserProfile = () => {
                 return "Viernes";
             case 6:
                 return "Sábado";
-            case 7:
+            case 0:
                 return "Domingo";
         }
     };
@@ -134,31 +144,41 @@ const UserProfile = () => {
     const handleSaveChanges = async () => {
         try {
             let payload1 = {
-                start: user.agenda.working_hours[0].start_time,
-                finish: user.agenda.working_hours[0].finish_time,
-            };
-            let payload2 = {
                 start: user.agenda.working_hours[1].start_time,
                 finish: user.agenda.working_hours[1].finish_time,
             };
-            let payload3 = {
+            let payload2 = {
                 start: user.agenda.working_hours[2].start_time,
                 finish: user.agenda.working_hours[2].finish_time,
             };
-            let payload4 = {
+            let payload3 = {
                 start: user.agenda.working_hours[3].start_time,
                 finish: user.agenda.working_hours[3].finish_time,
             };
-            let payload5 = {
+            let payload4 = {
                 start: user.agenda.working_hours[4].start_time,
                 finish: user.agenda.working_hours[4].finish_time,
             };
+            let payload5 = {
+                start: user.agenda.working_hours[5].start_time,
+                finish: user.agenda.working_hours[5].finish_time,
+            };
+            let payload6 = {
+                start: user.agenda.working_hours[6].start_time,
+                finish: user.agenda.working_hours[6].finish_time,
+            };
+            let payload0 = {
+                start: user.agenda.working_hours[0].start_time,
+                finish: user.agenda.working_hours[0].finish_time,
+            };
             const response = await axios.put(`${apiURL}physicians/agenda`, {
+                0: payload0,
                 1: payload1,
                 2: payload2,
                 3: payload3,
                 4: payload4,
                 5: payload5,
+                6: payload6,
             });
             getUserData();
             toast.success("Horario de atención actualizado exitosamente.");
@@ -299,10 +319,20 @@ const UserProfile = () => {
                                             id='workingDay'
                                             name='workingDay'
                                             className={styles["checkbox-input"]}
-                                            defaultChecked={user.agenda.working_days.includes(
-                                                item.day_of_week
-                                            )}
+                                            defaultChecked={
+                                                item.start_time !== 0 ||
+                                                item.finish_time !== 0
+                                            }
                                             value={item.day_of_week}
+                                            onChange={(e) =>
+                                                e.target.checked
+                                                    ? addTimeToAgenda(
+                                                          item.day_of_week
+                                                      )
+                                                    : removeTimeFromAgenda(
+                                                          item.day_of_week
+                                                      )
+                                            }
                                         />
                                         <label
                                             htmlFor={item.day_of_week}
