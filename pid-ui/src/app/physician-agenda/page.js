@@ -24,11 +24,47 @@ const PhysicianAgenda = () => {
     const [startTime, setStartTime] = useState("");
     const [newObservationContent, setNewObservationContent] = useState("");
     const [appointmentAttended, setAppointmentAttended] = useState(true);
+    const [appointmentToClose, setAppointmentToClose] = useState("");
+
+    const [reviews, setReviews] = useState([
+        { id: 1, type: "Puntualidad", rating: 5 },
+        { id: 2, type: "Atencion", rating: 4.5 },
+        { id: 3, type: "Limpieza", rating: 4.5 },
+        { id: 4, type: "Instalaciones", rating: 3 },
+        { id: 5, type: "Precio", rating: 4.5 },
+    ]);
 
     const agent = new https.Agent({
         rejectUnauthorized: false,
     });
-    const [appointmentToClose, setAppointmentToClose] = useState("");
+
+    const getScores = async (id) => {
+        try {
+            const response = await axios.get(`${apiURL}users/score/${id}`, {
+                httpsAgent: agent,
+            });
+            console.log(response.data.score_metrics);
+
+            let tempReviews = [
+                { id: 1, type: "Puntualidad", rating: 5 },
+                { id: 2, type: "Atencion", rating: 4.5 },
+                { id: 3, type: "Limpieza", rating: 4.5 },
+                { id: 4, type: "Instalaciones", rating: 3 },
+                { id: 5, type: "Precio", rating: 4.5 },
+            ];
+
+            tempReviews[0].rating = response.data.score_metrics.puntuality;
+            tempReviews[1].rating = response.data.score_metrics.attention;
+            tempReviews[2].rating = response.data.score_metrics.cleanliness;
+            tempReviews[3].rating = response.data.score_metrics.facilities;
+            tempReviews[4].rating = response.data.score_metrics.price;
+
+            setReviews(tempReviews);
+        } catch (error) {
+            toast.error("Error al obtener los puntajes");
+            console.error(error);
+        }
+    };
 
     const fetchAppointments = async () => {
         try {
@@ -43,30 +79,34 @@ const PhysicianAgenda = () => {
                 : setAppointments(response.data.appointments);
         } catch (error) {
             toast.error("Error al obtener los turnos");
-            console.log(error);
+            console.error(error);
         }
     };
 
     const handleOpenAppointmentClosureModal = (appointment) => {
-        console.log(appointment);
-        setStartTime(new Date(appointment.date * 1000));
-        console.log(startTime);
+        getScores(appointment.patient.id);
         setIsAddObervationModalOpen(true);
         setAppointmentToClose(appointment);
         setPatientId(appointment.patient.id);
-        // setStartTime(appointment.date.toLocaleString("es-AR"));
     };
 
     const handleAppointmentClosure = async () => {
         console.log(appointmentToClose.id);
         console.log(appointmentAttended);
         console.log(startTime);
+        let hour = startTime.split(":")[0];
+        let minutes = startTime.split(":")[1];
+        let date = new Date(appointmentToClose.date * 1000);
+        date.setHours(hour);
+        date.setMinutes(minutes);
+        console.log((date.getTime() / 1000).toString());
+
         try {
-            const response = await axios.post(
+            const response = await axios.put(
                 `${apiURL}appointments/close-appointment/${appointmentToClose.id}`,
                 {
                     attended: appointmentAttended,
-                    start_time: startTime,
+                    start_time: (date.getTime() / 1000).toString(),
                 },
                 {
                     httpsAgent: agent,
@@ -79,8 +119,11 @@ const PhysicianAgenda = () => {
 
         try {
             const response = await axios.post(
-                `${apiURL}records/update/${patientId}`,
+                `${apiURL}records/update`,
                 {
+                    appointment_id: appointmentToClose.id,
+                    attended: appointmentAttended.toString(),
+                    real_start_time: (date.getTime() / 1000).toString(),
                     observation: newObservationContent,
                 },
                 {
@@ -92,6 +135,27 @@ const PhysicianAgenda = () => {
             setIsAddObervationModalOpen(false);
         } catch (error) {
             toast.error("Error al agregar la observación");
+            console.error(error);
+        }
+
+        try {
+            const response = await axios.post(
+                `${apiURL}users/add-score`,
+                {
+                    appointment_id: appointmentToClose.id,
+                    puntuality: reviews[0].rating,
+                    attention: reviews[1].rating,
+                    cleanliness: reviews[2].rating,
+                    facilities: reviews[3].rating,
+                    price: reviews[4].rating,
+                },
+                {
+                    httpsAgent: agent,
+                }
+            );
+            toast.info("Puntaje cargado exitosamente");
+        } catch (error) {
+            toast.error("Error al agregar la puntaje");
             console.error(error);
         }
     };
@@ -106,20 +170,33 @@ const PhysicianAgenda = () => {
             fetchAppointments();
         } catch (error) {
             toast.error("Error al eliminar el turno");
-            console.log(error);
+            console.error(error);
         }
     };
 
-    const customStyles = {
-        content: {
-            top: "50%",
-            left: "50%",
-            right: "auto",
-            bottom: "auto",
-            marginRight: "-50%",
-            transform: "translate(-50%, -50%)",
-            width: "80%",
-        },
+    const MODAL_STYLES = {
+        top: "50%",
+        left: "50%",
+        right: "auto",
+        bottom: "auto",
+        marginRight: "-50%",
+        transform: "translate(-50%, -50%)",
+        width: "80%",
+        marginTop: "6rem",
+    };
+
+    const OVERLAY_STYLE = {
+        position: "fixed",
+        display: "flex",
+        justifyContent: "center",
+        top: "0",
+        left: "0",
+        width: "100%",
+        height: "100%",
+        backgroundColor: "rgba(0,0,0, .8)",
+        zIndex: "1000",
+        overflowY: "auto",
+        marginTop: "6rem",
     };
 
     const handleCloseEditModal = () => {
@@ -132,6 +209,7 @@ const PhysicianAgenda = () => {
         };
 
         redirect(router);
+        getScores();
         fetchAppointments()
             .then(() => setIsLoading(false)) // Marcar como cargado cuando la respuesta llega
             .catch(() => {
@@ -146,9 +224,9 @@ const PhysicianAgenda = () => {
                     ariaHideApp={false}
                     isOpen={isAddObservationModalOpen}
                     onRequestClose={handleCloseEditModal}
-                    style={customStyles}
+                    // style={customStyles}
                 >
-                    <form
+                    <div
                         className={styles["new-record-section"]}
                         onSubmit={handleAppointmentClosure}
                     >
@@ -161,7 +239,10 @@ const PhysicianAgenda = () => {
                                 className={styles["select"]}
                                 name="attended"
                                 id="attended"
-                                onChange={(e) => setAppointmentAttended(e)}
+                                onChange={(e) => {
+                                    console.log(e.target.value);
+                                    setAppointmentAttended(e.target.value);
+                                }}
                             >
                                 <option value={true}>Si</option>
                                 <option value={false}>No</option>
@@ -175,7 +256,17 @@ const PhysicianAgenda = () => {
                                 type="time"
                                 id="time"
                                 name="time"
-                                onChange={(date) => setStartTime(date)}
+                                onChange={(date) => {
+                                    setStartTime(date.target.value.toString());
+                                    console.log(date.target.value.toString());
+                                }}
+                                disabled={appointmentAttended == "false"}
+                                required
+                                className={`${
+                                    appointmentAttended == "false"
+                                        ? styles["disabled-input"]
+                                        : ""
+                                }`}
                             />
 
                             <div className={styles["subtitle"]}>
@@ -185,31 +276,118 @@ const PhysicianAgenda = () => {
                             <textarea
                                 id="observation"
                                 value={newObservationContent}
-                                onChange={(e) =>
-                                    setNewObservationContent(e.target.value)
-                                }
+                                onChange={(e) => {
+                                    console.log(e.target.value);
+                                    setNewObservationContent(e.target.value);
+                                }}
                                 placeholder="Escribe una nueva observación"
                                 required
-                                className={styles.observationInput}
+                                className={`${styles["observation-input"]} ${
+                                    appointmentAttended === "false"
+                                        ? styles["disabled-input"]
+                                        : ""
+                                }`}
                                 wrap="soft"
-                                disabled={appointmentAttended == "no"}
+                                disabled={appointmentAttended == "false"}
                             />
                         </div>
 
+                        <div
+                            key={reviews.key}
+                            className={styles["reviews-container"]}
+                        >
+                            {reviews.length > 0 ? (
+                                <>
+                                    {reviews.map((review) => (
+                                        <div
+                                            key={review.id}
+                                            className={styles["review"]}
+                                        >
+                                            <div
+                                                className={
+                                                    styles[
+                                                        "review-cards-container"
+                                                    ]
+                                                }
+                                            >
+                                                <div
+                                                    className={
+                                                        styles["review-card"]
+                                                    }
+                                                >
+                                                    <div
+                                                        className={
+                                                            styles[
+                                                                "review-card-title"
+                                                            ]
+                                                        }
+                                                    >
+                                                        {review.type}
+                                                    </div>
+                                                    <div
+                                                        className={
+                                                            styles[
+                                                                "review-card-content"
+                                                            ]
+                                                        }
+                                                    >
+                                                        <input
+                                                            type="number"
+                                                            id="points"
+                                                            name="points"
+                                                            min="0"
+                                                            max="5"
+                                                            placeholder={
+                                                                review.rating
+                                                            }
+                                                            onChange={(e) => {
+                                                                setReviews(
+                                                                    reviews.map(
+                                                                        (
+                                                                            item
+                                                                        ) =>
+                                                                            item.id ===
+                                                                            review.id
+                                                                                ? {
+                                                                                      ...item,
+                                                                                      rating: e
+                                                                                          .target
+                                                                                          .value,
+                                                                                  }
+                                                                                : item
+                                                                    )
+                                                                );
+                                                            }}
+                                                        ></input>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </>
+                            ) : (
+                                // If there are no reviews, display the message
+                                <div className={styles["subtitle"]}>
+                                    No hay reviews
+                                </div>
+                            )}
+                        </div>
+
                         <button
-                            className={`${styles["submit-button"]} ${
+                            className={`${styles["edit-button"]} ${
                                 !newObservationContent || !startTime
                                     ? styles["disabled-button"]
                                     : ""
                             }`}
-                            type="submit"
+                            onClick={handleAppointmentClosure}
                             disabled={!newObservationContent || !startTime}
                         >
                             Agregar
                         </button>
-                    </form>
+                    </div>
                 </Modal>
             )}
+
             <PhysicianTabBar highlight={"TurnosDelDia"} />
 
             <Header role="physician" />
@@ -258,7 +436,7 @@ const PhysicianAgenda = () => {
                                                             .last_name}
                                                 </div>
                                                 <p>
-                                                    Fecha y hora:{" "}
+                                                    Fecha y hora:
                                                     {new Date(
                                                         appointment.date * 1000
                                                     ).toLocaleString("es-AR")}

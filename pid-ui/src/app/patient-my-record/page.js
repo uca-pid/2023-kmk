@@ -284,13 +284,6 @@ const MyRecord = () => {
                                         ref={inputRef}
                                         style={{ display: "none" }}
                                     />
-                                    {/* <button
-                                        className={styles["edit-button"]}
-                                        type="submit"
-                                        value="Upload"
-                                    >
-                                        Cargar analisis
-                                    </button> */}
                                 </form>
                             </div>
                         </div>
@@ -316,7 +309,11 @@ const MyRecord = () => {
                                                         }
                                                     >
                                                         Observacion del{" "}
-                                                        {observation.appointment_date.toLocaleString()}{" "}
+                                                        {Date(
+                                                            observation.appointment_date
+                                                        ).toLocaleString(
+                                                            "es-AR"
+                                                        )}
                                                         - Médico:{" "}
                                                         {observation.physician}
                                                     </div>

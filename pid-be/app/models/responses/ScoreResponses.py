@@ -16,3 +16,9 @@ class BasicScoreResponse(BaseModel):
 
 class SuccessfullScoreResponse(BaseModel):
     score_metrics: BasicScoreResponse
+
+class PendingScoresErrorResponse(BaseModel):
+    detail: str
+
+class PendingScoresResponse(BaseModel):
+    scores: list
