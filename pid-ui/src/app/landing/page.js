@@ -52,9 +52,27 @@ const Landing = () => {
             loginCheck(router);
         } catch (error) {
             console.error(error);
-            toast.error(
-                "Error al iniciar sesión: " + error.response.data.detail
-            );
+
+            switch (error.response.data.detail) {
+                case "User must be logged in":
+                    router.replace("/");
+                    break;
+                case "Account has to be approved by admin":
+                    toast.error(
+                        <div>
+                            Aprobacion pendiente <br /> Contacte al
+                            administrador
+                        </div>
+                    );
+                    break;
+                case "Account is not approved":
+                    toast.error(
+                        <div>
+                            Cuenta denegada <br /> Contacte al administrador
+                        </div>
+                    );
+                    break;
+            }
         }
     };
 

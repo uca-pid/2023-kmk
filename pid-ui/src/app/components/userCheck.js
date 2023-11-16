@@ -27,6 +27,7 @@ const loginCheck = async (router) => {
                 case "patient":
                     router.replace("/patient-dashboard");
                     break;
+
                 default:
                     router.replace("/");
                     break;
@@ -39,23 +40,19 @@ const loginCheck = async (router) => {
             case "User must be logged in":
                 router.replace("/");
                 break;
-            case "Physician pending":
+            case "Account has to be approved by admin":
                 toast.error(
-                    "Aprobacion pendiente \n Contacte al administrador"
+                    <div>
+                        Aprobacion pendiente <br /> Contacte al administrador
+                    </div>
                 );
                 break;
-            case "Physician approved":
+            case "Account is not approved":
                 toast.error(
-                    "Aprobacion pendiente \n Contacte al administrador"
+                    <div>
+                        Cuenta denegada <br /> Contacte al administrador
+                    </div>
                 );
-                break;
-            case "Physician denied":
-                toast.error(
-                    "Aprobacion rechazada \n Contacte al administrador"
-                );
-                break;
-            case "Physician blocked":
-                toast.error("Usuario bloqueado \n Contacte al administrador");
                 break;
         }
     }

@@ -1,17 +1,22 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styles from "../styles/styles.module.css";
 import axios from "axios";
 import https from "https";
+import { useRouter } from "next/navigation";
 import { Footer, Header, TabBar } from "../components/header";
 import Image from "next/image";
 import { toast } from "react-toastify";
+import { userCheck } from "../components/userCheck";
+import "react-toastify/dist/ReactToastify.css";
 
 const MyRecord = () => {
     const [isLoading, setIsLoading] = useState(true);
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
+    const router = useRouter();
     const [file, setFile] = useState([]); // File to be uploaded
+    const [analysis, setAnalysis] = useState([]);
     const [record, setRecord] = useState({
         name: "",
         last_name: "",
@@ -21,11 +26,11 @@ const MyRecord = () => {
         id: "",
         observations: [],
     });
+    const inputRef = useRef(null);
 
     const agent = new https.Agent({
         rejectUnauthorized: false,
     });
-    const [analysis, setAnalysis] = useState([]);
 
     const fetchData = async () => {
         try {
@@ -50,11 +55,37 @@ const MyRecord = () => {
         }
     };
 
+    const handleDownload = (url) => {
+        const link = document.createElement("a");
+        link.download = url;
+
+        link.href = url;
+
+        link.click();
+    };
+
+    const handleFileDelete = async (id) => {
+        try {
+            const response = await axios.delete(`${apiURL}analysis/${id}`);
+            console.log(response);
+            toast.success("Analisis eliminado con exito");
+            fetchMyAnalysis();
+        } catch (error) {
+            console.error(error);
+            toast.error("Error al eliminar analisis");
+        }
+    };
+
+    const resetFileInput = () => {
+        inputRef.current.value = null;
+        setFile([]);
+    };
+
     const onSubmit = async (e) => {
-        e.preventDefault();
+        // e.preventDefault();
         toast.info("Subiendo analisis");
         const formData = new FormData();
-        Array.from(file).forEach((file_to_upload) =>
+        Array.from(e).forEach((file_to_upload) =>
             formData.append("analysis", file_to_upload)
         );
         try {
@@ -62,6 +93,7 @@ const MyRecord = () => {
             console.log(response);
             toast.success("Analisis subido con exito");
             fetchMyAnalysis();
+            resetFileInput();
         } catch (error) {
             console.error(error);
             toast.error("Error al subir analisis");
@@ -72,6 +104,7 @@ const MyRecord = () => {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
+        userCheck(router);
         fetchData();
         fetchMyAnalysis().then(() => setIsLoading(false));
     }, []);
@@ -119,20 +152,21 @@ const MyRecord = () => {
                                 </div>
 
                                 <div className={styles["horizontal-scroll"]}>
-                                    {Array.isArray(analysis) ? (
+                                    {analysis.length > 0 ? (
                                         analysis.map((uploaded_analysis) => {
                                             return (
-                                                <div key={uploaded_analysis.id}>
-                                                    <a
-                                                        className={
-                                                            styles[
-                                                                "estudio-card"
-                                                            ]
-                                                        }
-                                                        href={
-                                                            uploaded_analysis.url
-                                                        }
-                                                        target="_blank"
+                                                <div
+                                                    className={
+                                                        styles["estudio-card"]
+                                                    }
+                                                    key={uploaded_analysis.id}
+                                                >
+                                                    <div
+                                                        onClick={() => {
+                                                            handleDownload(
+                                                                uploaded_analysis.url
+                                                            );
+                                                        }}
                                                     >
                                                         <div
                                                             className={
@@ -154,6 +188,11 @@ const MyRecord = () => {
                                                                     "document-icon"
                                                                 ]
                                                             }
+                                                            style={{
+                                                                alignSelf:
+                                                                    "center",
+                                                                margin: "auto",
+                                                            }}
                                                             width={100}
                                                             height={100}
                                                             onClick={() => {}}
@@ -164,20 +203,54 @@ const MyRecord = () => {
                                                                     "estudio-date"
                                                                 ]
                                                             }
+                                                            style={{
+                                                                alignSelf:
+                                                                    "center",
+                                                                margin: "auto",
+                                                                display:
+                                                                    "table",
+                                                                padding:
+                                                                    "5px 0",
+                                                            }}
                                                         >
                                                             {new Date(
                                                                 uploaded_analysis.uploaded_at *
                                                                     1000
-                                                            ).toLocaleString(
+                                                            ).toLocaleDateString(
                                                                 "es-AR"
                                                             )}
                                                         </div>
-                                                    </a>
+                                                    </div>
+                                                    <Image
+                                                        src="/trash_icon.png"
+                                                        alt=""
+                                                        className={
+                                                            styles[
+                                                                "document-icon"
+                                                            ]
+                                                        }
+                                                        style={{
+                                                            alignSelf: "center",
+                                                        }}
+                                                        width={25}
+                                                        height={25}
+                                                        onClick={() => {
+                                                            handleFileDelete(
+                                                                uploaded_analysis.id
+                                                            );
+                                                        }}
+                                                    />
                                                 </div>
                                             );
                                         })
                                     ) : (
-                                        <div className={styles["subtitle"]}>
+                                        <div
+                                            style={{
+                                                alignSelf: "center",
+                                                margin: "auto",
+                                                padding: "5px 0",
+                                            }}
+                                        >
                                             No hay analisis cargados
                                         </div>
                                     )}
@@ -185,24 +258,39 @@ const MyRecord = () => {
 
                                 <form
                                     className={styles["file-upload-form"]}
-                                    onSubmit={onSubmit}
+                                    // onSubmit={onSubmit}
                                 >
+                                    <label
+                                        htmlFor="files"
+                                        className={styles["upload-button"]}
+                                        style={{ color: "#fff" }}
+                                    >
+                                        Cargar analisis
+                                    </label>
+
                                     <input
+                                        id="files"
                                         type="file"
                                         name="file"
                                         accept=".pdf"
                                         multiple={true}
-                                        onChange={(e) =>
-                                            setFile(e.target.files)
-                                        }
+                                        onChange={(e) => {
+                                            onSubmit(e.target.files);
+                                            setFile(e.target.files);
+                                        }}
+                                        onClick={(event) => {
+                                            event.target.value = null;
+                                        }}
+                                        ref={inputRef}
+                                        style={{ display: "none" }}
                                     />
-                                    <button
+                                    {/* <button
                                         className={styles["edit-button"]}
                                         type="submit"
                                         value="Upload"
                                     >
                                         Cargar analisis
-                                    </button>
+                                    </button> */}
                                 </form>
                             </div>
                         </div>

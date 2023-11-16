@@ -27,7 +27,7 @@ const DashboardPatient = () => {
     const [selectedSpecialty, setSelectedSpecialty] = useState("");
     const [selectedDoctor, setSelectedDoctor] = useState("");
     const [physiciansAgenda, setPhysiciansAgenda] = useState({});
-    const [date, setDate] = useState();
+    const [date, setDate] = useState(new Date());
     const [dateToEdit, setDateToEdit] = useState(new Date());
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
@@ -517,7 +517,7 @@ const DashboardPatient = () => {
                                                             )
                                                         }
                                                     >
-                                                        Eliminar
+                                                        Cancelar
                                                     </button>
                                                 </div>
                                             </div>
