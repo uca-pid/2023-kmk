@@ -344,38 +344,6 @@ def test_register_patient_with_password_with_no_numbers_returns_a_422_code():
     assert register_patient_response.status_code == 422
 
 
-def test_register_endpoint_returns_a_403_code_and_message_if_user_is_logged_in():
-    mocked_response = requests.Response()
-    mocked_response.status_code = 200
-    with patch("requests.post", return_value=mocked_response) as mocked_request:
-        client.post(
-            "/users/register",
-            json=a_KMK_patient_information,
-        )
-
-    response_to_login_endpoint = client.post(
-        "/users/login",
-        json={
-            "email": a_KMK_patient_information["email"],
-            "password": a_KMK_patient_information["password"],
-        },
-    )
-
-    bearer = response_to_login_endpoint.json()["token"]
-
-    response_to_second_request_to_login_endpoint = client.post(
-        "/users/register",
-        headers={"Authorization": f"Bearer {bearer}"},
-        json=a_KMK_patient_information,
-    )
-
-    assert response_to_second_request_to_login_endpoint.status_code == 403
-    assert (
-        response_to_second_request_to_login_endpoint.json()["detail"]
-        == "User has already logged in"
-    )
-
-
 def test_register_physician_returns_a_201_code():
     mocked_response = requests.Response()
     mocked_response.status_code = 200

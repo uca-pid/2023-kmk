@@ -28,10 +28,11 @@ class EmailHandler:
             "PATIENT_REGISTERED_ACCOUNT": "Bienvenid@!",
             "PHYSICIAN_REGISTERED_ACCOUNT": "Bienvenid@!",
             "PHYSICIAN_APPROVED_ACCOUNT": "Cuenta Verificada",
-            "PHYSICIAN_REJECTED_ACCOUNT": "Cuenta Rechazada",
+            "PHYSICIAN_DENIED_ACCOUNT": "Cuenta Rechazada",
             "PASSWORD_CHANGED": "Contrase&ntilde;a Modificada",
             "PENDING_APPOINTMENT": "Nuevo Turno",
-            "APPROVED_APPOINTMENT": "Turno Aprovado",
+            "UPDATED_APPOINTMENT": "Turno Actualizado",
+            "APPROVED_APPOINTMENT": "Turno Aprobado",
             "CANCELED_APPOINTMENT": "Turno Cancelado",
             "EDITED_RECORDS": "EditedRecords",
         }

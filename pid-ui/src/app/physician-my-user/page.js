@@ -186,7 +186,8 @@ const UserProfile = () => {
         }
     };
 
-    const handleChangePassword = async () => {
+    const handleChangePassword = async (e) => {
+        e.preventDefault();
         if (newPassword !== confirmNewPassword) {
             toast.error("Las contraseñas no coinciden.");
             return;
@@ -204,10 +205,10 @@ const UserProfile = () => {
                 }
             );
 
-            toast.success("Contraseña cambiada exitosamente.");
             setPassword("");
             setNewPassword("");
             setConfirmNewPassword("");
+            toast.success("Contraseña cambiada exitosamente.");
         } catch (error) {
             console.error(error);
             toast.error(
@@ -235,7 +236,7 @@ const UserProfile = () => {
         <div className={styles.dashboard}>
             <PhysicianTabBar />
 
-            <Header role="physician" />
+            <Header role='physician' />
             {isLoading ? (
                 <p>Cargando...</p>
             ) : (
@@ -247,31 +248,31 @@ const UserProfile = () => {
                                 Datos del Usuario
                             </div>
                             <div className={styles["form-group"]}>
-                                <label htmlFor="firstName">Nombre:</label>
+                                <label htmlFor='firstName'>Nombre:</label>
                                 <input
-                                    type="text"
-                                    id="firstName"
+                                    type='text'
+                                    id='firstName'
                                     value={user.firstName}
                                     readOnly
                                 />
                             </div>
                             <div className={styles["form-group"]}>
-                                <label htmlFor="lastName">Apellido:</label>
+                                <label htmlFor='lastName'>Apellido:</label>
                                 <input
-                                    type="text"
-                                    id="lastName"
+                                    type='text'
+                                    id='lastName'
                                     value={user.lastName}
                                     readOnly
                                 />
                             </div>
 
                             <div className={styles["form-group"]}>
-                                <label htmlFor="email">
+                                <label htmlFor='email'>
                                     Correo Electrónico:
                                 </label>
                                 <input
-                                    type="email"
-                                    id="email"
+                                    type='email'
+                                    id='email'
                                     value={user.email}
                                     readOnly
                                 />
@@ -284,7 +285,7 @@ const UserProfile = () => {
                                 Horario de Atención
                             </div>
 
-                            <div className="horario">
+                            <div className='horario'>
                                 {user.agenda.working_hours.map((item) => (
                                     <div
                                         key={item.day_of_week}
@@ -294,9 +295,9 @@ const UserProfile = () => {
                                     >
                                         <h3>{convertDay(item.day_of_week)}</h3>
                                         <input
-                                            type="checkbox"
-                                            id="workingDay"
-                                            name="workingDay"
+                                            type='checkbox'
+                                            id='workingDay'
+                                            name='workingDay'
                                             className={styles["checkbox-input"]}
                                             defaultChecked={user.agenda.working_days.includes(
                                                 item.day_of_week
@@ -316,7 +317,7 @@ const UserProfile = () => {
                                         >
                                             <label>Inicio: </label>
                                             <input
-                                                type="time"
+                                                type='time'
                                                 defaultValue={convertTime(
                                                     item.start_time
                                                 )}
@@ -330,7 +331,7 @@ const UserProfile = () => {
 
                                             <label>Fin:</label>
                                             <input
-                                                type="time"
+                                                type='time'
                                                 defaultValue={convertTime(
                                                     item.finish_time
                                                 )}
@@ -362,52 +363,52 @@ const UserProfile = () => {
                                 Cambiar Contraseña
                             </div>
                             <div className={styles["form-group"]}>
-                                <label htmlFor="currentPassword">
+                                <label htmlFor='currentPassword'>
                                     Contraseña Actual:
                                 </label>
                                 <input
-                                    type="password"
-                                    id="currentPassword"
+                                    type='password'
+                                    id='currentPassword'
                                     value={password}
                                     onChange={(e) =>
                                         setPassword(e.target.value)
                                     }
                                     required
-                                    autoComplete="current-password"
+                                    autoComplete='current-password'
                                 />
                             </div>
                             <div className={styles["form-group"]}>
-                                <label htmlFor="newPassword">
+                                <label htmlFor='newPassword'>
                                     Nueva Contraseña:
                                 </label>
                                 <input
-                                    type="password"
-                                    id="newPassword"
+                                    type='password'
+                                    id='newPassword'
                                     value={newPassword}
                                     onChange={(e) =>
                                         setNewPassword(e.target.value)
                                     }
                                     required
-                                    autoComplete="new-password"
+                                    autoComplete='new-password'
                                 />
                             </div>
                             <div className={styles["form-group"]}>
-                                <label htmlFor="confirmNewPassword">
+                                <label htmlFor='confirmNewPassword'>
                                     Confirmar Nueva Contraseña:
                                 </label>
                                 <input
-                                    type="password"
-                                    id="confirmNewPassword"
+                                    type='password'
+                                    id='confirmNewPassword'
                                     value={confirmNewPassword}
                                     onChange={(e) =>
                                         setConfirmNewPassword(e.target.value)
                                     }
                                     required
-                                    autoComplete="new-password"
+                                    autoComplete='new-password'
                                 />
                             </div>
                             <button
-                                type="submit"
+                                type='submit'
                                 className={`${styles["standard-button"]} ${
                                     newPassword !== confirmNewPassword || error
                                         ? styles["disabled-button"]
