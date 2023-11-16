@@ -517,7 +517,7 @@ const DashboardPatient = () => {
                                                             )
                                                         }
                                                     >
-                                                        Eliminar
+                                                        Cancelar
                                                     </button>
                                                 </div>
                                             </div>

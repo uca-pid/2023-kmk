@@ -28,6 +28,7 @@ const Registro = () => {
     const [blood_types, setBloodTypes] = useState([]);
     const [blood_type, setBloodType] = useState("");
     const router = useRouter();
+    const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
     // At request level
     const agent = new https.Agent({
@@ -83,6 +84,11 @@ const Registro = () => {
     };
 
     const handleSubmit = async (e) => {
+        localStorage.removeItem("token");
+        axios.defaults.headers.common = {
+            Authorization: `bearer`,
+        };
+
         toast.info("Registrando...");
         e.preventDefault();
 
@@ -116,9 +122,9 @@ const Registro = () => {
                 { httpsAgent: agent }
             );
             console.log(response.data);
-            if (response.data) {
-                console.log("Registro exitoso");
+            if (response.data.message === "Successfull registration") {
                 toast.success("Se ha registrado exitosamente");
+                await delay(5000);
                 router.push("/");
             }
         } catch (error) {
