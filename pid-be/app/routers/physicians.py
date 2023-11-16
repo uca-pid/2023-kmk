@@ -1,3 +1,4 @@
+import requests
 from typing import Dict
 from fastapi import APIRouter, status, Depends
 from fastapi.responses import JSONResponse
@@ -6,6 +7,7 @@ from app.models.requests.PhysicianRequests import AgendaUpdateRequest
 
 from app.models.entities.Auth import Auth
 from app.models.entities.Physician import Physician
+from app.models.entities.Patient import Patient
 from app.models.entities.Appointment import Appointment
 from app.models.responses.PhysicianResponses import (
     GetPhysiciansResponse,
@@ -87,6 +89,21 @@ async def approve_appointment(appointment_id: str, uid=Depends(Auth.is_logged_in
                 content={"detail": "Can only approve appointments"},
             )
         Physician.approve_appointment(appointment_id)
+
+        appointment = Appointment.get_by_id(appointment_id)
+        patient = Patient.get_by_id(appointment.patient_id)
+        physician = Physician.get_by_id(appointment.physician_id)
+        requests.post(
+            "http://localhost:9000/emails/send",
+            json={
+                "type": "APPROVED_APPOINTMENT",
+                "data": {
+                    "physician_first_name": physician["first_name"],
+                    "physician_last_name": physician["last_name"],
+                    "email": patient["email"],
+                },
+            },
+        )
         return {"message": "Appointment approved successfully"}
     except:
         return JSONResponse(

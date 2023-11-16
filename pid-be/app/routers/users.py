@@ -30,9 +30,7 @@ from app.models.responses.ScoreResponses import (
     ScoreErrorResponse,
     SuccessfullScoreResponse,
 )
-from app.models.requests.ScoreRequests import (
-    LoadScoreRequest
-)
+from app.models.requests.ScoreRequests import LoadScoreRequest
 from app.models.responses.PatientResponses import PatientResponse
 from app.models.responses.PhysicianResponses import PhysicianResponse
 
@@ -132,8 +130,7 @@ async def register(
     register_request: Annotated[
         Union[PatientRegisterRequest, PhysicianRegisterRequest],
         Body(discriminator="role"),
-    ],
-    token=Depends(Auth.has_bearer_token),
+    ]
 ):
     """
     Register a user.
@@ -362,7 +359,7 @@ def change_password(
     },
 )
 def add_score(
-    add_score_request: LoadScoreRequest, #uid=Depends(Auth.is_logged_in)
+    add_score_request: LoadScoreRequest,  # uid=Depends(Auth.is_logged_in)
 ):
     """
     Add score.
@@ -383,7 +380,7 @@ def add_score(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal server error"},
         )
-    
+
 
 @router.get(
     "/score/{user_id}",
@@ -395,7 +392,7 @@ def add_score(
     },
 )
 def show_score(
-    user_id: str, #uid=Depends(Auth.is_logged_in)
+    user_id: str,  # uid=Depends(Auth.is_logged_in)
 ):
     """
     Show scores from a physician.
@@ -408,30 +405,36 @@ def show_score(
     * Raise an error if password change fails.
     """
     try:
-        if(Patient.is_patient(user_id)):
+        if Patient.is_patient(user_id):
             appointments = Appointment.get_all_appointments_for_patient_with(user_id)
-        if(Physician.is_physician(user_id)):
+        if Physician.is_physician(user_id):
             appointments = Appointment.get_all_appointments_for_physician_with(user_id)
-        
-        scores = {"puntuality": 0, "attention": 0, "cleanliness": 0, "facilities": 0, "price": 0}
+
+        scores = {
+            "puntuality": 0,
+            "attention": 0,
+            "cleanliness": 0,
+            "facilities": 0,
+            "price": 0,
+        }
         ratings = 0
         for appointment in appointments:
             score = Score.get_score(appointment["id"])
-            if(score != None):
+            if score != None:
                 scores["puntuality"] += score["puntuality"]
                 scores["attention"] += score["attention"]
                 scores["cleanliness"] += score["cleanliness"]
                 scores["facilities"] += score["facilities"]
                 scores["price"] += score["price"]
-                ratings+=1
+                ratings += 1
 
         return {
             "score_metrics": {
-                "puntuality": scores["puntuality"]/ratings,
-                "attention": scores["attention"]/ratings,
-                "cleanliness": scores["cleanliness"]/ratings,
-                "facilities": scores["facilities"]/ratings,
-                "price": scores["price"]/ratings,
+                "puntuality": scores["puntuality"] / ratings,
+                "attention": scores["attention"] / ratings,
+                "cleanliness": scores["cleanliness"] / ratings,
+                "facilities": scores["facilities"] / ratings,
+                "price": scores["price"] / ratings,
             }
         }
     except:

@@ -253,6 +253,27 @@ def update_appointment(
             content={"detail": "Invalid appointment id"},
         )
     appointment.update(update_appointment_request.model_dump())
+
+    physician = Physician.get_by_id(appointment.physician_id)
+    patient = Patient.get_by_id(uid)
+    date = datetime.fromtimestamp(update_appointment_request.date)
+    requests.post(
+        "http://localhost:9000/emails/send",
+        json={
+            "type": "UPDATED_APPOINTMENT",
+            "data": {
+                "email": physician["email"],
+                "name": patient["first_name"],
+                "last_name": patient["last_name"],
+                "day": date.day,
+                "month": date.month,
+                "year": date.year,
+                "hour": date.hour,
+                "minute": date.minute,
+                "second": date.second,
+            },
+        },
+    )
     return {"message": "Appointment updated successfully"}
 
 
