@@ -1,23 +1,87 @@
 import axios from "axios";
+import https from "https";
+import { toast } from "react-toastify";
 
-const userCheck = async (router) => {
+const agent = new https.Agent({
+    rejectUnauthorized: false,
+});
+
+const loginCheck = async (router) => {
+    const apiURL = process.env.NEXT_PUBLIC_API_URL;
     try {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
-        const response = await axios.get(`http://localhost:8080/users/role`);
+        const response = await axios.get(`${apiURL}users/role`, {
+            httpsAgent: agent,
+        });
         if (response.status == 200) {
-            if (response.data.roles.includes("admin")) {
-                router.replace("/dashboard-admin");
-            } else if (response.data.roles.includes("physician")) {
-                router.replace("/dashboard-physician");
-            } else if (response.data.roles.includes("patient")) {
-                router.replace("/dashboard-patient");
-            } else {
-                router.replace("/");
+            console.log(response.data.roles);
+            switch (response.data.roles[0]) {
+                case "admin":
+                    router.replace("/dashboard-admin");
+                    break;
+                case "physician":
+                    router.replace("/physician-agenda");
+                    break;
+                case "patient":
+                    router.replace("/patient-dashboard");
+                    break;
+
+                default:
+                    router.replace("/");
+                    break;
             }
-        } else {
-            router.replace("/");
+        }
+    } catch (error) {
+        console.error(error);
+
+        switch (error.response.data.detail) {
+            case "User must be logged in":
+                router.replace("/");
+                break;
+            case "Account has to be approved by admin":
+                toast.error(
+                    <div>
+                        Aprobacion pendiente <br /> Contacte al administrador
+                    </div>
+                );
+                break;
+            case "Account is not approved":
+                toast.error(
+                    <div>
+                        Cuenta denegada <br /> Contacte al administrador
+                    </div>
+                );
+                break;
+        }
+    }
+};
+
+const redirect = async (router) => {
+    const apiURL = process.env.NEXT_PUBLIC_API_URL;
+    try {
+        axios.defaults.headers.common = {
+            Authorization: `bearer ${localStorage.getItem("token")}`,
+        };
+        const response = await axios.get(`${apiURL}users/role`, {
+            httpsAgent: agent,
+        });
+        if (response.status == 200) {
+            switch (response.data.roles[0]) {
+                case "admin":
+                    router.replace("/dashboard-admin");
+                    break;
+                case "physician":
+                    router.replace("/physician-agenda");
+                    break;
+                case "patient":
+                    router.replace("/patient-dashboard");
+                    break;
+                default:
+                    router.replace("/");
+                    break;
+            }
         }
     } catch (error) {
         console.error(error);
@@ -30,4 +94,24 @@ const userCheck = async (router) => {
     }
 };
 
-export default userCheck;
+const userCheck = async (router) => {
+    const apiURL = process.env.NEXT_PUBLIC_API_URL;
+    try {
+        axios.defaults.headers.common = {
+            Authorization: `bearer ${localStorage.getItem("token")}`,
+        };
+        const response = await axios.get(`${apiURL}users/role`, {
+            httpsAgent: agent,
+        });
+    } catch (error) {
+        console.error(error);
+
+        switch (error.response.data.detail) {
+            case "User must be logged in":
+                router.replace("/");
+                break;
+        }
+    }
+};
+
+export { loginCheck, redirect, userCheck };

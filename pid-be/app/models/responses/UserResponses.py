@@ -1,6 +1,8 @@
 from enum import Enum
 from pydantic import BaseModel
 
+from app.models.responses.AgendaResponses import AgendaResponse
+
 
 class SuccessfulLoginResponse(BaseModel):
     token: str
@@ -48,6 +50,7 @@ class UserInfoResponse(BaseModel):
     email: str
     first_name: str
     last_name: str
+    agenda: AgendaResponse = None
 
 
 class UserInfoErrorResponse(BaseModel):

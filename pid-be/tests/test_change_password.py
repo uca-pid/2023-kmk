@@ -1,7 +1,11 @@
 import pytest
-import requests
-from .config import *
 from firebase_admin import auth, firestore
+from app.main import app
+from fastapi.testclient import TestClient
+import requests
+from unittest.mock import patch
+
+client = TestClient(app)
 
 db = firestore.client()
 
@@ -17,20 +21,18 @@ a_KMK_patient_information = {
 }
 
 
-@pytest.fixture(scope="session", autouse=True)
-def clean_firestore():
-    requests.delete(
-        "http://localhost:8081/emulator/v1/projects/pid-kmk/databases/(default)/documents"
-    )
-
-
 @pytest.fixture(autouse=True)
-def create_patient_and_then_delete_him(clean_firestore):
-    requests.post(
-        "http://localhost:8080/users/register",
-        json=a_KMK_patient_information,
+def create_patient_and_then_delete_him():
+    created_user = auth.create_user(
+        **{
+            "email": a_KMK_patient_information["email"],
+            "password": a_KMK_patient_information["password"],
+        }
     )
-    pytest.patient_uid = auth.get_user_by_email(a_KMK_patient_information["email"]).uid
+    pytest.patient_uid = created_user.uid
+    db.collection("patients").document(pytest.patient_uid).set(
+        a_KMK_patient_information
+    )
     yield
     auth.delete_user(pytest.patient_uid)
     db.collection("patients").document(pytest.patient_uid).delete()
@@ -38,8 +40,8 @@ def create_patient_and_then_delete_him(clean_firestore):
 
 @pytest.fixture(autouse=True)
 def log_in_patient(create_patient_and_then_delete_him):
-    pytest.bearer_token = requests.post(
-        "http://localhost:8080/users/login",
+    pytest.bearer_token = client.post(
+        "/users/login",
         json={
             "email": a_KMK_patient_information["email"],
             "password": a_KMK_patient_information["password"],
@@ -49,27 +51,33 @@ def log_in_patient(create_patient_and_then_delete_him):
 
 
 def test_change_password_endpoint_returns_a_200_code():
-    response_from_change_password_endpoint = requests.post(
-        "http://localhost:8080/users/change-password",
-        json={
-            "current_password": a_KMK_patient_information["password"],
-            "new_password": "newPassword123456",
-        },
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        response_from_change_password_endpoint = client.post(
+            "/users/change-password",
+            json={
+                "current_password": a_KMK_patient_information["password"],
+                "new_password": "newPassword123456",
+            },
+            headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+        )
 
     assert response_from_change_password_endpoint.status_code == 200
 
 
 def test_change_password_endpoint_returns_a_message():
-    response_from_change_password_endpoint = requests.post(
-        "http://localhost:8080/users/change-password",
-        json={
-            "current_password": a_KMK_patient_information["password"],
-            "new_password": "newPassword123456",
-        },
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        response_from_change_password_endpoint = client.post(
+            "/users/change-password",
+            json={
+                "current_password": a_KMK_patient_information["password"],
+                "new_password": "newPassword123456",
+            },
+            headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+        )
 
     assert (
         response_from_change_password_endpoint.json()["message"]
@@ -80,8 +88,8 @@ def test_change_password_endpoint_returns_a_message():
 def test_change_password_endpoint_changes_password_in_authentication():
     new_password = "newPassword123456"
     assert (
-        requests.post(
-            "http://localhost:8080/users/login",
+        client.post(
+            "/users/login",
             json={
                 "email": a_KMK_patient_information["email"],
                 "password": new_password,
@@ -89,19 +97,21 @@ def test_change_password_endpoint_changes_password_in_authentication():
         ).status_code
         == 400
     )
-
-    requests.post(
-        "http://localhost:8080/users/change-password",
-        json={
-            "current_password": a_KMK_patient_information["password"],
-            "new_password": new_password,
-        },
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
-    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        client.post(
+            "/users/change-password",
+            json={
+                "current_password": a_KMK_patient_information["password"],
+                "new_password": new_password,
+            },
+            headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+        )
 
     assert (
-        requests.post(
-            "http://localhost:8080/users/login",
+        client.post(
+            "/users/login",
             json={
                 "email": a_KMK_patient_information["email"],
                 "password": new_password,
@@ -112,8 +122,8 @@ def test_change_password_endpoint_changes_password_in_authentication():
 
 
 def test_change_password_endpoint_throws_a_422_if_new_password_has_less_that_8_characters():
-    response_from_change_password_endpoint = requests.post(
-        "http://localhost:8080/users/change-password",
+    response_from_change_password_endpoint = client.post(
+        "/users/change-password",
         json={
             "current_password": a_KMK_patient_information["password"],
             "new_password": "nePa6",
@@ -125,8 +135,8 @@ def test_change_password_endpoint_throws_a_422_if_new_password_has_less_that_8_c
 
 
 def test_change_password_endpoint_throws_a_422_if_new_password_has_no_uppercases():
-    response_from_change_password_endpoint = requests.post(
-        "http://localhost:8080/users/change-password",
+    response_from_change_password_endpoint = client.post(
+        "/users/change-password",
         json={
             "current_password": a_KMK_patient_information["password"],
             "new_password": "password123456",
@@ -138,8 +148,8 @@ def test_change_password_endpoint_throws_a_422_if_new_password_has_no_uppercases
 
 
 def test_change_password_endpoint_throws_a_422_if_new_password_has_no_lowercases():
-    response_from_change_password_endpoint = requests.post(
-        "http://localhost:8080/users/change-password",
+    response_from_change_password_endpoint = client.post(
+        "/users/change-password",
         json={
             "current_password": a_KMK_patient_information["password"],
             "new_password": "PASSWORD123456",
@@ -151,8 +161,8 @@ def test_change_password_endpoint_throws_a_422_if_new_password_has_no_lowercases
 
 
 def test_change_password_endpoint_throws_a_422_if_new_password_has_no_numbers():
-    response_from_change_password_endpoint = requests.post(
-        "http://localhost:8080/users/change-password",
+    response_from_change_password_endpoint = client.post(
+        "/users/change-password",
         json={
             "current_password": a_KMK_patient_information["password"],
             "new_password": "PASSWORDabc",
@@ -164,9 +174,7 @@ def test_change_password_endpoint_throws_a_422_if_new_password_has_no_numbers():
 
 
 def test_change_password_with_no_authorization_header_returns_401_code():
-    response_from_change_password_endpoint = requests.post(
-        "http://localhost:8080/users/change-password"
-    )
+    response_from_change_password_endpoint = client.post("/users/change-password")
 
     assert response_from_change_password_endpoint.status_code == 401
     assert (
@@ -176,8 +184,8 @@ def test_change_password_with_no_authorization_header_returns_401_code():
 
 
 def test_change_password_with_empty_authorization_header_returns_401_code():
-    response_from_change_password_endpoint = requests.post(
-        "http://localhost:8080/users/change-password",
+    response_from_change_password_endpoint = client.post(
+        "/users/change-password",
         headers={"Authorization": ""},
     )
 
@@ -189,8 +197,8 @@ def test_change_password_with_empty_authorization_header_returns_401_code():
 
 
 def test_change_password_with_empty_bearer_token_returns_401_code():
-    response_from_change_password_endpoint = requests.post(
-        "http://localhost:8080/users/change-password",
+    response_from_change_password_endpoint = client.post(
+        "/users/change-password",
         headers={"Authorization": f"Bearer "},
     )
 
@@ -202,8 +210,8 @@ def test_change_password_with_empty_bearer_token_returns_401_code():
 
 
 def test_change_password_with_non_bearer_token_returns_401_code():
-    response_from_change_password_endpoint = requests.post(
-        "http://localhost:8080/users/change-password",
+    response_from_change_password_endpoint = client.post(
+        "/users/change-password",
         headers={"Authorization": pytest.bearer_token},
     )
 
@@ -215,8 +223,8 @@ def test_change_password_with_non_bearer_token_returns_401_code():
 
 
 def test_change_password_with_invalid_bearer_token_returns_401_code():
-    response_from_change_password_endpoint = requests.post(
-        "http://localhost:8080/users/change-password",
+    response_from_change_password_endpoint = client.post(
+        "/users/change-password",
         headers={"Authorization": "Bearer smth"},
     )
 
@@ -228,8 +236,8 @@ def test_change_password_with_invalid_bearer_token_returns_401_code():
 
 
 def test_change_password_endpoint_returns_a_400_code_and_message_if_current_password_is_invalid():
-    response_from_change_password_endpoint = requests.post(
-        "http://localhost:8080/users/change-password",
+    response_from_change_password_endpoint = client.post(
+        "/users/change-password",
         json={
             "current_password": "notCurrentPassword",
             "new_password": "newPassword123456",
@@ -242,3 +250,19 @@ def test_change_password_endpoint_returns_a_400_code_and_message_if_current_pass
         response_from_change_password_endpoint.json()["detail"]
         == "Invalid current password"
     )
+
+
+def test_change_password_endpoint_triggers_notification():
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        client.post(
+            "/users/change-password",
+            json={
+                "current_password": a_KMK_patient_information["password"],
+                "new_password": "newPassword123456",
+            },
+            headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+        )
+
+    assert mocked_request.call_count == 2

@@ -1,7 +1,9 @@
 import pytest
-import requests
-from .config import *
 from firebase_admin import firestore, auth
+from app.main import app
+from fastapi.testclient import TestClient
+
+client = TestClient(app)
 
 db = firestore.client()
 
@@ -27,22 +29,15 @@ a_KMK_user_information = {
 }
 
 
-@pytest.fixture(scope="session", autouse=True)
-def clean_firestore():
-    requests.delete(
-        "http://localhost:8081/emulator/v1/projects/pid-kmk/databases/(default)/documents"
-    )
-
-
-@pytest.fixture(scope="session", autouse=True)
-def create_test_user(clean_firestore):
+@pytest.fixture(scope="module", autouse=True)
+def create_test_user():
     created_user = auth.create_user(**a_KMK_user_information)
     a_KMK_user_information["uid"] = created_user.uid
     yield
     auth.delete_user(a_KMK_user_information["uid"])
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def load_and_delete_specialties():
     for specialty in specialties:
         db.collection("specialties").document().set({"name": specialty})
@@ -53,15 +48,15 @@ def load_and_delete_specialties():
 
 
 def test_get_specialties_endpoint_returns_a_200_code():
-    response_from_login_endpoint = requests.post(
-        "http://localhost:8080/users/login",
+    response_from_login_endpoint = client.post(
+        "/users/login",
         json={
             "email": a_KMK_user_information["email"],
             "password": a_KMK_user_information["password"],
         },
     )
-    response_from_get_specialties_endpoint = requests.get(
-        "http://localhost:8080/specialties",
+    response_from_get_specialties_endpoint = client.get(
+        "/specialties",
         headers={
             "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
         },
@@ -71,15 +66,15 @@ def test_get_specialties_endpoint_returns_a_200_code():
 
 
 def test_get_specialties_endpoint_returns_a_list():
-    response_from_login_endpoint = requests.post(
-        "http://localhost:8080/users/login",
+    response_from_login_endpoint = client.post(
+        "/users/login",
         json={
             "email": a_KMK_user_information["email"],
             "password": a_KMK_user_information["password"],
         },
     )
-    response_from_get_specialties_endpoint = requests.get(
-        "http://localhost:8080/specialties",
+    response_from_get_specialties_endpoint = client.get(
+        "/specialties",
         headers={
             "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
         },
@@ -89,15 +84,15 @@ def test_get_specialties_endpoint_returns_a_list():
 
 
 def test_get_specialties_endpoint_returns_the_list_of_all_specialties_ordered_alphabetically():
-    response_from_login_endpoint = requests.post(
-        "http://localhost:8080/users/login",
+    response_from_login_endpoint = client.post(
+        "/users/login",
         json={
             "email": a_KMK_user_information["email"],
             "password": a_KMK_user_information["password"],
         },
     )
-    response_from_get_specialties_endpoint = requests.get(
-        "http://localhost:8080/specialties",
+    response_from_get_specialties_endpoint = client.get(
+        "/specialties",
         headers={
             "Authorization": f"Bearer {response_from_login_endpoint.json()['token']}"
         },
@@ -107,9 +102,7 @@ def test_get_specialties_endpoint_returns_the_list_of_all_specialties_ordered_al
 
 
 def test_get_specialties_with_no_authorization_header_returns_200_code():
-    response_to_get_specialties_endpoint = requests.get(
-        "http://localhost:8080/specialties"
-    )
+    response_to_get_specialties_endpoint = client.get("/specialties")
 
     assert response_to_get_specialties_endpoint.status_code == 200
 
@@ -118,7 +111,5 @@ def test_get_specialties_with_no_specialties_created_returns_an_empty_list():
     specilaties_doc = db.collection("specialties").list_documents()
     for specialty_doc in specilaties_doc:
         specialty_doc.delete()
-    response_to_get_specialties_endpoint = requests.get(
-        "http://localhost:8080/specialties"
-    )
+    response_to_get_specialties_endpoint = client.get("/specialties")
     assert response_to_get_specialties_endpoint.json()["specialties"] == []

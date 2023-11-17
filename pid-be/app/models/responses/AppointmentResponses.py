@@ -19,6 +19,10 @@ class SuccessfulAppointmentUpdateResponse(BaseModel):
     message: str
 
 
+class SuccessfulAppointmentCloseResponse(BaseModel):
+    message: str
+
+
 class AppointmentCreationError(BaseModel):
     detail: str
 
@@ -35,19 +39,26 @@ class UpdateAppointmentError(BaseModel):
     detail: str
 
 
+class CloseAppointmentError(BaseModel):
+    detail: str
+
+
 class BasicAppointmentResponse(BaseModel):
     id: str
     date: int
     physician: PhysicianResponse
     patient: PatientResponse
     created_at: int
+    status: str = "pending"
+    attended: Union[bool, None] = None
+    start_time: Union[str, None] = None
 
     def __init__(self, **data):
         physician = Physician.get_by_id(data["physician_id"])
-        data["physician"] = PhysicianResponse(**physician).dict()
+        data["physician"] = PhysicianResponse(**physician).model_dump()
 
         patient = Patient.get_by_id(data["patient_id"])
-        data["patient"] = PatientResponse(**patient).dict()
+        data["patient"] = PatientResponse(**patient).model_dump()
         super().__init__(**data)
 
 

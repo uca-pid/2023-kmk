@@ -1,6 +1,9 @@
+import requests
 from fastapi import APIRouter, status, Depends
 from fastapi.responses import JSONResponse
 
+from app.models.entities.Appointment import Appointment
+from app.models.entities.Patient import Patient
 from app.models.entities.Auth import Auth
 from app.models.entities.Record import Record
 from app.models.responses.RecordResponses import (
@@ -48,6 +51,7 @@ def get_record(patient_id):
             content={"detail": "Internal server error"},
         )
 
+
 @router.get(
     "/get-my-record",
     status_code=status.HTTP_200_OK,
@@ -70,7 +74,9 @@ def get_my_record(patient_id=Depends(Auth.is_logged_in)):
     * Throw an error if recrods retrieving fails.
     """
     try:
+        print(patient_id)
         record = Record.get_by_id(patient_id)
+        print(record)
         return {"record": record}
     except:
         return JSONResponse(
@@ -80,7 +86,7 @@ def get_my_record(patient_id=Depends(Auth.is_logged_in)):
 
 
 @router.post(
-    "/update/{patient_id}",
+    "/update",
     status_code=status.HTTP_200_OK,
     response_model=GetRecordResponse,
     responses={
@@ -89,7 +95,10 @@ def get_my_record(patient_id=Depends(Auth.is_logged_in)):
         500: {"model": GetRecordError},
     },
 )
-def update_record(patient_id, observation_creation_request: ObservationRequest):
+def update_record(
+    observation_creation_request: ObservationRequest,
+    uid=Depends(Auth.is_logged_in),
+):
     """
     Update a patient's record with new observation.
 
@@ -102,7 +111,12 @@ def update_record(patient_id, observation_creation_request: ObservationRequest):
     * Throw an error if the record is not found or updating fails.
     """
     try:
-        record = Record.add_observation(patient_id, observation_creation_request.dict())
+        print(observation_creation_request)
+        appointment = Appointment.get_by_id(
+            observation_creation_request.appointment_id)
+        print(appointment.patient_id)
+        record = Record.add_observation(
+            appointment.patient_id, observation_creation_request.dict(),uid)
         return {"record": record}
     except:
         return JSONResponse(

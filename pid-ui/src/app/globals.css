@@ -30,6 +30,8 @@ button {
     cursor: pointer;
     transition: background-color 0.3s;
     margin-right: 10px;
+    margin: 10px 5px;
+    font-size: 16px;
 }
 
 /* Estilos para el encabezado */
@@ -65,7 +67,7 @@ input {
     appearance: none;
     outline: none;
     cursor: pointer;
-    margin-bottom: 2rem;
+    margin: 1rem 0;
 }
 
 /* Estilos para el pie de página de la página de inicio */

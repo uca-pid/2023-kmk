@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "pid-notifications-api"
+version = "0.1.0"
+description = ""
+authors = ["tommudano <38632202+tommudano@users.noreply.github.com>"]
+
+packages = [{ include = "app" }, { include = "tests" }]
+
+[tool.poetry.scripts]
+start = "app.main:start"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.103.2"
+fastapi-mail = "^1.4.1"
+python-dotenv = "^1.0.0"
+uvicorn = "^0.23.2"
+pydantic = "^2.4.2"
+httpx = "^0.25.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "7.3.1"
+requests = "^2.31.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

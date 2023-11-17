@@ -9,7 +9,7 @@ class Physician:
     role: str
     name: str
     last_name: str
-    tuition: int
+    tuition: str
     specialty: str
     email: str
     id: str
@@ -20,7 +20,7 @@ class Physician:
         role: str,
         name: str,
         last_name: str,
-        tuition: int,
+        tuition: str,
         specialty: str,
         email: str,
         id: str,
@@ -102,6 +102,18 @@ class Physician:
         db.collection("physicians").document(id).update(
             {f"appointments.{date}": firestore.DELETE_FIELD}
         )
+
+    @staticmethod
+    def approve_appointment(id):
+        db.collection("appointments").document(id).update({"status": "approved"})
+
+    @staticmethod
+    def deny_appointment(id):
+        db.collection("appointments").document(id).update({"status": "denied"})
+
+    @staticmethod
+    def update_agenda(id, agenda):
+        db.collection("physicians").document(id).update({"agenda": agenda})
 
     def create(self):
         if db.collection("physicians").document(self.id).get().exists:
