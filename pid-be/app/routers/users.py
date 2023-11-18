@@ -224,7 +224,6 @@ def get_user_roles(user_id=Depends(Auth.is_logged_in)):
     * Return the users roles.
     * Throw an error if users role retrieving process fails.
     """
-    print(user_id)
     roles = []
     try:
         if Admin.is_admin(user_id):
@@ -375,13 +374,15 @@ def add_score(
     """
     try:
         if Patient.get_by_id(uid):
-            score = Score(**{**add_score_request.model_dump()})
-            new_score_id = score.create()
-            Appointment.update_rated_status(new_score_id)
+            # print(add_score_request.appointment_id)
+            # score = Score(**{**add_score_request.model_dump()})
+            # new_score_id = score.create()
+            Score.add_physician_score(add_score_request)
+            Appointment.update_rated_status(add_score_request.appointment_id)
             return {"message": "Scores added successfully"}
         if Physician.get_by_id(uid):
-            score = Score(**{**add_score_request.model_dump()})
-            score.create()
+            print(add_score_request)
+            Score.add_patient_score(add_score_request)
             return {"message": "Scores added successfully"}
         else:
             return JSONResponse(
