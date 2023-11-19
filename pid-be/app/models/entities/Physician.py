@@ -94,6 +94,18 @@ class Physician:
         return [physician.to_dict() for physician in physicians]
 
     @staticmethod
+    def get_physicians_working():
+        physicians = (
+            db.collection("physicians").where("approved", "==", "approved").get()
+        )
+        return [physician.to_dict() for physician in physicians]
+
+    @staticmethod
+    def get_physicians_denied():
+        physicians = db.collection("deniedPhysicians").get()
+        return [physician.to_dict() for physician in physicians]
+
+    @staticmethod
     def is_physician(id):
         return db.collection("physicians").document(id).get().exists
 
