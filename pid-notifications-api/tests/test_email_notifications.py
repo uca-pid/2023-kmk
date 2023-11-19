@@ -171,3 +171,16 @@ def test_email_template_handler_generates_correct_HTML_for_edited_records():
     with open("app/models/email_templates/EditedRecords.html", "r") as fp:
         expected_template = fp.read()
     assert generated_template == expected_template.format()
+
+
+def test_email_template_handler_generates_correct_HTML_for_ublocked_physician_accounts():
+    template_handler = TemplateHandler(
+        **{
+            "type": "PHYSICIAN_UNBLOCKED_ACCOUNT",
+            "data": {"email": physician_account_data["email"]},
+        }
+    )
+    generated_template = template_handler.generate_template()
+    with open("app/models/email_templates/UnblockedPhysicianAccount.html", "r") as fp:
+        expected_template = fp.read()
+    assert generated_template == expected_template.format()

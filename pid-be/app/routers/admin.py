@@ -133,6 +133,55 @@ async def deny_physician(physician_id: str, uid=Depends(Auth.is_admin)):
         )
 
 
+@router.post(
+    "/unblock-physician/{physician_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessfullValidationResponse,
+    responses={
+        400: {"model": ValidationErrorResponse},
+        401: {"model": ValidationErrorResponse},
+        403: {"model": ValidationErrorResponse},
+        500: {"model": ValidationErrorResponse},
+    },
+)
+async def unblock_physician(physician_id: str, uid=Depends(Auth.is_admin)):
+    """
+    Validate a physician.
+
+    This will allow superusers to unblock blocked physicians.
+
+    This path operation will:
+
+    * Validate a physician.
+    * Change the _approved_ field from Physicians from _denied_ to _pending_.
+    * Throw an error if the validation fails.
+    """
+    try:
+        if not Physician.is_blocked_physician(physician_id):
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"detail": "Can only unblock blocked physicians"},
+            )
+        physician = Physician.get_blocked_by_id(physician_id)
+        Admin.unblock_physician(physician)
+        requests.post(
+            "http://localhost:9000/emails/send",
+            json={
+                "type": "PHYSICIAN_UNBLOCKED_ACCOUNT",
+                "data": {
+                    "email": physician["email"],
+                },
+            },
+        )
+        return {"message": "Physician unblocked successfully"}
+    except Exception as e:
+        print(e)
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "Internal server error"},
+        )
+
+
 @router.get(
     "/physicians-pending",
     status_code=status.HTTP_200_OK,

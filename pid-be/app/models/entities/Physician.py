@@ -40,6 +40,10 @@ class Physician:
         return db.collection("physicians").document(id).get().to_dict()
 
     @staticmethod
+    def get_blocked_by_id(id):
+        return db.collection("deniedPhysicians").document(id).get().to_dict()
+
+    @staticmethod
     def get_by_specialty(specialty_name):
         physicians = (
             db.collection("physicians")
@@ -108,6 +112,10 @@ class Physician:
     @staticmethod
     def is_physician(id):
         return db.collection("physicians").document(id).get().exists
+
+    @staticmethod
+    def is_blocked_physician(id):
+        return db.collection("deniedPhysicians").document(id).get().exists
 
     @staticmethod
     def free_agenda(id, date):

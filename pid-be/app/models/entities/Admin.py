@@ -42,6 +42,13 @@ class Admin:
         Admin.delete_physician(id)
 
     @staticmethod
+    def unblock_physician(denied_physician):
+        db.collection("physicians").document(denied_physician["id"]).set(
+            {**denied_physician, "approved": "approved"}
+        )
+        db.collection("deniedPhysicians").document(denied_physician["id"]).delete()
+
+    @staticmethod
     def delete_physician(id):
         db.collection("physicians").document(id).delete()
 
