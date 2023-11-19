@@ -106,8 +106,8 @@ const Admin = () => {
                     httpsAgent: agent,
                 }
             );
-            console.log(response.data.physicians_pending_validation);
-            setPhysicians(response.data.physicians_pending_validation);
+            console.log(response.data.physicians_working);
+            setPhysicians(response.data.physicians_working);
             !firstLoad ? toast.success("Profesionales actualizados") : null;
         } catch (error) {
             console.error(error);
@@ -125,8 +125,8 @@ const Admin = () => {
                     httpsAgent: agent,
                 }
             );
-            console.log(response.data.physicians_pending_validation);
-            setBlockedPhysicians(response.data.physicians_pending_validation);
+            console.log(response.data.physicians_blocked);
+            setBlockedPhysicians(response.data.physicians_blocked);
             !firstLoad ? toast.success("Profesionales actualizados") : null;
         } catch (error) {
             console.error(error);
@@ -177,6 +177,26 @@ const Admin = () => {
         }
     };
 
+    const handleUnblockPhysician = async (physician) => {
+        try {
+            console.log(physician.id);
+            const response = await axios.post(
+                `${apiURL}admin/unblock-physician/${physician.id}`,
+                {
+                    httpsAgent: agent,
+                }
+            );
+            toast.info("Profesional desbloqueado");
+            setFirstLoad(true);
+            fetchPendingPhysicians();
+            fetchPhysicians();
+            fetchBlockedPhysicians();
+            setFirstLoad(false);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
     const fetchMetrics = async () => {
         try {
             const response = await axios.get(`${apiURL}dashboard/admin`, {
@@ -196,10 +216,10 @@ const Admin = () => {
         };
         redirect(router);
 
-        // fetchBlockedPhysicians();
-        // fetchPhysicians();
         fetchSpecialties();
         fetchMetrics();
+        fetchPhysicians();
+        fetchBlockedPhysicians();
         fetchPendingPhysicians().then(() => setIsLoading(false));
         setFirstLoad(false);
     }, []);
@@ -217,8 +237,8 @@ const Admin = () => {
                                 Especialidades
                             </div>
                             <Image
-                                src="/refresh_icon.png"
-                                alt="Notificaciones"
+                                src='/refresh_icon.png'
+                                alt='Notificaciones'
                                 className={styles["refresh-icon"]}
                                 width={200}
                                 height={200}
@@ -234,10 +254,10 @@ const Admin = () => {
                                 Agregar Especialidad
                             </div>
                             <input
-                                type="text"
-                                id="specialty"
-                                name="specialty"
-                                placeholder="Especialidad"
+                                type='text'
+                                id='specialty'
+                                name='specialty'
+                                placeholder='Especialidad'
                                 value={newSpecialty}
                                 onChange={(e) =>
                                     setNewSpecialty(e.target.value)
@@ -270,8 +290,8 @@ const Admin = () => {
                                                     }
                                                 >
                                                     <Image
-                                                        src="/trash_icon.png"
-                                                        alt="borrar"
+                                                        src='/trash_icon.png'
+                                                        alt='borrar'
                                                         className={styles.logo}
                                                         width={25}
                                                         height={25}
@@ -298,8 +318,8 @@ const Admin = () => {
                                 Profesionales pendientes de aprobación
                             </div>
                             <Image
-                                src="/refresh_icon.png"
-                                alt="Notificaciones"
+                                src='/refresh_icon.png'
+                                alt='Notificaciones'
                                 className={styles["refresh-icon"]}
                                 width={200}
                                 height={200}
@@ -369,7 +389,7 @@ const Admin = () => {
                                                             )
                                                         }
                                                     >
-                                                        Denegar
+                                                        Bloquear
                                                     </button>
                                                 </div>
                                             </div>
@@ -388,8 +408,8 @@ const Admin = () => {
                                 Profesionales en funciones
                             </div>
                             <Image
-                                src="/refresh_icon.png"
-                                alt="Notificaciones"
+                                src='/refresh_icon.png'
+                                alt='Notificaciones'
                                 className={styles["refresh-icon"]}
                                 width={200}
                                 height={200}
@@ -435,21 +455,6 @@ const Admin = () => {
                                                     <button
                                                         className={
                                                             styles[
-                                                                "approve-button"
-                                                            ]
-                                                        }
-                                                        onClick={() =>
-                                                            handleApprovePhysician(
-                                                                doctor
-                                                            )
-                                                        }
-                                                    >
-                                                        Aprobar
-                                                    </button>
-
-                                                    <button
-                                                        className={
-                                                            styles[
                                                                 "delete-button"
                                                             ]
                                                         }
@@ -459,7 +464,7 @@ const Admin = () => {
                                                             )
                                                         }
                                                     >
-                                                        Denegar
+                                                        Bloquear
                                                     </button>
                                                 </div>
                                             </div>
@@ -475,11 +480,11 @@ const Admin = () => {
 
                         <div className={styles.form}>
                             <div className={styles["title"]}>
-                                Profesionales bloqueados
+                                Profesionales bloqueados / denegados
                             </div>
                             <Image
-                                src="/refresh_icon.png"
-                                alt="Notificaciones"
+                                src='/refresh_icon.png'
+                                alt='Notificaciones'
                                 className={styles["refresh-icon"]}
                                 width={200}
                                 height={200}
@@ -530,27 +535,12 @@ const Admin = () => {
                                                             ]
                                                         }
                                                         onClick={() =>
-                                                            handleApprovePhysician(
+                                                            handleUnblockPhysician(
                                                                 doctor
                                                             )
                                                         }
                                                     >
-                                                        Aprobar
-                                                    </button>
-
-                                                    <button
-                                                        className={
-                                                            styles[
-                                                                "delete-button"
-                                                            ]
-                                                        }
-                                                        onClick={() =>
-                                                            handleDenyPhysician(
-                                                                doctor
-                                                            )
-                                                        }
-                                                    >
-                                                        Denegar
+                                                        Desbloquear
                                                     </button>
                                                 </div>
                                             </div>
