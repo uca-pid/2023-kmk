@@ -147,9 +147,9 @@ def get_all_appointments_for_physician(uid=Depends(Auth.is_logged_in)):
     """
     try:
         appointments = Appointment.get_all_appointments_for_physician_with(uid)
-        print (appointments)
+        print(appointments)
         return {"appointments": appointments}
-    
+
     except HTTPException as http_exception:
         raise http_exception
     except:
@@ -193,6 +193,7 @@ def delete_appointment_by_id(id: str, uid=Depends(Auth.is_logged_in)):
                 content={"detail": "Invalid appointment id"},
             )
         appointment.delete()
+        date = datetime.fromtimestamp(appointment.date)
         physician = Physician.get_by_id(appointment.physician_id)
         requests.post(
             "http://localhost:9000/emails/send",
@@ -200,6 +201,12 @@ def delete_appointment_by_id(id: str, uid=Depends(Auth.is_logged_in)):
                 "type": "CANCELED_APPOINTMENT",
                 "data": {
                     "email": physician["email"],
+                    "day": date.day,
+                    "month": date.month,
+                    "year": date.year,
+                    "hour": date.hour,
+                    "minute": date.minute,
+                    "second": date.second,
                 },
             },
         )
@@ -210,6 +217,12 @@ def delete_appointment_by_id(id: str, uid=Depends(Auth.is_logged_in)):
                 "type": "CANCELED_APPOINTMENT",
                 "data": {
                     "email": patient["email"],
+                    "day": date.day,
+                    "month": date.month,
+                    "year": date.year,
+                    "hour": date.hour,
+                    "minute": date.minute,
+                    "second": date.second,
                 },
             },
         )

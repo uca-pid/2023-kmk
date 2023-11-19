@@ -151,13 +151,13 @@ def test_email_template_handler_generates_correct_HTML_for_canceled_appointment(
     template_handler = TemplateHandler(
         **{
             "type": "CANCELED_APPOINTMENT",
-            "data": {"email": physician_account_data["email"]},
+            "data": {"email": physician_account_data["email"], **date_data},
         }
     )
     generated_template = template_handler.generate_template()
     with open("app/models/email_templates/CanceledAppointment.html", "r") as fp:
         expected_template = fp.read()
-    assert generated_template == expected_template.format()
+    assert generated_template == expected_template.format(**date_data)
 
 
 def test_email_template_handler_generates_correct_HTML_for_edited_records():
