@@ -135,6 +135,7 @@ def test_email_template_handler_generates_correct_HTML_for_approved_appointment(
                 "physician_first_name": physician_account_data["name"],
                 "physician_last_name": physician_account_data["last_name"],
                 "email": patient_account_data["email"],
+                **date_data,
             },
         }
     )
@@ -144,6 +145,29 @@ def test_email_template_handler_generates_correct_HTML_for_approved_appointment(
     assert generated_template == expected_template.format(
         physician_first_name=physician_account_data["name"],
         physician_last_name=physician_account_data["last_name"],
+        **date_data
+    )
+
+
+def test_email_template_handler_generates_correct_HTML_for_approved_appointment_that_has_been_updated():
+    template_handler = TemplateHandler(
+        **{
+            "type": "APPROVED_UPDATED_APPOINTMENT",
+            "data": {
+                "physician_first_name": physician_account_data["name"],
+                "physician_last_name": physician_account_data["last_name"],
+                "email": patient_account_data["email"],
+                **date_data,
+            },
+        }
+    )
+    generated_template = template_handler.generate_template()
+    with open("app/models/email_templates/ApprovedUpdatedAppointment.html", "r") as fp:
+        expected_template = fp.read()
+    assert generated_template == expected_template.format(
+        physician_first_name=physician_account_data["name"],
+        physician_last_name=physician_account_data["last_name"],
+        **date_data
     )
 
 
