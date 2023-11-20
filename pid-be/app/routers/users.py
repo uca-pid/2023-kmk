@@ -378,7 +378,7 @@ def add_score(
     try:
         if Patient.get_by_id(uid):
             Score.add_physician_score(add_score_request)
-            #Appointment.update_rated_status(add_score_request.appointment_id)
+            Appointment.update_rated_status(add_score_request.appointment_id)
             return {"message": "Scores added successfully"}
         if Physician.get_by_id(uid):
             Score.add_patient_score(add_score_request)

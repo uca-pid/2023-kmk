@@ -25,4 +25,4 @@ class PendingScoresErrorResponse(BaseModel):
     detail: str
 
 class PendingScoresResponse(BaseModel):
-    scores: list
+    pending_scores: list
