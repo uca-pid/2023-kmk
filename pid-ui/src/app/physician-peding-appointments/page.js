@@ -7,7 +7,6 @@ import styles from "../styles/styles.module.css";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
 import https from "https";
-import { userCheck } from "../components/userCheck";
 import { Header, Footer, PhysicianTabBar } from "../components/header";
 import { toast } from "react-toastify";
 
@@ -66,8 +65,6 @@ const PhysicianPendingAppointments = () => {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
-
-        userCheck(router);
         fetchAppointments()
             .then(() => setIsLoading(false)) // Marcar como cargado cuando la respuesta llega
             .catch(() => {

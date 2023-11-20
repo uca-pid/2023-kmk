@@ -3,14 +3,13 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Pie } from "react-chartjs-2";
-import Chart from "chart.js/auto";
 import styles from "../styles/styles.module.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import https from "https";
-import { redirect } from "../components/userCheck";
 import { Header, Footer } from "../components/header";
 import { toast } from "react-toastify";
+import { userCheck } from "../components/userCheck";
 
 const Admin = () => {
     const [isLoading, setIsLoading] = useState(true);
@@ -214,14 +213,14 @@ const Admin = () => {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
-        redirect(router);
-
-        fetchSpecialties();
-        fetchMetrics();
-        fetchPhysicians();
-        fetchBlockedPhysicians();
-        fetchPendingPhysicians().then(() => setIsLoading(false));
-        setFirstLoad(false);
+        userCheck(router, "admin").then(() => {
+            fetchSpecialties();
+            fetchMetrics();
+            fetchPhysicians();
+            fetchBlockedPhysicians();
+            fetchPendingPhysicians().then(() => setIsLoading(false));
+            setFirstLoad(false);
+        });
     }, []);
 
     return (
@@ -237,8 +236,8 @@ const Admin = () => {
                                 Especialidades
                             </div>
                             <Image
-                                src='/refresh_icon.png'
-                                alt='Notificaciones'
+                                src="/refresh_icon.png"
+                                alt="Notificaciones"
                                 className={styles["refresh-icon"]}
                                 width={200}
                                 height={200}
@@ -254,10 +253,10 @@ const Admin = () => {
                                 Agregar Especialidad
                             </div>
                             <input
-                                type='text'
-                                id='specialty'
-                                name='specialty'
-                                placeholder='Especialidad'
+                                type="text"
+                                id="specialty"
+                                name="specialty"
+                                placeholder="Especialidad"
                                 value={newSpecialty}
                                 onChange={(e) =>
                                     setNewSpecialty(e.target.value)
@@ -290,8 +289,8 @@ const Admin = () => {
                                                     }
                                                 >
                                                     <Image
-                                                        src='/trash_icon.png'
-                                                        alt='borrar'
+                                                        src="/trash_icon.png"
+                                                        alt="borrar"
                                                         className={styles.logo}
                                                         width={25}
                                                         height={25}
@@ -318,8 +317,8 @@ const Admin = () => {
                                 Profesionales pendientes de aprobación
                             </div>
                             <Image
-                                src='/refresh_icon.png'
-                                alt='Notificaciones'
+                                src="/refresh_icon.png"
+                                alt="Notificaciones"
                                 className={styles["refresh-icon"]}
                                 width={200}
                                 height={200}
@@ -408,8 +407,8 @@ const Admin = () => {
                                 Profesionales en funciones
                             </div>
                             <Image
-                                src='/refresh_icon.png'
-                                alt='Notificaciones'
+                                src="/refresh_icon.png"
+                                alt="Notificaciones"
                                 className={styles["refresh-icon"]}
                                 width={200}
                                 height={200}
@@ -483,8 +482,8 @@ const Admin = () => {
                                 Profesionales bloqueados / denegados
                             </div>
                             <Image
-                                src='/refresh_icon.png'
-                                alt='Notificaciones'
+                                src="/refresh_icon.png"
+                                alt="Notificaciones"
                                 className={styles["refresh-icon"]}
                                 width={200}
                                 height={200}
