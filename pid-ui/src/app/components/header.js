@@ -120,7 +120,7 @@ const PhysicianTabBar = (props) => {
                 }`}
                 onClick={() => router.push("/physician-agenda")}
             >
-                Turnos del día
+                Próximos turnos
             </div>
             <div
                 className={`${styles["tab"]} ${
