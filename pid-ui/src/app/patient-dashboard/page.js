@@ -2,9 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import styles from "../styles/styles.module.css";
-import { useRouter } from "next/navigation";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import es from "date-fns/locale/es";
@@ -12,15 +10,14 @@ import Modal from "react-modal";
 import axios from "axios";
 import https from "https";
 import { Footer, Header, TabBar } from "../components/header";
-import { redirect } from "../components/userCheck";
 import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 registerLocale("es", es);
 
 const DashboardPatient = () => {
     const [isLoading, setIsLoading] = useState(true);
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
-    const router = useRouter();
     const [appointments, setAppointments] = useState([]);
     const [doctors, setDoctors] = useState([]);
     const [specialties, setSpecialties] = useState([]);
@@ -32,15 +29,14 @@ const DashboardPatient = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
     const [editingAppointment, setEditingAppointment] = useState({});
-
-    const [reviews, setReviews] = useState([]);
-    const [rating, setRating] = useState([]);
+    const [physicianScores, setPhysicianScores] = useState([]);
+    const [appointmentScores, setAppointmentScores] = useState([]);
 
     const agent = new https.Agent({
         rejectUnauthorized: false,
     });
 
-    const getScores = async (id) => {
+    const getPhysicianScores = async (id) => {
         try {
             const response = await axios.get(`${apiURL}users/score/${id}`, {
                 httpsAgent: agent,
@@ -48,11 +44,11 @@ const DashboardPatient = () => {
             console.log(response.data.score_metrics);
 
             let tempReviews = [
-                { id: 1, type: "Puntualidad", rating: 5 },
-                { id: 2, type: "Atencion", rating: 4.5 },
-                { id: 3, type: "Limpieza", rating: 4.5 },
-                { id: 4, type: "Instalaciones", rating: 3 },
-                { id: 5, type: "Precio", rating: 4.5 },
+                { id: 1, type: "Puntualidad", rating: 0 },
+                { id: 2, type: "Atencion", rating: 0 },
+                { id: 3, type: "Limpieza", rating: 0 },
+                { id: 4, type: "Instalaciones", rating: 0 },
+                { id: 5, type: "Precio", rating: 0 },
             ];
 
             tempReviews[0].rating = response.data.score_metrics.puntuality;
@@ -61,14 +57,25 @@ const DashboardPatient = () => {
             tempReviews[3].rating = response.data.score_metrics.facilities;
             tempReviews[4].rating = response.data.score_metrics.price;
 
-            setReviews(tempReviews);
+            if (
+                tempReviews[0].rating +
+                    tempReviews[1].rating +
+                    tempReviews[2].rating +
+                    tempReviews[3].rating +
+                    tempReviews[4].rating ==
+                0
+            ) {
+                setPhysicianScores([]);
+            } else {
+                setPhysicianScores(tempReviews);
+            }
         } catch (error) {
             toast.error("Error al obtener los puntajes");
             console.error(error);
         }
     };
 
-    const getRating = async (id) => {
+    const getAppointmentScores = async (id) => {
         try {
             const response = await axios.get(`${apiURL}users/score/${id}`, {
                 httpsAgent: agent,
@@ -89,7 +96,18 @@ const DashboardPatient = () => {
             tempReviews[3].rating = response.data.score_metrics.facilities;
             tempReviews[4].rating = response.data.score_metrics.price;
 
-            setRating(tempReviews);
+            if (
+                tempReviews[0].rating +
+                    tempReviews[1].rating +
+                    tempReviews[2].rating +
+                    tempReviews[3].rating +
+                    tempReviews[4].rating ==
+                0
+            ) {
+                setPhysicianScores([]);
+            } else {
+                setAppointmentScores(tempReviews);
+            }
         } catch (error) {
             toast.error("Error al obtener los puntajes");
             console.error(error);
@@ -193,7 +211,7 @@ const DashboardPatient = () => {
     };
 
     const handleOpenRatingModal = (doctorId) => {
-        getRating(doctorId);
+        getAppointmentScores(doctorId);
         setIsRatingModalOpen(true);
 
         console.log(doctorId);
@@ -201,7 +219,7 @@ const DashboardPatient = () => {
     };
 
     const handleCloseRatingModal = () => {
-        setRating([]);
+        setAppointmentScores([]);
         setIsRatingModalOpen(false);
     };
 
@@ -213,7 +231,7 @@ const DashboardPatient = () => {
             setPhysiciansAgenda(
                 doctors.filter((doctor) => doctor.id == doctorId)[0].agenda
             );
-            getScores(doctorId);
+            getPhysicianScores(doctorId);
         } else {
             setPhysiciansAgenda({});
         }
@@ -276,7 +294,7 @@ const DashboardPatient = () => {
             bottom: "auto",
             marginRight: "-50%",
             transform: "translate(-50%, -50%)",
-            width: "70%",
+            width: "auto",
         },
     };
 
@@ -284,7 +302,6 @@ const DashboardPatient = () => {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
-        redirect(router);
         fetchSpecialties();
         fetchAppointments().then(() => setIsLoading(false));
     }, []);
@@ -392,12 +409,12 @@ const DashboardPatient = () => {
                     contentLabel="Example Modal"
                 >
                     <div
-                        key={rating.key}
+                        key={appointmentScores.key}
                         className={styles["reviews-container"]}
                     >
-                        {rating.length > 0 ? (
+                        {appointmentScores.length > 0 ? (
                             <>
-                                {rating.map((review) => (
+                                {appointmentScores.map((review) => (
                                     <div
                                         key={review.id}
                                         className={styles["review"]}
@@ -641,12 +658,12 @@ const DashboardPatient = () => {
                             </div>
 
                             <div
-                                key={reviews.key}
+                                key={physicianScores.key}
                                 className={styles["reviews-container"]}
                             >
-                                {reviews.length > 0 ? (
+                                {physicianScores.length > 0 ? (
                                     <>
-                                        {reviews.map((review) => (
+                                        {physicianScores.map((review) => (
                                             <div
                                                 key={review.id}
                                                 className={styles["review"]}
@@ -690,7 +707,13 @@ const DashboardPatient = () => {
                                     </>
                                 ) : (
                                     // If there are no reviews, display the message
-                                    <div className={styles["subtitle"]}>
+                                    <div
+                                        style={{
+                                            fontSize: "20px",
+                                            paddingLeft: "1rem",
+                                            marginBottom: "1rem",
+                                        }}
+                                    >
                                         No hay reviews
                                     </div>
                                 )}

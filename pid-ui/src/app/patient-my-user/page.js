@@ -3,15 +3,12 @@
 import React, { useState, useEffect } from "react";
 import styles from "../styles/styles.module.css";
 import axios from "axios";
-import { userCheck } from "../components/userCheck";
-import { useRouter } from "next/navigation";
 import validator from "validator";
 import { Footer, Header, TabBar } from "../components/header";
 import { toast } from "react-toastify";
 
 const UserProfile = () => {
     const [isLoading, setIsLoading] = useState(true);
-    const router = useRouter();
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
     const [user, setUser] = useState({
         firstName: "",
@@ -96,7 +93,6 @@ const UserProfile = () => {
     };
 
     useEffect(() => {
-        userCheck(router);
         getUserData().then(() => setIsLoading(false));
     }, []);
 
@@ -134,17 +130,6 @@ const UserProfile = () => {
                                     readOnly
                                 />
                             </div>
-                            {/* <div className={styles["form-group"]}>
-                                <label htmlFor="lastName">
-                                    Grupo Sanguíneo:
-                                </label>
-                                <input
-                                    type="text"
-                                    id="bloodType"
-                                    value={user.blood_type}
-                                    readOnly
-                                />
-                            </div> */}
                             <div className={styles["form-group"]}>
                                 <label htmlFor="email">
                                     Correo Electrónico:

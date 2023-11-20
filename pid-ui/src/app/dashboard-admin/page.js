@@ -3,14 +3,13 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Pie } from "react-chartjs-2";
-import Chart from "chart.js/auto";
 import styles from "../styles/styles.module.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import https from "https";
-import { redirect } from "../components/userCheck";
 import { Header, Footer } from "../components/header";
 import { toast } from "react-toastify";
+import { userCheck } from "../components/userCheck";
 
 const Admin = () => {
     const [isLoading, setIsLoading] = useState(true);
@@ -106,8 +105,8 @@ const Admin = () => {
                     httpsAgent: agent,
                 }
             );
-            console.log(response.data.physicians_pending_validation);
-            setPhysicians(response.data.physicians_pending_validation);
+            console.log(response.data.physicians_working);
+            setPhysicians(response.data.physicians_working);
             !firstLoad ? toast.success("Profesionales actualizados") : null;
         } catch (error) {
             console.error(error);
@@ -125,8 +124,8 @@ const Admin = () => {
                     httpsAgent: agent,
                 }
             );
-            console.log(response.data.physicians_pending_validation);
-            setBlockedPhysicians(response.data.physicians_pending_validation);
+            console.log(response.data.physicians_blocked);
+            setBlockedPhysicians(response.data.physicians_blocked);
             !firstLoad ? toast.success("Profesionales actualizados") : null;
         } catch (error) {
             console.error(error);
@@ -177,6 +176,26 @@ const Admin = () => {
         }
     };
 
+    const handleUnblockPhysician = async (physician) => {
+        try {
+            console.log(physician.id);
+            const response = await axios.post(
+                `${apiURL}admin/unblock-physician/${physician.id}`,
+                {
+                    httpsAgent: agent,
+                }
+            );
+            toast.info("Profesional desbloqueado");
+            setFirstLoad(true);
+            fetchPendingPhysicians();
+            fetchPhysicians();
+            fetchBlockedPhysicians();
+            setFirstLoad(false);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
     const fetchMetrics = async () => {
         try {
             const response = await axios.get(`${apiURL}dashboard/admin`, {
@@ -194,14 +213,14 @@ const Admin = () => {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
-        redirect(router);
-
-        // fetchBlockedPhysicians();
-        // fetchPhysicians();
-        fetchSpecialties();
-        fetchMetrics();
-        fetchPendingPhysicians().then(() => setIsLoading(false));
-        setFirstLoad(false);
+        userCheck(router, "admin").then(() => {
+            fetchSpecialties();
+            fetchMetrics();
+            fetchPhysicians();
+            fetchBlockedPhysicians();
+            fetchPendingPhysicians().then(() => setIsLoading(false));
+            setFirstLoad(false);
+        });
     }, []);
 
     return (
@@ -369,7 +388,7 @@ const Admin = () => {
                                                             )
                                                         }
                                                     >
-                                                        Denegar
+                                                        Bloquear
                                                     </button>
                                                 </div>
                                             </div>
@@ -435,21 +454,6 @@ const Admin = () => {
                                                     <button
                                                         className={
                                                             styles[
-                                                                "approve-button"
-                                                            ]
-                                                        }
-                                                        onClick={() =>
-                                                            handleApprovePhysician(
-                                                                doctor
-                                                            )
-                                                        }
-                                                    >
-                                                        Aprobar
-                                                    </button>
-
-                                                    <button
-                                                        className={
-                                                            styles[
                                                                 "delete-button"
                                                             ]
                                                         }
@@ -459,7 +463,7 @@ const Admin = () => {
                                                             )
                                                         }
                                                     >
-                                                        Denegar
+                                                        Bloquear
                                                     </button>
                                                 </div>
                                             </div>
@@ -475,7 +479,7 @@ const Admin = () => {
 
                         <div className={styles.form}>
                             <div className={styles["title"]}>
-                                Profesionales bloqueados
+                                Profesionales bloqueados / denegados
                             </div>
                             <Image
                                 src="/refresh_icon.png"
@@ -530,27 +534,12 @@ const Admin = () => {
                                                             ]
                                                         }
                                                         onClick={() =>
-                                                            handleApprovePhysician(
+                                                            handleUnblockPhysician(
                                                                 doctor
                                                             )
                                                         }
                                                     >
-                                                        Aprobar
-                                                    </button>
-
-                                                    <button
-                                                        className={
-                                                            styles[
-                                                                "delete-button"
-                                                            ]
-                                                        }
-                                                        onClick={() =>
-                                                            handleDenyPhysician(
-                                                                doctor
-                                                            )
-                                                        }
-                                                    >
-                                                        Denegar
+                                                        Desbloquear
                                                     </button>
                                                 </div>
                                             </div>

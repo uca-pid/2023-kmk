@@ -4,19 +4,16 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import styles from "../styles/styles.module.css";
-import { useRouter } from "next/navigation";
 import "react-datepicker/dist/react-datepicker.css";
 import Modal from "react-modal";
 import axios from "axios";
 import https from "https";
 import { Header, Footer, PhysicianTabBar } from "../components/header";
-import { redirect } from "../components/userCheck";
 import { toast } from "react-toastify";
 
 const PhysicianAgenda = () => {
     const [isLoading, setIsLoading] = useState(true);
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
-    const router = useRouter();
     const [appointments, setAppointments] = useState([]);
     const [isAddObservationModalOpen, setIsAddObervationModalOpen] =
         useState(false);
@@ -207,9 +204,6 @@ const PhysicianAgenda = () => {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
-
-        redirect(router);
-        getScores();
         fetchAppointments()
             .then(() => setIsLoading(false)) // Marcar como cargado cuando la respuesta llega
             .catch(() => {
@@ -403,7 +397,7 @@ const PhysicianAgenda = () => {
                             </div>
                             <Image
                                 src="/refresh_icon.png"
-                                alt="Notificaciones"
+                                alt="Refrescar"
                                 className={styles["refresh-icon"]}
                                 width={200}
                                 height={200}

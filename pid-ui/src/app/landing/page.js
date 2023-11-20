@@ -57,6 +57,10 @@ const Landing = () => {
                 case "User must be logged in":
                     router.replace("/");
                     break;
+
+                case "Invalid email and/or password":
+                    toast.error("Correo o contraseña incorrectos");
+                    break;
                 case "Account has to be approved by admin":
                     toast.error(
                         <div>
