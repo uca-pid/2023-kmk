@@ -123,11 +123,11 @@ class Appointment:
             .get()
         )
         return [appointment.to_dict() for appointment in appointments]
-    
+
     @staticmethod
     def update_rated_status(id):
         db.collection("appointments").document(id).update({"status": "rated"})
-    
+
     @staticmethod
     def get_all_closed_appointments_for_patient_with(uid):
         if not Patient.is_patient(uid):
@@ -144,7 +144,7 @@ class Appointment:
         )
 
         return [appointment.to_dict() for appointment in appointments]
-    
+
     @staticmethod
     def get_all_closed_appointments_for_physician_with(uid):
         if not Physician.is_physician(uid):
@@ -161,7 +161,6 @@ class Appointment:
         )
 
         return [appointment.to_dict() for appointment in appointments]
-
 
     def delete(self):
         db.collection("appointments").document(self.id).delete()
@@ -188,12 +187,19 @@ class Appointment:
                 **updated_values,
                 "start_time": updated_values["start_time"],
                 "attended": updated_values["attended"],
-                "status": "closed"
+                "status": "closed",
             }
         )
+        db.collection("patientsPendingToScore").document(self.patient_id).set(
+            {self.id: True}
+        )
 
-    
     def create(self):
+        if Patient.has_pending_scores(self.patient_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Patient has pending appointments to score",
+            )
         id = db.collection("appointments").document().id
         db.collection("appointments").document(id).set(
             {
