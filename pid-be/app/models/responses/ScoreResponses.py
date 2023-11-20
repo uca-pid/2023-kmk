@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Union
 
 class SuccessfullLoadScoreResponse(BaseModel):
     message: str
@@ -8,10 +9,13 @@ class ScoreErrorResponse(BaseModel):
 
 class BasicScoreResponse(BaseModel):
     puntuality: float
-    attention: float
-    cleanliness: float
-    facilities: float
-    price: float
+    communication: float
+    attendance: Union[float, None] = None
+    treat: Union[float, None] = None
+    cleanliness: Union[float, None] = None
+    availability: Union[float, None] = None
+    price: Union[float, None] = None
+    attention: Union[float, None] = None
 
 
 class SuccessfullScoreResponse(BaseModel):

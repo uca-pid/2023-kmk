@@ -22,7 +22,7 @@ class Score:
 
     @staticmethod
     def get_by_id(id):
-        return db.collection("physicians").document(id).get().to_dict()
+        return db.collection("scores").document(id).get().to_dict()
     
     @staticmethod
     def get_score(id):
@@ -34,10 +34,10 @@ class Score:
         record_ref = db.collection("scores").document(score_data.appointment_id)
         patient_score = {}
         patient_score["puntuality"] = score_data.puntuality
-        patient_score["attention"] = score_data.attention
+        patient_score["treat"] = score_data.treat
         patient_score["cleanliness"] = score_data.cleanliness
-        patient_score["facilities"] = score_data.facilities
-        patient_score["price"] = score_data.price
+        patient_score["communication"] = score_data.communication
+        patient_score["attendance"] = score_data.attendance
         record_ref.update({"patient_score": firestore.ArrayUnion([patient_score])})
 
         updated_record = record_ref.get().to_dict()
@@ -50,9 +50,10 @@ class Score:
         patient_score["puntuality"] = score_data.puntuality
         patient_score["attention"] = score_data.attention
         patient_score["cleanliness"] = score_data.cleanliness
-        patient_score["facilities"] = score_data.facilities
+        patient_score["availability"] = score_data.availability
         patient_score["price"] = score_data.price
-        record_ref.update({"patient_score": firestore.ArrayUnion([patient_score])})
+        patient_score["communication"] = score_data.communication
+        record_ref.update({"physician_score": firestore.ArrayUnion([patient_score])})
 
         updated_record = record_ref.get().to_dict()
         return updated_record
