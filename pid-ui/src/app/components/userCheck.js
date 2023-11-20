@@ -94,7 +94,7 @@ const redirect = async (router) => {
     }
 };
 
-const userCheck = async (router) => {
+const userCheck = async (router, role) => {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
     try {
         axios.defaults.headers.common = {
@@ -103,6 +103,16 @@ const userCheck = async (router) => {
         const response = await axios.get(`${apiURL}users/role`, {
             httpsAgent: agent,
         });
+
+        if (response.status == 200) {
+            if (response.data.roles[0] != role) {
+                axios.defaults.headers.common = {
+                    Authorization: `bearer `,
+                };
+                localStorage.clear();
+                router.replace("/");
+            }
+        }
     } catch (error) {
         console.error(error);
 
