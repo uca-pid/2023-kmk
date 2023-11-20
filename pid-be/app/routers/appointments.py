@@ -83,8 +83,12 @@ async def create_appointment(
             },
         )
         return {"appointment_id": appointment_id}
-    except Exception as e:
-        print(e)
+    except HTTPException as http_exception:
+        return JSONResponse(
+            status_code=http_exception.status_code,
+            content={"detail": http_exception.detail},
+        )
+    except Exception:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal server error"},

@@ -34,6 +34,13 @@ class Patient:
     def is_patient(id):
         return db.collection("patients").document(id).get().exists
 
+    @staticmethod
+    def has_pending_scores(id):
+        pending_scores_doc = db.collection("patientsPendingToScore").document(id).get()
+        if not pending_scores_doc.exists:
+            return False
+        return len(pending_scores_doc.to_dict()) > 0
+
     def create(self):
         if db.collection("patients").document(self.id).get().exists:
             raise HTTPException(
