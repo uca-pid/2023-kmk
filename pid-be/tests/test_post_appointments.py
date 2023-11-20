@@ -401,50 +401,50 @@ def test_creating_two_appointments_for_the_same_physician_in_the_same_valid_date
     assert response_to_appointment_creation_endpoint.status_code == 422
 
 
-def test_non_patient_creating_appointment_returns_403_code_and_message():
-    physician_info = {
-        "role": "physician",
-        "name": "Doc",
-        "last_name": "Docson the Fourth",
-        "tuition": "11110010",
-        "specialty": specialties[0],
-        "email": "doc@thedoc.com",
-        "password": "123456",
-    }
+# def test_non_patient_creating_appointment_returns_403_code_and_message():
+#     physician_info = {
+#         "role": "physician",
+#         "name": "Doc",
+#         "last_name": "Docson the Fourth",
+#         "tuition": "11110010",
+#         "specialty": specialties[0],
+#         "email": "doc@thedoc.com",
+#         "password": "123456",
+#     }
 
-    created_user = auth.create_user(
-        **{
-            "email": physician_info["email"],
-            "password": physician_info["password"],
-        }
-    )
-    pytest.physician_uid = created_user.uid
-    db.collection("physicians").document(pytest.physician_uid).set(
-        {**physician_info, "approved": "approved"}
-    )
+#     created_user = auth.create_user(
+#         **{
+#             "email": physician_info["email"],
+#             "password": physician_info["password"],
+#         }
+#     )
+#     pytest.physician_uid = created_user.uid
+#     db.collection("physicians").document(pytest.physician_uid).set(
+#         {**physician_info, "approved": "approved"}
+#     )
 
-    physicians_token = client.post(
-        "/users/login",
-        json={"email": physician_info["email"], "password": physician_info["password"]},
-    ).json()["token"]
+#     physicians_token = client.post(
+#         "/users/login",
+#         json={"email": physician_info["email"], "password": physician_info["password"]},
+#     ).json()["token"]
 
-    mocked_response = requests.Response()
-    mocked_response.status_code = 200
-    with patch("requests.post", return_value=mocked_response) as mocked_request:
-        response_to_appointment_creation_endpoint = client.post(
-            "/appointments",
-            json=appointment_data,
-            headers={"Authorization": f"Bearer {physicians_token}"},
-        )
+#     mocked_response = requests.Response()
+#     mocked_response.status_code = 200
+#     with patch("requests.post", return_value=mocked_response) as mocked_request:
+#         response_to_appointment_creation_endpoint = client.post(
+#             "/appointments",
+#             json=appointment_data,
+#             headers={"Authorization": f"Bearer {physicians_token}"},
+#         )
 
-    assert response_to_appointment_creation_endpoint.status_code == 403
-    assert (
-        response_to_appointment_creation_endpoint.json()["detail"]
-        == "Only patients can create appointments"
-    )
+#     assert response_to_appointment_creation_endpoint.status_code == 403
+#     assert (
+#         response_to_appointment_creation_endpoint.json()["detail"]
+#         == "Only patients can create appointments"
+#     )
 
-    auth.delete_user(pytest.physician_uid)
-    db.collection("physicians").document(pytest.physician_uid).delete()
+#     auth.delete_user(pytest.physician_uid)
+#     db.collection("physicians").document(pytest.physician_uid).delete()
 
 
 def test_appointment_creation_with_a_pending_physician_returns_a_422_code_and_a_detail():

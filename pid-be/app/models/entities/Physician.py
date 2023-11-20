@@ -40,6 +40,10 @@ class Physician:
         return db.collection("physicians").document(id).get().to_dict()
 
     @staticmethod
+    def get_blocked_by_id(id):
+        return db.collection("deniedPhysicians").document(id).get().to_dict()
+
+    @staticmethod
     def get_by_specialty(specialty_name):
         physicians = (
             db.collection("physicians")
@@ -94,8 +98,24 @@ class Physician:
         return [physician.to_dict() for physician in physicians]
 
     @staticmethod
+    def get_physicians_working():
+        physicians = (
+            db.collection("physicians").where("approved", "==", "approved").get()
+        )
+        return [physician.to_dict() for physician in physicians]
+
+    @staticmethod
+    def get_physicians_denied():
+        physicians = db.collection("deniedPhysicians").get()
+        return [physician.to_dict() for physician in physicians]
+
+    @staticmethod
     def is_physician(id):
         return db.collection("physicians").document(id).get().exists
+
+    @staticmethod
+    def is_blocked_physician(id):
+        return db.collection("deniedPhysicians").document(id).get().exists
 
     @staticmethod
     def free_agenda(id, date):
@@ -105,11 +125,11 @@ class Physician:
 
     @staticmethod
     def approve_appointment(id):
-        db.collection("appointments").document(id).update({"approved": "approved"})
+        db.collection("appointments").document(id).update({"status": "approved"})
 
     @staticmethod
     def deny_appointment(id):
-        db.collection("appointments").document(id).update({"approved": "denied"})
+        db.collection("appointments").document(id).update({"status": "denied"})
 
     @staticmethod
     def update_agenda(id, agenda):

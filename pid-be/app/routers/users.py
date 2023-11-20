@@ -29,6 +29,8 @@ from app.models.responses.ScoreResponses import (
     SuccessfullLoadScoreResponse,
     ScoreErrorResponse,
     SuccessfullScoreResponse,
+    PendingScoresErrorResponse,
+    PendingScoresResponse
 )
 from app.models.requests.ScoreRequests import LoadScoreRequest
 from app.models.responses.PatientResponses import PatientResponse
@@ -359,7 +361,7 @@ def change_password(
     },
 )
 def add_score(
-    add_score_request: LoadScoreRequest,  # uid=Depends(Auth.is_logged_in)
+    add_score_request: LoadScoreRequest, uid=Depends(Auth.is_logged_in)
 ):
     """
     Add score.
@@ -372,9 +374,19 @@ def add_score(
     * Raise an error if password change fails.
     """
     try:
-        score = Score(**{**add_score_request.model_dump()})
-        score.create()
-        return {"message": "Scores added successfully"}
+        if Patient.get_by_id(uid):
+            score = Score(**{**add_score_request.model_dump()})
+            new_score_id = score.create()
+            Appointment.update_rated_status(new_score_id)
+            return {"message": "Scores added successfully"}
+        if Physician.get_by_id(uid):
+            score = Score(**{**add_score_request.model_dump()})
+            score.create()
+            return {"message": "Scores added successfully"}
+        else:
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -392,7 +404,8 @@ def add_score(
     },
 )
 def show_score(
-    user_id: str,  # uid=Depends(Auth.is_logged_in)
+    user_id: str,
+    uid=Depends(Auth.is_logged_in)
 ):
     """
     Show scores from a physician.
@@ -406,9 +419,9 @@ def show_score(
     """
     try:
         if Patient.is_patient(user_id):
-            appointments = Appointment.get_all_appointments_for_patient_with(user_id)
+            appointments = Appointment.get_all_closed_appointments_for_patient_with(user_id)
         if Physician.is_physician(user_id):
-            appointments = Appointment.get_all_appointments_for_physician_with(user_id)
+            appointments = Appointment.get_all_closed_appointments_for_physician_with(user_id)
 
         scores = {
             "puntuality": 0,
@@ -429,14 +442,52 @@ def show_score(
                 ratings += 1
 
         return {
+
             "score_metrics": {
-                "puntuality": scores["puntuality"] / ratings,
-                "attention": scores["attention"] / ratings,
-                "cleanliness": scores["cleanliness"] / ratings,
-                "facilities": scores["facilities"] / ratings,
-                "price": scores["price"] / ratings,
+                "puntuality": 0 if ratings == 0 else scores["puntuality"] / ratings,
+                "attention": 0 if ratings == 0 else scores["attention"] / ratings,
+                "cleanliness": 0 if ratings == 0 else scores["cleanliness"] / ratings,
+                "facilities": 0 if ratings == 0 else scores["facilities"] / ratings,
+                "price": 0 if ratings == 0 else scores["price"] / ratings,
             }
         }
+    except:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "Internal server error"},
+        )
+    
+
+@router.get(
+    "/patient-pending-scores",
+    status_code=status.HTTP_200_OK,
+    response_model=PendingScoresResponse,
+    responses={
+        400: {"model": PendingScoresErrorResponse},
+        401: {"model": PendingScoresErrorResponse},
+    },
+)
+def pending_scores(
+    user_id=Depends(Auth.is_logged_in)
+):
+    """
+    Get pending scores for a patient.
+
+    This will allow us to check if a patient has pending scores.
+
+    This path operation will:
+
+    * Check for pending scores.
+    * Return a list of pending scores.
+    * Raise an error if password change fails.
+    """
+    try:
+        appointments = Appointment.get_all_closed_appointments_for_patient_with(user_id)
+        pending_scores = []
+        for appointment in appointments:
+            pending_scores.append(appointment)
+        
+        return {"pending_scores": pending_scores}
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
