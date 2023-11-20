@@ -31,11 +31,12 @@ class EmailHandler:
             "PHYSICIAN_DENIED_ACCOUNT": "Cuenta Bloqueada",
             "PASSWORD_CHANGED": "Contrase&ntilde;a Modificada",
             "PENDING_APPOINTMENT": "Nuevo Turno",
-            "UPDATED_APPOINTMENT": "Turno Actualizado",
+            "UPDATED_APPOINTMENT": "Turno Modificado",
             "APPROVED_APPOINTMENT": "Turno Aprobado",
             "CANCELED_APPOINTMENT": "Turno Cancelado",
             "EDITED_RECORDS": "Registros Actualizados",
             "PHYSICIAN_UNBLOCKED_ACCOUNT": "Cuenta Desbloqueada",
+            "APPROVED_UPDATED_APPOINTMENT": "Tu turno modificado ha sido Aprobado",
         }
         self.type = type
         self.subject = subject_for_email_type[self.type]
