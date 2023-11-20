@@ -12,6 +12,7 @@ import Modal from "react-modal";
 import axios from "axios";
 import https from "https";
 import { Footer, Header, TabBar } from "../components/header";
+import ConfirmationModal from "../components/ConfirmationModal";
 import { redirect } from "../components/userCheck";
 import { toast } from "react-toastify";
 
@@ -32,6 +33,10 @@ const DashboardPatient = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
     const [editingAppointment, setEditingAppointment] = useState({});
+    const [showModal, setShowModal] = useState(false);
+    const [appointmentIdToDelete, setAppointmentIdToDelete] = useState(null);
+
+
 
     const [reviews, setReviews] = useState([]);
     const [rating, setRating] = useState([]);
@@ -219,18 +224,41 @@ const DashboardPatient = () => {
         }
     };
 
-    const handleDeleteAppointment = async (appointmentId) => {
+    // const handleDeleteAppointment = async (appointmentId) => {
+    //     try {
+    //         await axios.delete(`${apiURL}appointments/${appointmentId}`, {
+    //             httpsAgent: agent,
+    //         });
+    //         toast.info("Turno eliminado exitosamente");
+    //         fetchAppointments();
+    //     } catch (error) {
+    //         console.error(error);
+    //         toast.error("Error al eliminar turno");
+    //     }
+    // };
+
+    const handleDeleteClick = (appointmentId) => {
+        setAppointmentIdToDelete(appointmentId);
+        setShowModal(true);
+    };    
+    
+
+    const handleDeleteAppointment = async () => {
+        setShowModal(false);
+        toast.info("Eliminando turno...");
         try {
-            await axios.delete(`${apiURL}appointments/${appointmentId}`, {
+            await axios.delete(`${apiURL}appointments/${appointmentIdToDelete}`, {
                 httpsAgent: agent,
             });
             toast.info("Turno eliminado exitosamente");
             fetchAppointments();
+            setAppointmentIdToDelete(null); // Limpiar el ID del turno después de eliminar
         } catch (error) {
             console.error(error);
             toast.error("Error al eliminar turno");
         }
     };
+    
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -482,9 +510,11 @@ const DashboardPatient = () => {
                                 }}
                             />
                             <div className={styles["appointments-section"]}>
+                                
                                 {appointments.length > 0 ? (
                                     // If there are appointments, map through them and display each appointment
                                     <div>
+                                        {/* ... */}
                                         {appointments.map((appointment) => (
                                             <div
                                                 key={appointment.id}
@@ -534,43 +564,21 @@ const DashboardPatient = () => {
                                                         appointment.date * 1000
                                                     ).toLocaleString("es-AR")}
                                                 </p>
-                                                <div
-                                                    className={
-                                                        styles[
-                                                            "appointment-buttons-container"
-                                                        ]
-                                                    }
+                                                <div className={styles["appointment-buttons-container"]}>
+                                                <button
+                                                    className={styles["edit-button"]}
+                                                    onClick={() => handleOpenEditModal(appointment)}
                                                 >
-                                                    <button
-                                                        className={
-                                                            styles[
-                                                                "edit-button"
-                                                            ]
-                                                        }
-                                                        onClick={() =>
-                                                            handleOpenEditModal(
-                                                                appointment
-                                                            )
-                                                        }
-                                                    >
-                                                        Modificar
-                                                    </button>
+                                                    Modificar
+                                                </button>
+                                                <button
+                                                    className={styles["delete-button"]}
+                                                    onClick={() => handleDeleteClick(appointment.id)}
+                                                >
+                                                    Cancelar
+                                                </button>
+                                            </div>
 
-                                                    <button
-                                                        className={
-                                                            styles[
-                                                                "delete-button"
-                                                            ]
-                                                        }
-                                                        onClick={() =>
-                                                            handleDeleteAppointment(
-                                                                appointment.id
-                                                            )
-                                                        }
-                                                    >
-                                                        Cancelar
-                                                    </button>
-                                                </div>
                                             </div>
                                         ))}
                                     </div>
@@ -580,7 +588,15 @@ const DashboardPatient = () => {
                                         No hay turnos pendientes
                                     </div>
                                 )}
+                                {/* ... */}
                             </div>
+                            {/* Modal de confirmación */}
+                            <ConfirmationModal
+                                    isOpen={showModal}
+                                    closeModal={() => setShowModal(false)}
+                                    confirmAction={handleDeleteAppointment}
+                                    message="¿Estás seguro de que deseas cancelar este turno?"
+                                />   
                         </div>
 
                         {/* Formulario de selección de especialidad y doctor */}

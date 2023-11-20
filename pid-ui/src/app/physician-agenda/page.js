@@ -10,6 +10,7 @@ import Modal from "react-modal";
 import axios from "axios";
 import https from "https";
 import { Header, Footer, PhysicianTabBar } from "../components/header";
+import ConfirmationModal from "../components/ConfirmationModal";
 import { redirect } from "../components/userCheck";
 import { toast } from "react-toastify";
 
@@ -25,6 +26,8 @@ const PhysicianAgenda = () => {
     const [newObservationContent, setNewObservationContent] = useState("");
     const [appointmentAttended, setAppointmentAttended] = useState(true);
     const [appointmentToClose, setAppointmentToClose] = useState("");
+    const [showModal, setShowModal] = useState(false);
+    const [appointmentIdToDelete, setAppointmentIdToDelete] = useState(null);
 
     const [reviews, setReviews] = useState([
         { id: 1, type: "Puntualidad", rating: 5 },
@@ -160,17 +163,38 @@ const PhysicianAgenda = () => {
         }
     };
 
-    const handleDeleteAppointment = async (appointmentId) => {
-        console.log(appointmentId);
+    // const handleDeleteAppointment = async (appointmentId) => {
+    //     console.log(appointmentId);
+    //     try {
+    //         await axios.delete(`${apiURL}appointments/${appointmentId}`, {
+    //             httpsAgent: agent,
+    //         });
+    //         toast.info("Turno eliminado exitosamente");
+    //         fetchAppointments();
+    //     } catch (error) {
+    //         toast.error("Error al eliminar el turno");
+    //         console.error(error);
+    //     }
+    // };
+
+    const handleDeleteClick = (appointmentId) => {
+        setAppointmentIdToDelete(appointmentId);
+        setShowModal(true);
+    };
+
+    const handleDeleteAppointment = async () => {
+        setShowModal(false);
+        toast.info("Eliminando turno...");
         try {
-            await axios.delete(`${apiURL}appointments/${appointmentId}`, {
+            await axios.delete(`${apiURL}appointments/${appointmentIdToDelete}`, {
                 httpsAgent: agent,
             });
             toast.info("Turno eliminado exitosamente");
             fetchAppointments();
+            setAppointmentIdToDelete(null); // Limpiar el ID del turno después de eliminar
         } catch (error) {
-            toast.error("Error al eliminar el turno");
             console.error(error);
+            toast.error("Error al eliminar turno");
         }
     };
 
@@ -416,6 +440,7 @@ const PhysicianAgenda = () => {
                                 {appointments.length > 0 ? (
                                     // If there are appointments, map through them and display each appointment
                                     <div>
+                                        {/* ... */}
                                         {appointments.map((appointment) => (
                                             <div
                                                 key={appointment.id}
@@ -489,7 +514,7 @@ const PhysicianAgenda = () => {
                                                             ]
                                                         }
                                                         onClick={() =>
-                                                            handleDeleteAppointment(
+                                                            handleDeleteClick(
                                                                 appointment.id
                                                             )
                                                         }
@@ -506,7 +531,15 @@ const PhysicianAgenda = () => {
                                         No hay turnos pendientes
                                     </div>
                                 )}
+                                {/* ... */}
                             </div>
+                            {/* Modal de confirmación */}
+                            <ConfirmationModal
+                                    isOpen={showModal}
+                                    closeModal={() => setShowModal(false)}
+                                    confirmAction={handleDeleteAppointment}
+                                    message="¿Estás seguro de que deseas cancelar este turno?"
+                                />
                         </div>
                     </div>
 

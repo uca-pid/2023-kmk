@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import https from "https";
 import { redirect } from "../components/userCheck";
+import ConfirmationModal from "../components/ConfirmationModal";
 import { Header, Footer } from "../components/header";
 import { toast } from "react-toastify";
 
@@ -23,6 +24,8 @@ const Admin = () => {
     const [pendingPhysicians, setPendingPhysicians] = useState([]);
     const [blockedPhysicians, setBlockedPhysicians] = useState([]);
     const [metrics, setMetrics] = useState({});
+    const [showModal, setShowModal] = useState(false);
+    const [selectedSpecialty, setSelectedSpecialty] = useState('');
 
     const agent = new https.Agent({
         rejectUnauthorized: false,
@@ -62,22 +65,45 @@ const Admin = () => {
         }
     };
 
-    const handleSpecialtyDelete = async (specialty) => {
+    // const handleSpecialtyDelete = async (specialty) => {
+    //     const confirmDeletion = window.confirm(`¿Estás seguro de eliminar la especialidad ${specialty}?`);
+    
+    //     if (confirmDeletion) {
+    //         try {
+    //             const response = await axios.delete(
+    //                 `${apiURL}specialties/delete/${specialty}`,
+    //                 { httpsAgent: agent }
+    //             );
+    //             console.log(response.data);
+    //             toast.success("Especialidad borrada");
+    //             setFirstLoad(true);
+    //             fetchSpecialties();
+    //             setFirstLoad(false);
+    //         } catch (error) {
+    //             console.error(error);
+    //             toast.error("Error al borrar especialidad");
+    //         }
+    //     }
+    // };
+
+    const handleDeleteClick = (specialty) => {
+        setSelectedSpecialty(specialty);
+        setShowModal(true);
+    };
+
+    const handleDeleteConfirmation = async () => {
+        setShowModal(false);
         try {
-            const response = await axios.delete(
-                `${apiURL}specialties/delete/${specialty}`,
-                { httpsAgent: agent }
-            );
+            const response = await axios.delete(`${apiURL}specialties/delete/${selectedSpecialty}`);
             console.log(response.data);
-            toast.success("Especialidad borrada");
-            setFirstLoad(true);
+            toast.success('Especialidad borrada');
             fetchSpecialties();
-            setFirstLoad(false);
         } catch (error) {
             console.error(error);
-            toast.error("Error al borrar especialidad");
+            toast.error('Error al borrar especialidad');
         }
     };
+    
 
     const fetchPendingPhysicians = async () => {
         try {
@@ -269,48 +295,32 @@ const Admin = () => {
                             >
                                 Agregar
                             </button>
-                            <div className={styles["admin-scrollable-section"]}>
-                                {specialties.length > 0 ? (
-                                    <>
-                                        {specialties.map((specialty) => (
-                                            <div
-                                                key={specialty}
-                                                className={
-                                                    styles[
-                                                        "specialty-container"
-                                                    ]
-                                                }
-                                            >
-                                                <p>{specialty}</p>
-                                                <div
-                                                    className={
-                                                        styles[
-                                                            "appointment-buttons-container"
-                                                        ]
-                                                    }
-                                                >
-                                                    <Image
-                                                        src='/trash_icon.png'
-                                                        alt='borrar'
-                                                        className={styles.logo}
-                                                        width={25}
-                                                        height={25}
-                                                        onClick={() => {
-                                                            handleSpecialtyDelete(
-                                                                specialty
-                                                            );
-                                                        }}
-                                                    />
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </>
-                                ) : (
-                                    <div className={styles["subtitle"]}>
-                                        No hay especialidades
+                            <div className={styles['admin-scrollable-section']}>
+                            {/* ... */}
+                            {specialties.map((specialty) => (
+                                <div key={specialty} className={styles['specialty-container']}>
+                                    <p>{specialty}</p>
+                                    <div className={styles['appointment-buttons-container']}>
+                                        <Image
+                                            src='/trash_icon.png'
+                                            alt='borrar'
+                                            className={styles.logo}
+                                            width={25}
+                                            height={25}
+                                            onClick={() => handleDeleteClick(specialty)}
+                                        />
                                     </div>
-                                )}
-                            </div>
+                                </div>
+                            ))}
+                            {/* ... */}
+                        </div>
+                        {/* Modal de confirmación */}
+                        <ConfirmationModal
+                            isOpen={showModal}
+                            closeModal={() => setShowModal(false)}
+                            confirmAction={handleDeleteConfirmation}
+                            message={`¿Estás seguro de eliminar la especialidad ${selectedSpecialty}?`}
+                        />
                         </div>
 
                         <div className={styles.form}>
