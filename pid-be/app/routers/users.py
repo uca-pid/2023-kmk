@@ -378,7 +378,7 @@ def add_score(
     try:
         if Patient.get_by_id(uid):
             Score.add_physician_score(add_score_request)
-            Appointment.update_rated_status(add_score_request.appointment_id)
+            #Appointment.update_rated_status(add_score_request.appointment_id)
             return {"message": "Scores added successfully"}
         if Physician.get_by_id(uid):
             Score.add_patient_score(add_score_request)
@@ -405,7 +405,7 @@ def add_score(
 )
 def show_score(
     user_id: str,
-    #uid=Depends(Auth.is_logged_in)
+    uid=Depends(Auth.is_logged_in)
 ):
     """
     Show scores from a physician.
@@ -447,9 +447,7 @@ def show_score(
             if score_counts[key] > 0:
                 score_averages[key] = value / score_counts[key]
             else:
-                score_averages[key] = 0  # Evitar la división por cero
-
-        print("************************",score_averages)
+                score_averages[key] = 0
 
         return {
             "score_metrics": score_averages
