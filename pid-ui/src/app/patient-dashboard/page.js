@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import styles from "../styles/styles.module.css";
 import DatePicker, { registerLocale } from "react-datepicker";
@@ -18,6 +19,7 @@ registerLocale("es", es);
 const DashboardPatient = () => {
     const [isLoading, setIsLoading] = useState(true);
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
+    const router = useRouter();
     const [appointments, setAppointments] = useState([]);
     const [doctors, setDoctors] = useState([]);
     const [specialties, setSpecialties] = useState([]);
@@ -35,6 +37,24 @@ const DashboardPatient = () => {
     const agent = new https.Agent({
         rejectUnauthorized: false,
     });
+
+    const checkPendingReviews = async () => {
+        try {
+            const response = await axios.get(
+                `${apiURL}users/patient-pending-scores`,
+                {
+                    httpsAgent: agent,
+                }
+            );
+            console.log(response.data);
+            if (response.data.pending_scores.length > 0) {
+                router.push("/patient-dashboard/pending-reviews");
+            }
+        } catch (error) {
+            toast.error("Error al obtener las reseñas pendientes");
+            console.error(error);
+        }
+    };
 
     const getPhysicianScores = async (id) => {
         try {
@@ -302,8 +322,12 @@ const DashboardPatient = () => {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
-        fetchSpecialties();
-        fetchAppointments().then(() => setIsLoading(false));
+        checkPendingReviews()
+            .then(() => {
+                fetchSpecialties();
+                fetchAppointments();
+            })
+            .then(() => setIsLoading(false));
     }, []);
 
     return (
