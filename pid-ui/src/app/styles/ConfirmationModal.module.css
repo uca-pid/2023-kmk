@@ -31,3 +31,13 @@
     background-color: #ca1a1a;
     color: #fff;
 }
+
+.buttons-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 30px; /* Ajusta este valor según sea necesario para mover los botones hacia abajo */
+}
+
+.message {
+    margin-top: 15px; /* Ajusta este valor según sea necesario para mover el texto hacia abajo */
+}

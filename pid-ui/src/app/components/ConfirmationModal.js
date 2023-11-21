@@ -13,8 +13,8 @@ const ConfirmationModal = ({ isOpen, closeModal, confirmAction, message }) => {
             ariaHideApp={false}
         >
             <h2>Confirmación</h2>
-            <p>{message}</p>
-            <div>
+            <p className={styles.message}>{message}</p>
+            <div className={styles["buttons-container"]}>
                 <button onClick={closeModal} className={styles["cancel-button"]}>Cancelar</button>
                 <button onClick={confirmAction} className={styles["confirm-button"]}>Confirmar</button>
             </div>

@@ -224,19 +224,6 @@ const DashboardPatient = () => {
         }
     };
 
-    // const handleDeleteAppointment = async (appointmentId) => {
-    //     try {
-    //         await axios.delete(`${apiURL}appointments/${appointmentId}`, {
-    //             httpsAgent: agent,
-    //         });
-    //         toast.info("Turno eliminado exitosamente");
-    //         fetchAppointments();
-    //     } catch (error) {
-    //         console.error(error);
-    //         toast.error("Error al eliminar turno");
-    //     }
-    // };
-
     const handleDeleteClick = (appointmentId) => {
         setAppointmentIdToDelete(appointmentId);
         setShowModal(true);

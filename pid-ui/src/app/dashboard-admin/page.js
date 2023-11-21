@@ -65,27 +65,6 @@ const Admin = () => {
         }
     };
 
-    // const handleSpecialtyDelete = async (specialty) => {
-    //     const confirmDeletion = window.confirm(`¿Estás seguro de eliminar la especialidad ${specialty}?`);
-    
-    //     if (confirmDeletion) {
-    //         try {
-    //             const response = await axios.delete(
-    //                 `${apiURL}specialties/delete/${specialty}`,
-    //                 { httpsAgent: agent }
-    //             );
-    //             console.log(response.data);
-    //             toast.success("Especialidad borrada");
-    //             setFirstLoad(true);
-    //             fetchSpecialties();
-    //             setFirstLoad(false);
-    //         } catch (error) {
-    //             console.error(error);
-    //             toast.error("Error al borrar especialidad");
-    //         }
-    //     }
-    // };
-
     const handleDeleteClick = (specialty) => {
         setSelectedSpecialty(specialty);
         setShowModal(true);
