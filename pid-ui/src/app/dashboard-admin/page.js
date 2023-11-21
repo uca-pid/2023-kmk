@@ -142,6 +142,7 @@ const Admin = () => {
     };
 
     const handleApprovePhysician = async (physician) => {
+        toast.info("Aprobando profesional...");
         try {
             console.log(physician.id);
             const response = await axios.post(
@@ -151,7 +152,7 @@ const Admin = () => {
                 }
             );
             console.log(response.data);
-            toast.info("Profesional aprobado");
+            toast.success("Profesional aprobado");
             setFirstLoad(true);
             fetchPendingPhysicians();
             fetchPhysicians();
@@ -159,10 +160,12 @@ const Admin = () => {
             setFirstLoad(false);
         } catch (error) {
             console.log(error);
+            toast.error('Error al aprobar profesional');
         }
     };
 
     const handleDenyPhysician = async (physician) => {
+        toast.info("Denegando profesional...");
         try {
             console.log(physician.id);
             const response = await axios.post(
@@ -171,7 +174,7 @@ const Admin = () => {
                     httpsAgent: agent,
                 }
             );
-            toast.info("Profesional denegado");
+            toast.success("Profesional denegado");
             setFirstLoad(true);
             fetchPendingPhysicians();
             fetchPhysicians();
@@ -179,10 +182,12 @@ const Admin = () => {
             setFirstLoad(false);
         } catch (error) {
             console.log(error);
+            toast.error('Error al denegar profesional');
         }
     };
 
     const handleUnblockPhysician = async (physician) => {
+        toast.info("Desbloqueando profesional...");
         try {
             console.log(physician.id);
             const response = await axios.post(
@@ -191,7 +196,7 @@ const Admin = () => {
                     httpsAgent: agent,
                 }
             );
-            toast.info("Profesional desbloqueado");
+            toast.success("Profesional desbloqueado");
             setFirstLoad(true);
             fetchPendingPhysicians();
             fetchPhysicians();
@@ -199,6 +204,7 @@ const Admin = () => {
             setFirstLoad(false);
         } catch (error) {
             console.log(error);
+            toast.error('Error al desbloquear profesional');
         }
     };
 

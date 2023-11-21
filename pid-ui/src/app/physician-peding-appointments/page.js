@@ -40,6 +40,7 @@ const PhysicianPendingAppointments = () => {
 
     const handleApproveAppointment = async (appointmentId) => {
         console.log(appointmentId);
+        toast.info("Aprobando turno...");
         try {
             await axios.post(
                 `${apiURL}physicians/approve-appointment/${appointmentId}`
@@ -63,8 +64,7 @@ const PhysicianPendingAppointments = () => {
             await axios.delete(`${apiURL}appointments/${appointmentIdToDeny}`, {
                 httpsAgent: agent,
             });
-            toast.info("Turno rechazado exitosamente");
-
+            toast.success("Turno rechazado exitosamente");
             fetchAppointments();
         } catch (error) {
             console.log(error);

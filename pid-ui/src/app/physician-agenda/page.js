@@ -175,7 +175,7 @@ const PhysicianAgenda = () => {
             await axios.delete(`${apiURL}appointments/${appointmentIdToDelete}`, {
                 httpsAgent: agent,
             });
-            toast.info("Turno eliminado exitosamente");
+            toast.success("Turno eliminado exitosamente");
             fetchAppointments();
             setAppointmentIdToDelete(null); // Limpiar el ID del turno después de eliminar
         } catch (error) {

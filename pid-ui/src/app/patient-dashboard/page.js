@@ -237,7 +237,7 @@ const DashboardPatient = () => {
             await axios.delete(`${apiURL}appointments/${appointmentIdToDelete}`, {
                 httpsAgent: agent,
             });
-            toast.info("Turno eliminado exitosamente");
+            toast.success("Turno eliminado exitosamente");
             fetchAppointments();
             setAppointmentIdToDelete(null); // Limpiar el ID del turno después de eliminar
         } catch (error) {
@@ -249,6 +249,7 @@ const DashboardPatient = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        toast.info("Solicitando turno...");
         try {
             const response = await axios.post(
                 `${apiURL}appointments/`,
@@ -260,7 +261,7 @@ const DashboardPatient = () => {
                     httpsAgent: agent,
                 }
             );
-            toast.info("Turno solicitado. Aguarde aprobacion del mismo");
+            toast.success("Turno solicitado. Aguarde aprobacion del mismo");
             setSelectedDoctor("");
             setDate(new Date());
             setSelectedSpecialty("");
