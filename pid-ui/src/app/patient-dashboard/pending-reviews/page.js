@@ -23,8 +23,9 @@ const DashboardPatient = () => {
         { id: 1, type: "Puntualidad", rating: 5 },
         { id: 2, type: "Atencion", rating: 4.5 },
         { id: 3, type: "Limpieza", rating: 4.5 },
-        { id: 4, type: "Instalaciones", rating: 3 },
+        { id: 4, type: "Disponibilidad", rating: 3 },
         { id: 5, type: "Precio", rating: 4.5 },
+        { id: 6, type: "Comunicacion", rating: 2.5 },
     ]);
 
     const agent = new https.Agent({
@@ -58,15 +59,17 @@ const DashboardPatient = () => {
                 { id: 1, type: "Puntualidad", rating: 5 },
                 { id: 2, type: "Atencion", rating: 4.5 },
                 { id: 3, type: "Limpieza", rating: 4.5 },
-                { id: 4, type: "Instalaciones", rating: 3 },
+                { id: 4, type: "Disponibilidad", rating: 3 },
                 { id: 5, type: "Precio", rating: 4.5 },
+                { id: 6, type: "Comunicacion", rating: 2.5 },
             ];
 
             tempReviews[0].rating = response.data.score_metrics.puntuality;
             tempReviews[1].rating = response.data.score_metrics.attention;
             tempReviews[2].rating = response.data.score_metrics.cleanliness;
-            tempReviews[3].rating = response.data.score_metrics.facilities;
+            tempReviews[3].rating = response.data.score_metrics.availability;
             tempReviews[4].rating = response.data.score_metrics.price;
+            tempReviews[5].rating = response.data.score_metrics.communication;
 
             setReviews(tempReviews);
         } catch (error) {
@@ -94,8 +97,9 @@ const DashboardPatient = () => {
                     puntuality: reviews[0].rating,
                     attention: reviews[1].rating,
                     cleanliness: reviews[2].rating,
-                    facilities: reviews[3].rating,
+                    availability: reviews[3].rating,
                     price: reviews[4].rating,
+                    communication: reviews[5].rating,
                 },
                 {
                     httpsAgent: agent,

@@ -67,22 +67,25 @@ const DashboardPatient = () => {
                 { id: 1, type: "Puntualidad", rating: 0 },
                 { id: 2, type: "Atencion", rating: 0 },
                 { id: 3, type: "Limpieza", rating: 0 },
-                { id: 4, type: "Instalaciones", rating: 0 },
+                { id: 4, type: "Disponibilidad", rating: 0 },
                 { id: 5, type: "Precio", rating: 0 },
+                { id: 6, type: "Comunicacion", rating: 0 },
             ];
 
             tempReviews[0].rating = response.data.score_metrics.puntuality;
             tempReviews[1].rating = response.data.score_metrics.attention;
             tempReviews[2].rating = response.data.score_metrics.cleanliness;
-            tempReviews[3].rating = response.data.score_metrics.facilities;
+            tempReviews[3].rating = response.data.score_metrics.availability;
             tempReviews[4].rating = response.data.score_metrics.price;
+            tempReviews[5].rating = response.data.score_metrics.communication;
 
             if (
                 tempReviews[0].rating +
                     tempReviews[1].rating +
                     tempReviews[2].rating +
                     tempReviews[3].rating +
-                    tempReviews[4].rating ==
+                    tempReviews[4].rating +
+                    tempReviews[5].rating ==
                 0
             ) {
                 setPhysicianScores([]);
@@ -106,22 +109,25 @@ const DashboardPatient = () => {
                 { id: 1, type: "Puntualidad", rating: 5 },
                 { id: 2, type: "Atencion", rating: 4.5 },
                 { id: 3, type: "Limpieza", rating: 4.5 },
-                { id: 4, type: "Instalaciones", rating: 3 },
+                { id: 4, type: "Disponibilidad", rating: 3 },
                 { id: 5, type: "Precio", rating: 4.5 },
+                { id: 6, type: "Comunicacion", rating: 2.5 },
             ];
 
             tempReviews[0].rating = response.data.score_metrics.puntuality;
             tempReviews[1].rating = response.data.score_metrics.attention;
             tempReviews[2].rating = response.data.score_metrics.cleanliness;
-            tempReviews[3].rating = response.data.score_metrics.facilities;
+            tempReviews[3].rating = response.data.score_metrics.availability;
             tempReviews[4].rating = response.data.score_metrics.price;
+            tempReviews[5].rating = response.data.score_metrics.communication;
 
             if (
                 tempReviews[0].rating +
                     tempReviews[1].rating +
                     tempReviews[2].rating +
                     tempReviews[3].rating +
-                    tempReviews[4].rating ==
+                    tempReviews[4].rating +
+                    tempReviews[5].rating ==
                 0
             ) {
                 setPhysicianScores([]);
