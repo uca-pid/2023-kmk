@@ -580,6 +580,17 @@ const Admin = () => {
                                                             data: Object.values(
                                                                 metrics.all_appointments_by_specialty
                                                             ),
+                                                            backgroundColor: [
+                                                                "rgba(43, 59, 127, 0.3)",
+                                                                "rgba(43, 59, 127, 0.5)",
+                                                                "rgba(43, 59, 127, 0.7)", 
+                                                                "rgba(43, 59, 127, 0.9)",
+                                                                "rgba(43, 59, 127, 1.1)",
+                                                                "rgba(43, 59, 127, 1.3)",
+                                                                "rgba(43, 59, 127, 1.5)",
+                                                                "rgba(43, 59, 127, 1.7)",
+                                                                "rgba(43, 59, 127, 1.9)",
+                                                            ],
                                                         },
                                                     ],
                                                 }}
