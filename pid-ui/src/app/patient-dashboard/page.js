@@ -296,6 +296,7 @@ const DashboardPatient = () => {
         e.preventDefault();
         toast.info("Solicitando turno...");
         try {
+            toast.info("Solicitando turno...");
             const response = await axios.post(
                 `${apiURL}appointments/`,
                 {
