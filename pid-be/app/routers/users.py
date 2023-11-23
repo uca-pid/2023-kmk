@@ -460,7 +460,7 @@ def show_score(
     
 
 @router.get(
-    "/patient-pending-scores/{user_id}",
+    "/patient-pending-scores",
     status_code=status.HTTP_200_OK,
     response_model=PendingScoresResponse,
     responses={
@@ -469,8 +469,7 @@ def show_score(
     },
 )
 def pending_scores(
-    #user_id=Depends(Auth.is_logged_in)
-    user_id: str
+    user_id=Depends(Auth.is_logged_in)
 ):
     """
     Get pending scores for a patient.
