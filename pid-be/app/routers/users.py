@@ -403,7 +403,9 @@ def add_score(add_score_request: LoadScoreRequest, uid=Depends(Auth.is_logged_in
         401: {"model": ScoreErrorResponse},
     },
 )
-def show_score(user_id: str, uid=Depends(Auth.is_logged_in)):
+def show_score(user_id: str, 
+               #uid=Depends(Auth.is_logged_in)
+               ):
     """
     Show scores from a physician.
 
@@ -439,7 +441,7 @@ def show_score(user_id: str, uid=Depends(Auth.is_logged_in)):
                 scores.append(score["patient_score"][0])
 
         if Physician.is_physician(user_id):
-            appointments = Appointment.get_all_closed_appointments_for_physician_with(
+            appointments = Appointment.get_all_rated_appointments_for_physician_with(
                 user_id
             )
             score_sums = {
@@ -476,6 +478,8 @@ def show_score(user_id: str, uid=Depends(Auth.is_logged_in)):
                 score_averages[key] = value / score_counts[key]
             else:
                 score_averages[key] = 0
+
+        print(score_averages)
 
         return {"score_metrics": score_averages}
     except:

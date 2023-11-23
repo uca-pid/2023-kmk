@@ -188,6 +188,23 @@ class Appointment:
         )
 
         return [appointment.to_dict() for appointment in appointments]
+    
+    @staticmethod
+    def get_all_rated_appointments_for_physician_with(uid):
+        if not Physician.is_physician(uid):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only physicians can access this resource",
+            )
+        appointments = (
+            db.collection("appointments")
+            .where("physician_id", "==", uid)
+            .where("status", "==", "rated")
+            .order_by("date")
+            .get()
+        )
+
+        return [appointment.to_dict() for appointment in appointments]
 
     def delete(self):
         db.collection("appointments").document(self.id).delete()
