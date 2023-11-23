@@ -78,7 +78,7 @@ const Admin = () => {
                 `${apiURL}specialties/delete/${selectedSpecialty}`
             );
             console.log(response.data);
-            toast.success("Especialidad borrada");
+            toast.success("Especialidad eliminada exitosamente");
             fetchSpecialties();
         } catch (error) {
             console.error(error);
@@ -239,6 +239,13 @@ const Admin = () => {
 
     return (
         <div className={styles.dashboard}>
+            <ConfirmationModal
+                isOpen={showModal}
+                closeModal={() => setShowModal(false)}
+                confirmAction={handleDeleteConfirmation}
+                message="¿Estás seguro de que deseas eliminar esta especialidad??"
+            />
+
             <Header />
             {isLoading ? (
                 <p>Cargando...</p>
