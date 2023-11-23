@@ -30,7 +30,7 @@ from app.models.responses.ScoreResponses import (
     ScoreErrorResponse,
     SuccessfullScoreResponse,
     PendingScoresErrorResponse,
-    PendingScoresResponse
+    PendingScoresResponse,
 )
 from app.models.requests.ScoreRequests import (
     LoadScoreRequest,
@@ -361,10 +361,7 @@ def change_password(
         401: {"model": ScoreErrorResponse},
     },
 )
-def add_score(
-    add_score_request: LoadScoreRequest, 
-    uid=Depends(Auth.is_logged_in)
-):
+def add_score(add_score_request: LoadScoreRequest, uid=Depends(Auth.is_logged_in)):
     """
     Add score.
 
@@ -379,6 +376,9 @@ def add_score(
         if Patient.get_by_id(uid):
             Score.add_physician_score(add_score_request)
             Appointment.update_rated_status(add_score_request.appointment_id)
+            Appointment.remove_pending_to_score_patient_register(
+                uid, add_score_request.appointment_id
+            )
             return {"message": "Scores added successfully"}
         if Physician.get_by_id(uid):
             Score.add_patient_score(add_score_request)
@@ -403,10 +403,7 @@ def add_score(
         401: {"model": ScoreErrorResponse},
     },
 )
-def show_score(
-    user_id: str,
-    uid=Depends(Auth.is_logged_in)
-):
+def show_score(user_id: str, uid=Depends(Auth.is_logged_in)):
     """
     Show scores from a physician.
 
@@ -419,18 +416,48 @@ def show_score(
     """
     try:
         if Patient.is_patient(user_id):
-            appointments = Appointment.get_all_closed_appointments_for_patient_with(user_id)
-            score_sums = {'puntuality': 0, 'communication': 0, 'attendance': 0, 'treat': 0, 'cleanliness': 0}
-            score_counts = {'puntuality': 0, 'communication': 0, 'attendance': 0, 'treat': 0, 'cleanliness': 0}
+            appointments = Appointment.get_all_closed_appointments_for_patient_with(
+                user_id
+            )
+            score_sums = {
+                "puntuality": 0,
+                "communication": 0,
+                "attendance": 0,
+                "treat": 0,
+                "cleanliness": 0,
+            }
+            score_counts = {
+                "puntuality": 0,
+                "communication": 0,
+                "attendance": 0,
+                "treat": 0,
+                "cleanliness": 0,
+            }
             scores = []
             for appt in appointments:
                 score = Score.get_by_id(appt["id"])
                 scores.append(score["patient_score"][0])
 
         if Physician.is_physician(user_id):
-            appointments = Appointment.get_all_closed_appointments_for_physician_with(user_id)
-            score_sums = {'puntuality': 0, 'attention': 0, 'cleanliness': 0, 'availability': 0, 'price': 0, "communication": 0}
-            score_counts = {'puntuality': 0, 'attention': 0, 'cleanliness': 0, 'availability': 0, 'price': 0, "communication": 0}
+            appointments = Appointment.get_all_closed_appointments_for_physician_with(
+                user_id
+            )
+            score_sums = {
+                "puntuality": 0,
+                "attention": 0,
+                "cleanliness": 0,
+                "availability": 0,
+                "price": 0,
+                "communication": 0,
+            }
+            score_counts = {
+                "puntuality": 0,
+                "attention": 0,
+                "cleanliness": 0,
+                "availability": 0,
+                "price": 0,
+                "communication": 0,
+            }
             scores = []
             for appt in appointments:
                 score = Score.get_by_id(appt["id"])
@@ -449,15 +476,13 @@ def show_score(
             else:
                 score_averages[key] = 0
 
-        return {
-            "score_metrics": score_averages
-        }
+        return {"score_metrics": score_averages}
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal server error"},
         )
-    
+
 
 @router.get(
     "/patient-pending-scores",
@@ -468,9 +493,7 @@ def show_score(
         401: {"model": PendingScoresErrorResponse},
     },
 )
-def pending_scores(
-    user_id=Depends(Auth.is_logged_in)
-):
+def pending_scores(user_id=Depends(Auth.is_logged_in)):
     """
     Get pending scores for a patient.
 
@@ -487,7 +510,7 @@ def pending_scores(
         pending_scores = []
         for appointment in appointments:
             pending_scores.append(appointment)
-        
+
         return {"pending_scores": pending_scores}
     except:
         return JSONResponse(

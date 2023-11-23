@@ -63,7 +63,9 @@ async def create_appointment(
     )
     try:
         appointment_id = appointment.create()
-        score = Score(appointment_id=appointment_id, patient_score = [], physician_score = [])
+        score = Score(
+            appointment_id=appointment_id, patient_score=[], physician_score=[]
+        )
         score.create()
         physician = Physician.get_by_id(appointment_creation_request.physician_id)
         patient = Patient.get_by_id(patient_id)
@@ -153,7 +155,7 @@ def get_all_appointments_for_physician(uid=Depends(Auth.is_logged_in)):
     * Throw an error if appointment retrieving fails.
     """
     try:
-        appointments = Appointment.get_all_appointments_for_physician_with(uid)
+        appointments = Appointment.get_all_approved_appointments_for_physician_with(uid)
         print(appointments)
         return {"appointments": appointments}
 
