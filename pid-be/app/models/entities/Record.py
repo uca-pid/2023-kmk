@@ -44,9 +44,7 @@ class Record:
         observation["attended"] = observation["attended"]
         observation["real_start_time"] = observation["real_start_time"]
         appt = Appointment.get_by_id(observation["appointment_id"])
-        print(appt.date)
         observation["appointment_date"] = appt.date
-        print(observation)
         record_ref.update({"observations": firestore.ArrayUnion([observation])})
 
         updated_record = record_ref.get().to_dict()

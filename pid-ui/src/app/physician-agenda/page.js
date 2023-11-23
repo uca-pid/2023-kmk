@@ -25,10 +25,10 @@ const PhysicianAgenda = () => {
 
     const [reviews, setReviews] = useState([
         { id: 1, type: "Puntualidad", rating: 5 },
-        { id: 2, type: "Atencion", rating: 4.5 },
-        { id: 3, type: "Limpieza", rating: 4.5 },
-        { id: 4, type: "Instalaciones", rating: 3 },
-        { id: 5, type: "Precio", rating: 4.5 },
+        { id: 2, type: "Comunicacion", rating: 4.5 },
+        { id: 3, type: "Asistencia", rating: 4.5 },
+        { id: 4, type: "Trato", rating: 3 },
+        { id: 5, type: "Limpieza", rating: 4.5 },
     ]);
 
     const agent = new https.Agent({
@@ -44,17 +44,17 @@ const PhysicianAgenda = () => {
 
             let tempReviews = [
                 { id: 1, type: "Puntualidad", rating: 5 },
-                { id: 2, type: "Atencion", rating: 4.5 },
-                { id: 3, type: "Limpieza", rating: 4.5 },
-                { id: 4, type: "Instalaciones", rating: 3 },
-                { id: 5, type: "Precio", rating: 4.5 },
+                { id: 2, type: "Comunicacion", rating: 4.5 },
+                { id: 3, type: "Asistencia", rating: 4.5 },
+                { id: 4, type: "Trato", rating: 3 },
+                { id: 5, type: "Limpieza", rating: 4.5 },
             ];
 
             tempReviews[0].rating = response.data.score_metrics.puntuality;
-            tempReviews[1].rating = response.data.score_metrics.attention;
-            tempReviews[2].rating = response.data.score_metrics.cleanliness;
-            tempReviews[3].rating = response.data.score_metrics.facilities;
-            tempReviews[4].rating = response.data.score_metrics.price;
+            tempReviews[1].rating = response.data.score_metrics.communication;
+            tempReviews[2].rating = response.data.score_metrics.attendance;
+            tempReviews[3].rating = response.data.score_metrics.treat;
+            tempReviews[4].rating = response.data.score_metrics.cleanliness;
 
             setReviews(tempReviews);
         } catch (error) {
@@ -141,10 +141,10 @@ const PhysicianAgenda = () => {
                 {
                     appointment_id: appointmentToClose.id,
                     puntuality: reviews[0].rating,
-                    attention: reviews[1].rating,
-                    cleanliness: reviews[2].rating,
-                    facilities: reviews[3].rating,
-                    price: reviews[4].rating,
+                    communication: reviews[1].rating,
+                    attendance: reviews[2].rating,
+                    treat: reviews[3].rating,
+                    cleanliness: reviews[4].rating,
                 },
                 {
                     httpsAgent: agent,

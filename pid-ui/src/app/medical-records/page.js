@@ -45,17 +45,17 @@ const MedicalRecords = ({ searchParams }) => {
 
             let tempReviews = [
                 { id: 1, type: "Puntualidad", rating: 0 },
-                { id: 2, type: "Atencion", rating: 0 },
-                { id: 3, type: "Limpieza", rating: 0 },
-                { id: 4, type: "Instalaciones", rating: 0 },
-                { id: 5, type: "Precio", rating: 0 },
+                { id: 2, type: "Comunicacion", rating: 0 },
+                { id: 3, type: "Asistencia", rating: 0 },
+                { id: 4, type: "Trato", rating: 0 },
+                { id: 5, type: "Limpieza", rating: 0 },
             ];
 
             tempReviews[0].rating = response.data.score_metrics.puntuality;
-            tempReviews[1].rating = response.data.score_metrics.attention;
-            tempReviews[2].rating = response.data.score_metrics.cleanliness;
-            tempReviews[3].rating = response.data.score_metrics.facilities;
-            tempReviews[4].rating = response.data.score_metrics.price;
+            tempReviews[1].rating = response.data.score_metrics.comunication;
+            tempReviews[2].rating = response.data.score_metrics.attendance;
+            tempReviews[3].rating = response.data.score_metrics.treat;
+            tempReviews[4].rating = response.data.score_metrics.cleanliness;
 
             if (
                 tempReviews[0].rating +

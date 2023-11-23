@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import styles from "../styles/styles.module.css";
 import DatePicker, { registerLocale } from "react-datepicker";
@@ -18,6 +19,7 @@ registerLocale("es", es);
 const DashboardPatient = () => {
     const [isLoading, setIsLoading] = useState(true);
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
+    const router = useRouter();
     const [appointments, setAppointments] = useState([]);
     const [doctors, setDoctors] = useState([]);
     const [specialties, setSpecialties] = useState([]);
@@ -36,6 +38,24 @@ const DashboardPatient = () => {
         rejectUnauthorized: false,
     });
 
+    const checkPendingReviews = async () => {
+        try {
+            const response = await axios.get(
+                `${apiURL}users/patient-pending-scores`,
+                {
+                    httpsAgent: agent,
+                }
+            );
+            console.log(response.data);
+            if (response.data.pending_scores.length > 0) {
+                router.push("/patient-dashboard/pending-reviews");
+            }
+        } catch (error) {
+            toast.error("Error al obtener las reseñas pendientes");
+            console.error(error);
+        }
+    };
+
     const getPhysicianScores = async (id) => {
         try {
             const response = await axios.get(`${apiURL}users/score/${id}`, {
@@ -47,22 +67,25 @@ const DashboardPatient = () => {
                 { id: 1, type: "Puntualidad", rating: 0 },
                 { id: 2, type: "Atencion", rating: 0 },
                 { id: 3, type: "Limpieza", rating: 0 },
-                { id: 4, type: "Instalaciones", rating: 0 },
+                { id: 4, type: "Disponibilidad", rating: 0 },
                 { id: 5, type: "Precio", rating: 0 },
+                { id: 6, type: "Comunicacion", rating: 0 },
             ];
 
             tempReviews[0].rating = response.data.score_metrics.puntuality;
             tempReviews[1].rating = response.data.score_metrics.attention;
             tempReviews[2].rating = response.data.score_metrics.cleanliness;
-            tempReviews[3].rating = response.data.score_metrics.facilities;
+            tempReviews[3].rating = response.data.score_metrics.availability;
             tempReviews[4].rating = response.data.score_metrics.price;
+            tempReviews[5].rating = response.data.score_metrics.communication;
 
             if (
                 tempReviews[0].rating +
                     tempReviews[1].rating +
                     tempReviews[2].rating +
                     tempReviews[3].rating +
-                    tempReviews[4].rating ==
+                    tempReviews[4].rating +
+                    tempReviews[5].rating ==
                 0
             ) {
                 setPhysicianScores([]);
@@ -86,22 +109,25 @@ const DashboardPatient = () => {
                 { id: 1, type: "Puntualidad", rating: 5 },
                 { id: 2, type: "Atencion", rating: 4.5 },
                 { id: 3, type: "Limpieza", rating: 4.5 },
-                { id: 4, type: "Instalaciones", rating: 3 },
+                { id: 4, type: "Disponibilidad", rating: 3 },
                 { id: 5, type: "Precio", rating: 4.5 },
+                { id: 6, type: "Comunicacion", rating: 2.5 },
             ];
 
             tempReviews[0].rating = response.data.score_metrics.puntuality;
             tempReviews[1].rating = response.data.score_metrics.attention;
             tempReviews[2].rating = response.data.score_metrics.cleanliness;
-            tempReviews[3].rating = response.data.score_metrics.facilities;
+            tempReviews[3].rating = response.data.score_metrics.availability;
             tempReviews[4].rating = response.data.score_metrics.price;
+            tempReviews[5].rating = response.data.score_metrics.communication;
 
             if (
                 tempReviews[0].rating +
                     tempReviews[1].rating +
                     tempReviews[2].rating +
                     tempReviews[3].rating +
-                    tempReviews[4].rating ==
+                    tempReviews[4].rating +
+                    tempReviews[5].rating ==
                 0
             ) {
                 setPhysicianScores([]);
@@ -302,8 +328,12 @@ const DashboardPatient = () => {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
-        fetchSpecialties();
-        fetchAppointments().then(() => setIsLoading(false));
+        checkPendingReviews()
+            .then(() => {
+                fetchSpecialties();
+                fetchAppointments();
+            })
+            .then(() => setIsLoading(false));
     }, []);
 
     return (
