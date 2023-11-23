@@ -294,7 +294,6 @@ const DashboardPatient = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        toast.info("Solicitando turno...");
         try {
             toast.info("Solicitando turno...");
             const response = await axios.post(
