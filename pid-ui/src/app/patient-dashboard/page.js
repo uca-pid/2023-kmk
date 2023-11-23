@@ -11,6 +11,8 @@ import Modal from "react-modal";
 import axios from "axios";
 import https from "https";
 import { Footer, Header, TabBar } from "../components/header";
+import ConfirmationModal from "../components/ConfirmationModal";
+import { redirect } from "../components/userCheck";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -31,6 +33,9 @@ const DashboardPatient = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
     const [editingAppointment, setEditingAppointment] = useState({});
+    const [showModal, setShowModal] = useState(false);
+    const [appointmentIdToDelete, setAppointmentIdToDelete] = useState(null);
+
     const [physicianScores, setPhysicianScores] = useState([]);
     const [appointmentScores, setAppointmentScores] = useState([]);
 
@@ -263,13 +268,24 @@ const DashboardPatient = () => {
         }
     };
 
-    const handleDeleteAppointment = async (appointmentId) => {
+    const handleDeleteClick = (appointmentId) => {
+        setAppointmentIdToDelete(appointmentId);
+        setShowModal(true);
+    };
+
+    const handleDeleteAppointment = async () => {
+        setShowModal(false);
+        toast.info("Eliminando turno...");
         try {
-            await axios.delete(`${apiURL}appointments/${appointmentId}`, {
-                httpsAgent: agent,
-            });
-            toast.info("Turno eliminado exitosamente");
+            await axios.delete(
+                `${apiURL}appointments/${appointmentIdToDelete}`,
+                {
+                    httpsAgent: agent,
+                }
+            );
+            toast.success("Turno eliminado exitosamente");
             fetchAppointments();
+            setAppointmentIdToDelete(null); // Limpiar el ID del turno después de eliminar
         } catch (error) {
             console.error(error);
             toast.error("Error al eliminar turno");
@@ -278,6 +294,7 @@ const DashboardPatient = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        toast.info("Solicitando turno...");
         try {
             toast.info("Solicitando turno...");
             const response = await axios.post(
@@ -290,7 +307,7 @@ const DashboardPatient = () => {
                     httpsAgent: agent,
                 }
             );
-            toast.info("Turno solicitado. Aguarde aprobacion del mismo");
+            toast.success("Turno solicitado. Aguarde aprobacion del mismo");
             setSelectedDoctor("");
             setDate(new Date());
             setSelectedSpecialty("");
@@ -533,6 +550,7 @@ const DashboardPatient = () => {
                                 {appointments.length > 0 ? (
                                     // If there are appointments, map through them and display each appointment
                                     <div>
+                                        {/* ... */}
                                         {appointments.map((appointment) => (
                                             <div
                                                 key={appointment.id}
@@ -603,7 +621,6 @@ const DashboardPatient = () => {
                                                     >
                                                         Modificar
                                                     </button>
-
                                                     <button
                                                         className={
                                                             styles[
@@ -611,7 +628,7 @@ const DashboardPatient = () => {
                                                             ]
                                                         }
                                                         onClick={() =>
-                                                            handleDeleteAppointment(
+                                                            handleDeleteClick(
                                                                 appointment.id
                                                             )
                                                         }
@@ -628,7 +645,15 @@ const DashboardPatient = () => {
                                         No hay turnos pendientes
                                     </div>
                                 )}
+                                {/* ... */}
                             </div>
+                            {/* Modal de confirmación */}
+                            <ConfirmationModal
+                                isOpen={showModal}
+                                closeModal={() => setShowModal(false)}
+                                confirmAction={handleDeleteAppointment}
+                                message="¿Estás seguro de que deseas cancelar este turno?"
+                            />
                         </div>
 
                         {/* Formulario de selección de especialidad y doctor */}

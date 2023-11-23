@@ -5,6 +5,7 @@ import styles from "../styles/styles.module.css";
 import axios from "axios";
 import https from "https";
 import { Footer, Header, TabBar } from "../components/header";
+import ConfirmationModal from "../components/ConfirmationModal";
 import Image from "next/image";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -24,6 +25,8 @@ const MyRecord = () => {
         observations: [],
     });
     const inputRef = useRef(null);
+    const [showModal, setShowModal] = useState(false);
+    const [selectedFile, setSelectedFile] = useState('');
 
     const agent = new https.Agent({
         rejectUnauthorized: false,
@@ -61,9 +64,15 @@ const MyRecord = () => {
         link.click();
     };
 
-    const handleFileDelete = async (id) => {
+    const handleDeleteClick = (file) => {
+        setSelectedFile(file);
+        setShowModal(true);
+    };
+
+    const handleDeleteFile = async () => {
+        setShowModal(false);
         try {
-            const response = await axios.delete(`${apiURL}analysis/${id}`);
+            const response = await axios.delete(`${apiURL}analysis/${selectedFile}`);
             console.log(response);
             toast.success("Analisis eliminado con exito");
             fetchMyAnalysis();
@@ -72,6 +81,18 @@ const MyRecord = () => {
             toast.error("Error al eliminar analisis");
         }
     };
+    
+    // const handleFileDelete = async (id) => {
+    //     try {
+    //         const response = await axios.delete(`${apiURL}analysis/${id}`);
+    //         console.log(response);
+    //         toast.success("Analisis eliminado con exito");
+    //         fetchMyAnalysis();
+    //     } catch (error) {
+    //         console.error(error);
+    //         toast.error("Error al eliminar analisis");
+    //     }
+    // };
 
     const resetFileInput = () => {
         inputRef.current.value = null;
@@ -229,7 +250,7 @@ const MyRecord = () => {
                                                         width={25}
                                                         height={25}
                                                         onClick={() => {
-                                                            handleFileDelete(
+                                                            handleDeleteClick(
                                                                 uploaded_analysis.id
                                                             );
                                                         }}
@@ -248,7 +269,15 @@ const MyRecord = () => {
                                             No hay analisis cargados
                                         </div>
                                     )}
+                                    {/* ... */}
                                 </div>
+                                {/* Modal de confirmación */}
+                                <ConfirmationModal
+                                    isOpen={showModal}
+                                    closeModal={() => setShowModal(false)}
+                                    confirmAction={handleDeleteFile}
+                                    message="¿Estás seguro de que deseas eliminar este archivo?"
+                                />
 
                                 <form className={styles["file-upload-form"]}>
                                     <label
