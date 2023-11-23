@@ -46,6 +46,7 @@ const Admin = () => {
 
     const handleAddSpecialty = async () => {
         try {
+            toast.info("Agregando especialidad...");
             const response = await axios.post(
                 `${apiURL}specialties/add/${newSpecialty}`,
                 {
@@ -53,6 +54,7 @@ const Admin = () => {
                 }
             );
             toast.success("Especialidad agregada");
+            setNewSpecialty("");
             setFirstLoad(true);
             fetchSpecialties();
             setFirstLoad(false);
@@ -64,6 +66,7 @@ const Admin = () => {
 
     const handleSpecialtyDelete = async (specialty) => {
         try {
+            toast.info("Borrando especialidad...");
             const response = await axios.delete(
                 `${apiURL}specialties/delete/${specialty}`,
                 { httpsAgent: agent }
@@ -138,6 +141,7 @@ const Admin = () => {
 
     const handleApprovePhysician = async (physician) => {
         try {
+            toast.info("Aprobando medico...");
             console.log(physician.id);
             const response = await axios.post(
                 `${apiURL}admin/approve-physician/${physician.id}`,
@@ -159,6 +163,7 @@ const Admin = () => {
 
     const handleDenyPhysician = async (physician) => {
         try {
+            toast.info("Bloquando medico...");
             console.log(physician.id);
             const response = await axios.post(
                 `${apiURL}admin/deny-physician/${physician.id}`,
@@ -179,6 +184,7 @@ const Admin = () => {
 
     const handleUnblockPhysician = async (physician) => {
         try {
+            toast.info("Desbloqueando medico...");
             console.log(physician.id);
             const response = await axios.post(
                 `${apiURL}admin/unblock-physician/${physician.id}`,
