@@ -40,6 +40,5 @@ class MetricParserHelper:
         for appointment in appointments:
             appointments_physician = Physician.get_by_id(appointment["physician_id"])
             appointments_per_specialty[appointments_physician["specialty"]] += 1
-
         filtered_appointments_per_specialty = {k: v for k, v in appointments_per_specialty.items() if v > 0}
         return filtered_appointments_per_specialty

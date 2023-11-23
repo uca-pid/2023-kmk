@@ -578,7 +578,10 @@ const Admin = () => {
                         <div className={styles.form}>
                             <div className={styles["title"]}>Metricas</div>
                             <div className={styles["admin-section"]}>
-                                {metrics.all_appointments_by_specialty ? (
+                                {metrics.all_appointments_by_specialty &&
+                                Object.keys(
+                                    metrics.all_appointments_by_specialty
+                                ).length > 0 ? (
                                     <div>
                                         <div className={styles["subtitle"]}>
                                             Turnos por especialidad
@@ -645,7 +648,12 @@ const Admin = () => {
                                             />
                                         </div>
                                     </div>
-                                ) : null}
+                                ) : (
+                                    <div className={styles["subtitle"]}>
+                                        No hay datos suficientes para mostrar
+                                        metricas
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
