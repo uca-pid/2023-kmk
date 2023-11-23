@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Bar } from "react-chartjs-2";
-import Chart from "chart.js/auto";
+import Chart from "chart.js/auto"; // NO BORRAR
 import styles from "../styles/styles.module.css";
 import { useRouter } from "next/navigation";
 import "react-datepicker/dist/react-datepicker.css";
@@ -46,7 +46,7 @@ const PhysicianPendingAppointments = () => {
         <div className={styles.dashboard}>
             <PhysicianTabBar highlight={"Metricas"} />
 
-            <Header role="physician" />
+            <Header role='physician' />
 
             <div className={styles["tab-content"]}></div>
 
