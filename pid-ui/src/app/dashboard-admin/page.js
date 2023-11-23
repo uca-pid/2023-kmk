@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Pie } from "react-chartjs-2";
+import Chart from "chart.js/auto"; // NO BORRAR; Es necesario para que los graficos corran correctamente
 import styles from "../styles/styles.module.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -29,7 +30,7 @@ const Admin = () => {
 
     const fetchSpecialties = async () => {
         try {
-            const response = await axios.get(`${apiURL}specialties`, {
+            const response = await axios.get(`${apiURL}admin/specialties`, {
                 httpsAgent: agent,
             });
             response.data.specialties == undefined
@@ -236,8 +237,8 @@ const Admin = () => {
                                 Especialidades
                             </div>
                             <Image
-                                src="/refresh_icon.png"
-                                alt="Notificaciones"
+                                src='/refresh_icon.png'
+                                alt='Notificaciones'
                                 className={styles["refresh-icon"]}
                                 width={200}
                                 height={200}
@@ -253,10 +254,10 @@ const Admin = () => {
                                 Agregar Especialidad
                             </div>
                             <input
-                                type="text"
-                                id="specialty"
-                                name="specialty"
-                                placeholder="Especialidad"
+                                type='text'
+                                id='specialty'
+                                name='specialty'
+                                placeholder='Especialidad'
                                 value={newSpecialty}
                                 onChange={(e) =>
                                     setNewSpecialty(e.target.value)
@@ -273,14 +274,14 @@ const Admin = () => {
                                     <>
                                         {specialties.map((specialty) => (
                                             <div
-                                                key={specialty}
+                                                key={specialty.name}
                                                 className={
                                                     styles[
                                                         "specialty-container"
                                                     ]
                                                 }
                                             >
-                                                <p>{specialty}</p>
+                                                <p>{specialty.name}</p>
                                                 <div
                                                     className={
                                                         styles[
@@ -289,14 +290,14 @@ const Admin = () => {
                                                     }
                                                 >
                                                     <Image
-                                                        src="/trash_icon.png"
-                                                        alt="borrar"
+                                                        src='/trash_icon.png'
+                                                        alt='borrar'
                                                         className={styles.logo}
                                                         width={25}
                                                         height={25}
                                                         onClick={() => {
                                                             handleSpecialtyDelete(
-                                                                specialty
+                                                                specialty.name
                                                             );
                                                         }}
                                                     />
@@ -317,8 +318,8 @@ const Admin = () => {
                                 Profesionales pendientes de aprobación
                             </div>
                             <Image
-                                src="/refresh_icon.png"
-                                alt="Notificaciones"
+                                src='/refresh_icon.png'
+                                alt='Notificaciones'
                                 className={styles["refresh-icon"]}
                                 width={200}
                                 height={200}
@@ -407,8 +408,8 @@ const Admin = () => {
                                 Profesionales en funciones
                             </div>
                             <Image
-                                src="/refresh_icon.png"
-                                alt="Notificaciones"
+                                src='/refresh_icon.png'
+                                alt='Notificaciones'
                                 className={styles["refresh-icon"]}
                                 width={200}
                                 height={200}
@@ -482,8 +483,8 @@ const Admin = () => {
                                 Profesionales bloqueados / denegados
                             </div>
                             <Image
-                                src="/refresh_icon.png"
-                                alt="Notificaciones"
+                                src='/refresh_icon.png'
+                                alt='Notificaciones'
                                 className={styles["refresh-icon"]}
                                 width={200}
                                 height={200}

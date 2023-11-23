@@ -23,6 +23,8 @@ from app.models.responses.ValidationResponses import (
     GetWorkingPhysiciansError,
     AllBlockedPhysiciansResponse,
     GetBlockedPhysiciansError,
+    AdminSpecialtiesGetError,
+    SuccessfulAdminSpecialtiesGetResponse,
 )
 
 load_dotenv()
@@ -126,7 +128,8 @@ async def deny_physician(physician_id: str, uid=Depends(Auth.is_admin)):
             },
         )
         return {"message": "Physician denied successfully"}
-    except:
+    except Exception as e:
+        print(e)
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal server error"},
@@ -330,3 +333,19 @@ def regsiter_admin(
     )
     admin.create()
     return {"message": "Successfull registration"}
+
+
+@router.get(
+    "/specialties",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessfulAdminSpecialtiesGetResponse,
+    responses={
+        400: {"model": AdminSpecialtiesGetError},
+        401: {"model": AdminSpecialtiesGetError},
+        403: {"model": AdminSpecialtiesGetError},
+        500: {"model": AdminSpecialtiesGetError},
+    },
+)
+def get_specialties_with_physician_count(uid=Depends(Auth.is_admin)):
+    specialies_with_physician_count = Admin.get_specialies_with_physician_count()
+    return {"specialties": specialies_with_physician_count}

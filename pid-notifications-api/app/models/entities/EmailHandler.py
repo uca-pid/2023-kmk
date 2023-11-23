@@ -37,6 +37,7 @@ class EmailHandler:
             "EDITED_RECORDS": "Registros Actualizados",
             "PHYSICIAN_UNBLOCKED_ACCOUNT": "Cuenta Desbloqueada",
             "APPROVED_UPDATED_APPOINTMENT": "Tu turno modificado ha sido Aprobado",
+            "CANCELED_APPOINTMENT_DUE_TO_PHYSICIAN_DENIAL": "Turno Cancelado",
         }
         self.type = type
         self.subject = subject_for_email_type[self.type]
