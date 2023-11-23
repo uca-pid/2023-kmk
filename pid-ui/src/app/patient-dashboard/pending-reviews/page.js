@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import styles from "../../styles/styles.module.css";
 import "react-datepicker/dist/react-datepicker.css";
 import Modal from "react-modal";
@@ -19,6 +20,8 @@ const DashboardPatient = () => {
     const [isReviewModalOpen, setIsAddObervationModalOpen] = useState(false);
     const [appointmentToReview, setAppointmentToReview] = useState("");
     const [appointmentScores, setAppointmentScores] = useState([]);
+    const router = useRouter();
+    const delay = (ms) => new Promise((res) => setTimeout(res, ms));
     const [reviews, setReviews] = useState([
         { id: 1, type: "Puntualidad", rating: 5 },
         { id: 2, type: "Atencion", rating: 4.5 },
@@ -42,6 +45,9 @@ const DashboardPatient = () => {
             );
             console.log(response.data);
             setAppointments(response.data.pending_scores);
+            if (response.data.pending_scores.length === 0) {
+                router.push("/patient-dashboard");
+            }
         } catch (error) {
             toast.error("Error al obtener las reseñas pendientes");
             console.error(error);
@@ -106,6 +112,8 @@ const DashboardPatient = () => {
                 }
             );
             toast.info("Puntaje cargado exitosamente");
+            await delay(5000);
+            fetchPendingReviews();
         } catch (error) {
             toast.error("Error al agregar la puntaje");
             console.error(error);
@@ -224,7 +232,12 @@ const DashboardPatient = () => {
                             )}
                         </div>
 
-                        <button onClick={addReview}>Agregar</button>
+                        <button
+                            className={styles["edit-button"]}
+                            onClick={addReview}
+                        >
+                            Agregar
+                        </button>
                     </div>
                 </Modal>
             )}
@@ -261,7 +274,7 @@ const DashboardPatient = () => {
                                     width={200}
                                     height={200}
                                     onClick={() => {
-                                        fetchAppointments();
+                                        fetchPendingReviews();
                                         toast.info("Actualizando turnos...");
                                     }}
                                 />
@@ -280,18 +293,13 @@ const DashboardPatient = () => {
                                                             styles["subtitle"]
                                                         }
                                                     >
-                                                        {/* {
-                                                        appointment.physician
-                                                            .specialty
-                                                    } */}
+                                                        {appointment.specialty}
                                                     </div>
                                                     <p>
                                                         Profesional:{" "}
-                                                        {/* {appointment.physician
-                                                        .first_name +
-                                                        " " +
-                                                        appointment.physician
-                                                            .last_name} */}
+                                                        {appointment.first_name +
+                                                            " " +
+                                                            appointment.last_name}
                                                     </p>
 
                                                     <p>
