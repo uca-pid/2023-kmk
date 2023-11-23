@@ -61,6 +61,7 @@ appointment_data = {
     "date": round(next_week_day_first_block.timestamp()),
 }
 
+
 @pytest.fixture(scope="module", autouse=True)
 def create_patient_and_then_delete_him():
     created_user = auth.create_user(
@@ -76,6 +77,7 @@ def create_patient_and_then_delete_him():
     yield
     auth.delete_user(pytest.patient_uid)
     db.collection("patients").document(pytest.patient_uid).delete()
+
 
 @pytest.fixture(scope="module", autouse=True)
 def log_in_patient():
@@ -108,6 +110,17 @@ def create_physician_and_then_delete_him():
         print("[+] Physisican has not been created")
 
 
+@pytest.fixture(scope="module", autouse=True)
+def log_in_physician():
+    pytest.physician_bearer_token = client.post(
+        "/users/login",
+        json={
+            "email": a_KMK_physician_information["email"],
+            "password": a_KMK_physician_information["password"],
+        },
+    ).json()["token"]
+
+
 @pytest.fixture(autouse=True)
 def create_appointment():
     today_at_now = datetime.now()
@@ -138,6 +151,7 @@ def create_appointment():
             headers={"Authorization": f"Bearer {pytest.bearer_token}"},
         )
 
+
 def test_endpoint_users_add_score(create_appointment):
     response = client.post(
         "/users/add-score",
@@ -150,7 +164,7 @@ def test_endpoint_users_add_score(create_appointment):
             "availability": 1,
             "price": 3,
         },
-        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+        headers={"Authorization": f"Bearer {pytest.physician_bearer_token}"},
     )
     assert response.status_code == 200
     assert response.json()["message"] == "Scores added successfully"
