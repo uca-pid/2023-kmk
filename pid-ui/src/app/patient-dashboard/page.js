@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import styles from "../styles/styles.module.css";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import styles from "../styles/styles.module.css";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import es from "date-fns/locale/es";
@@ -15,6 +14,7 @@ import { Footer, Header, TabBar } from "../components/header";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { redirect } from "../components/userCheck";
 import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 registerLocale("es", es);
 
@@ -36,16 +36,32 @@ const DashboardPatient = () => {
     const [showModal, setShowModal] = useState(false);
     const [appointmentIdToDelete, setAppointmentIdToDelete] = useState(null);
 
-
-
-    const [reviews, setReviews] = useState([]);
-    const [rating, setRating] = useState([]);
+    const [physicianScores, setPhysicianScores] = useState([]);
+    const [appointmentScores, setAppointmentScores] = useState([]);
 
     const agent = new https.Agent({
         rejectUnauthorized: false,
     });
 
-    const getScores = async (id) => {
+    const checkPendingReviews = async () => {
+        try {
+            const response = await axios.get(
+                `${apiURL}users/patient-pending-scores`,
+                {
+                    httpsAgent: agent,
+                }
+            );
+            console.log(response.data);
+            if (response.data.pending_scores.length > 0) {
+                router.push("/patient-dashboard/pending-reviews");
+            }
+        } catch (error) {
+            toast.error("Error al obtener las reseñas pendientes");
+            console.error(error);
+        }
+    };
+
+    const getPhysicianScores = async (id) => {
         try {
             const response = await axios.get(`${apiURL}users/score/${id}`, {
                 httpsAgent: agent,
@@ -53,27 +69,41 @@ const DashboardPatient = () => {
             console.log(response.data.score_metrics);
 
             let tempReviews = [
-                { id: 1, type: "Puntualidad", rating: 5 },
-                { id: 2, type: "Atencion", rating: 4.5 },
-                { id: 3, type: "Limpieza", rating: 4.5 },
-                { id: 4, type: "Instalaciones", rating: 3 },
-                { id: 5, type: "Precio", rating: 4.5 },
+                { id: 1, type: "Puntualidad", rating: 0 },
+                { id: 2, type: "Atencion", rating: 0 },
+                { id: 3, type: "Limpieza", rating: 0 },
+                { id: 4, type: "Disponibilidad", rating: 0 },
+                { id: 5, type: "Precio", rating: 0 },
+                { id: 6, type: "Comunicacion", rating: 0 },
             ];
 
             tempReviews[0].rating = response.data.score_metrics.puntuality;
             tempReviews[1].rating = response.data.score_metrics.attention;
             tempReviews[2].rating = response.data.score_metrics.cleanliness;
-            tempReviews[3].rating = response.data.score_metrics.facilities;
+            tempReviews[3].rating = response.data.score_metrics.availability;
             tempReviews[4].rating = response.data.score_metrics.price;
+            tempReviews[5].rating = response.data.score_metrics.communication;
 
-            setReviews(tempReviews);
+            if (
+                tempReviews[0].rating +
+                    tempReviews[1].rating +
+                    tempReviews[2].rating +
+                    tempReviews[3].rating +
+                    tempReviews[4].rating +
+                    tempReviews[5].rating ==
+                0
+            ) {
+                setPhysicianScores([]);
+            } else {
+                setPhysicianScores(tempReviews);
+            }
         } catch (error) {
             toast.error("Error al obtener los puntajes");
             console.error(error);
         }
     };
 
-    const getRating = async (id) => {
+    const getAppointmentScores = async (id) => {
         try {
             const response = await axios.get(`${apiURL}users/score/${id}`, {
                 httpsAgent: agent,
@@ -84,17 +114,31 @@ const DashboardPatient = () => {
                 { id: 1, type: "Puntualidad", rating: 5 },
                 { id: 2, type: "Atencion", rating: 4.5 },
                 { id: 3, type: "Limpieza", rating: 4.5 },
-                { id: 4, type: "Instalaciones", rating: 3 },
+                { id: 4, type: "Disponibilidad", rating: 3 },
                 { id: 5, type: "Precio", rating: 4.5 },
+                { id: 6, type: "Comunicacion", rating: 2.5 },
             ];
 
             tempReviews[0].rating = response.data.score_metrics.puntuality;
             tempReviews[1].rating = response.data.score_metrics.attention;
             tempReviews[2].rating = response.data.score_metrics.cleanliness;
-            tempReviews[3].rating = response.data.score_metrics.facilities;
+            tempReviews[3].rating = response.data.score_metrics.availability;
             tempReviews[4].rating = response.data.score_metrics.price;
+            tempReviews[5].rating = response.data.score_metrics.communication;
 
-            setRating(tempReviews);
+            if (
+                tempReviews[0].rating +
+                    tempReviews[1].rating +
+                    tempReviews[2].rating +
+                    tempReviews[3].rating +
+                    tempReviews[4].rating +
+                    tempReviews[5].rating ==
+                0
+            ) {
+                setPhysicianScores([]);
+            } else {
+                setAppointmentScores(tempReviews);
+            }
         } catch (error) {
             toast.error("Error al obtener los puntajes");
             console.error(error);
@@ -198,7 +242,7 @@ const DashboardPatient = () => {
     };
 
     const handleOpenRatingModal = (doctorId) => {
-        getRating(doctorId);
+        getAppointmentScores(doctorId);
         setIsRatingModalOpen(true);
 
         console.log(doctorId);
@@ -206,7 +250,7 @@ const DashboardPatient = () => {
     };
 
     const handleCloseRatingModal = () => {
-        setRating([]);
+        setAppointmentScores([]);
         setIsRatingModalOpen(false);
     };
 
@@ -218,7 +262,7 @@ const DashboardPatient = () => {
             setPhysiciansAgenda(
                 doctors.filter((doctor) => doctor.id == doctorId)[0].agenda
             );
-            getScores(doctorId);
+            getPhysicianScores(doctorId);
         } else {
             setPhysiciansAgenda({});
         }
@@ -227,16 +271,18 @@ const DashboardPatient = () => {
     const handleDeleteClick = (appointmentId) => {
         setAppointmentIdToDelete(appointmentId);
         setShowModal(true);
-    };    
-    
+    };
 
     const handleDeleteAppointment = async () => {
         setShowModal(false);
         toast.info("Eliminando turno...");
         try {
-            await axios.delete(`${apiURL}appointments/${appointmentIdToDelete}`, {
-                httpsAgent: agent,
-            });
+            await axios.delete(
+                `${apiURL}appointments/${appointmentIdToDelete}`,
+                {
+                    httpsAgent: agent,
+                }
+            );
             toast.success("Turno eliminado exitosamente");
             fetchAppointments();
             setAppointmentIdToDelete(null); // Limpiar el ID del turno después de eliminar
@@ -245,7 +291,6 @@ const DashboardPatient = () => {
             toast.error("Error al eliminar turno");
         }
     };
-    
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -292,7 +337,7 @@ const DashboardPatient = () => {
             bottom: "auto",
             marginRight: "-50%",
             transform: "translate(-50%, -50%)",
-            width: "70%",
+            width: "auto",
         },
     };
 
@@ -300,9 +345,12 @@ const DashboardPatient = () => {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
-        redirect(router);
-        fetchSpecialties();
-        fetchAppointments().then(() => setIsLoading(false));
+        checkPendingReviews()
+            .then(() => {
+                fetchSpecialties();
+                fetchAppointments();
+            })
+            .then(() => setIsLoading(false));
     }, []);
 
     return (
@@ -408,12 +456,12 @@ const DashboardPatient = () => {
                     contentLabel="Example Modal"
                 >
                     <div
-                        key={rating.key}
+                        key={appointmentScores.key}
                         className={styles["reviews-container"]}
                     >
-                        {rating.length > 0 ? (
+                        {appointmentScores.length > 0 ? (
                             <>
-                                {rating.map((review) => (
+                                {appointmentScores.map((review) => (
                                     <div
                                         key={review.id}
                                         className={styles["review"]}
@@ -498,7 +546,6 @@ const DashboardPatient = () => {
                                 }}
                             />
                             <div className={styles["appointments-section"]}>
-                                
                                 {appointments.length > 0 ? (
                                     // If there are appointments, map through them and display each appointment
                                     <div>
@@ -552,21 +599,42 @@ const DashboardPatient = () => {
                                                         appointment.date * 1000
                                                     ).toLocaleString("es-AR")}
                                                 </p>
-                                                <div className={styles["appointment-buttons-container"]}>
-                                                <button
-                                                    className={styles["edit-button"]}
-                                                    onClick={() => handleOpenEditModal(appointment)}
+                                                <div
+                                                    className={
+                                                        styles[
+                                                            "appointment-buttons-container"
+                                                        ]
+                                                    }
                                                 >
-                                                    Modificar
-                                                </button>
-                                                <button
-                                                    className={styles["delete-button"]}
-                                                    onClick={() => handleDeleteClick(appointment.id)}
-                                                >
-                                                    Cancelar
-                                                </button>
-                                            </div>
-
+                                                    <button
+                                                        className={
+                                                            styles[
+                                                                "edit-button"
+                                                            ]
+                                                        }
+                                                        onClick={() =>
+                                                            handleOpenEditModal(
+                                                                appointment
+                                                            )
+                                                        }
+                                                    >
+                                                        Modificar
+                                                    </button>
+                                                    <button
+                                                        className={
+                                                            styles[
+                                                                "delete-button"
+                                                            ]
+                                                        }
+                                                        onClick={() =>
+                                                            handleDeleteClick(
+                                                                appointment.id
+                                                            )
+                                                        }
+                                                    >
+                                                        Cancelar
+                                                    </button>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
@@ -580,11 +648,11 @@ const DashboardPatient = () => {
                             </div>
                             {/* Modal de confirmación */}
                             <ConfirmationModal
-                                    isOpen={showModal}
-                                    closeModal={() => setShowModal(false)}
-                                    confirmAction={handleDeleteAppointment}
-                                    message="¿Estás seguro de que deseas cancelar este turno?"
-                                />   
+                                isOpen={showModal}
+                                closeModal={() => setShowModal(false)}
+                                confirmAction={handleDeleteAppointment}
+                                message="¿Estás seguro de que deseas cancelar este turno?"
+                            />
                         </div>
 
                         {/* Formulario de selección de especialidad y doctor */}
@@ -645,12 +713,12 @@ const DashboardPatient = () => {
                             </div>
 
                             <div
-                                key={reviews.key}
+                                key={physicianScores.key}
                                 className={styles["reviews-container"]}
                             >
-                                {reviews.length > 0 ? (
+                                {physicianScores.length > 0 ? (
                                     <>
-                                        {reviews.map((review) => (
+                                        {physicianScores.map((review) => (
                                             <div
                                                 key={review.id}
                                                 className={styles["review"]}
@@ -694,7 +762,13 @@ const DashboardPatient = () => {
                                     </>
                                 ) : (
                                     // If there are no reviews, display the message
-                                    <div className={styles["subtitle"]}>
+                                    <div
+                                        style={{
+                                            fontSize: "20px",
+                                            paddingLeft: "1rem",
+                                            marginBottom: "1rem",
+                                        }}
+                                    >
                                         No hay reviews
                                     </div>
                                 )}

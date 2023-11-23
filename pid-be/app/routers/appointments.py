@@ -7,6 +7,7 @@ from app.models.entities.Physician import Physician
 from app.models.entities.Patient import Patient
 from app.models.entities.Auth import Auth
 from app.models.entities.Appointment import Appointment
+from app.models.entities.Score import Score
 from app.models.requests.AppointmentRequests import (
     AppointmentCreationRequest,
     UpdateAppointmentRequest,
@@ -62,6 +63,8 @@ async def create_appointment(
     )
     try:
         appointment_id = appointment.create()
+        score = Score(appointment_id=appointment_id, patient_score = [], physician_score = [])
+        score.create()
         physician = Physician.get_by_id(appointment_creation_request.physician_id)
         patient = Patient.get_by_id(patient_id)
         date = datetime.fromtimestamp(appointment_creation_request.date)
@@ -83,8 +86,12 @@ async def create_appointment(
             },
         )
         return {"appointment_id": appointment_id}
-    except Exception as e:
-        print(e)
+    except HTTPException as http_exception:
+        return JSONResponse(
+            status_code=http_exception.status_code,
+            content={"detail": http_exception.detail},
+        )
+    except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal server error"},

@@ -7,31 +7,57 @@ db = firestore.client()
 
 class Score:
     appointment_id: str
-    puntuality: list
-    attention: list
-    cleanliness: list
-    facilities: list
-    price: list
+    physician_score: list
+    patient_score: list
 
     def __init__(
         self,
         appointment_id: str,
-        puntuality: list,
-        attention: list,
-        cleanliness: list,
-        facilities: list,
-        price: list,
+        physician_score: list,
+        patient_score: list,
     ):
         self.appointment_id = appointment_id
-        self.puntuality = puntuality
-        self.attention = attention
-        self.cleanliness = cleanliness
-        self.facilities = facilities
-        self.price = price
+        self.physician_score = physician_score
+        self.patient_score = patient_score
 
+    @staticmethod
+    def get_by_id(id):
+        return db.collection("scores").document(id).get().to_dict()
+    
     @staticmethod
     def get_score(id):
         return db.collection("scores").document(id).get().to_dict()
+    
+    
+    @staticmethod
+    def add_patient_score(score_data):
+        record_ref = db.collection("scores").document(score_data.appointment_id)
+        patient_score = {}
+        patient_score["puntuality"] = score_data.puntuality
+        patient_score["treat"] = score_data.treat
+        patient_score["cleanliness"] = score_data.cleanliness
+        patient_score["communication"] = score_data.communication
+        patient_score["attendance"] = score_data.attendance
+        record_ref.update({"patient_score": firestore.ArrayUnion([patient_score])})
+
+        updated_record = record_ref.get().to_dict()
+        return updated_record
+    
+    @staticmethod
+    def add_physician_score(score_data):
+        record_ref = db.collection("scores").document(score_data.appointment_id)
+        patient_score = {}
+        patient_score["puntuality"] = score_data.puntuality
+        patient_score["attention"] = score_data.attention
+        patient_score["cleanliness"] = score_data.cleanliness
+        patient_score["availability"] = score_data.availability
+        patient_score["price"] = score_data.price
+        patient_score["communication"] = score_data.communication
+        record_ref.update({"physician_score": firestore.ArrayUnion([patient_score])})
+
+        updated_record = record_ref.get().to_dict()
+        return updated_record
+
 
     def create(self):
         # Obtener el documento existente de Firestore
@@ -43,23 +69,16 @@ class Score:
             data = doc.to_dict()
             
             # Actualizar los campos en la base de datos
+            #Actualizar los campos en la base de datos
             doc_ref.update({
-                "puntuality": (data.get("puntuality", []) + self.puntuality)/2,
-                "attention": (data.get("attention", []) + self.attention)/2,
-                "cleanliness": (data.get("cleanliness", []) + self.cleanliness)/2,
-                "facilities": (data.get("facilities", []) + self.facilities)/2,
-                "price": (data.get("price", []) + self.price)/2,
+                "physician_score": self.physician_score,
+                "patient_score": self.patient_score
             })
         else:
             # Si el documento no existe, establecer los valores por primera vez
             doc_ref.set({
-                "appointment_id": self.appointment_id,
-                "puntuality": self.puntuality,
-                "attention": self.attention,
-                "cleanliness": self.cleanliness,
-                "facilities": self.facilities,
-                "price": self.price,
+                "physician_score": self.physician_score,
+                "patient_score": self.patient_score
             })
 
-        print("Listo")
         return self.appointment_id

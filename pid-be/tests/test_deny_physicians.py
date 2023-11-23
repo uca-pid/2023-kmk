@@ -1,4 +1,6 @@
 import pytest
+import time
+from datetime import datetime, timedelta
 from firebase_admin import firestore, auth
 from app.main import app
 from fastapi.testclient import TestClient
@@ -8,6 +10,9 @@ from unittest.mock import patch
 client = TestClient(app)
 
 db = firestore.client()
+
+today_date = datetime.fromtimestamp(round(time.time()))
+number_of_day_of_week = int(today_date.date().strftime("%w"))
 
 specialties = [
     "pediatrics",
@@ -25,29 +30,31 @@ specialties = [
 
 a_KMK_physician_information = {
     "role": "physician",
-    "name": "Physician Test User Register 1",
+    "first_name": "Physician Test User Register 1",
     "last_name": "Test Last Name",
     "tuition": "777777",
     "specialty": specialties[0],
     "email": "testphysicianfordenial@kmk.com",
     "password": "verySecurePassword123",
-    "approved": "pending",
+    "approved": "approved",
+    "agenda": {str(number_of_day_of_week): {"start": 8.0, "finish": 18.5}},
 }
 
 another_KMK_physician_information = {
     "role": "physician",
-    "name": "Physician Test User Register 2",
+    "first_name": "Physician Test User Register 2",
     "last_name": "Test Last Name",
     "tuition": "777777",
     "specialty": specialties[0],
     "email": "testphysicianfordenial2@kmk.com",
     "password": "verySecurePassword123",
     "approved": "pending",
+    "agenda": {str(number_of_day_of_week): {"start": 8.0, "finish": 18.5}},
 }
 
 a_KMK_patient_information = {
     "role": "patient",
-    "name": "Patient Test User Register",
+    "first_name": "Patient Test User Register",
     "last_name": "Test Last Name",
     "email": "testpatientfordenial@kmk.com",
     "password": "verySecurePassword123",
@@ -89,6 +96,19 @@ def create_patient_and_then_delete_him(load_and_delete_specialties):
     db.collection("patients").document(pytest.a_patient_uid).delete()
 
 
+@pytest.fixture(scope="module", autouse=True)
+def login_patient(create_patient_and_then_delete_him):
+    response_from_login_endpoint_for_first_user = client.post(
+        "/users/login",
+        json={
+            "email": a_KMK_patient_information["email"],
+            "password": a_KMK_patient_information["password"],
+        },
+    )
+
+    pytest.first_bearer = response_from_login_endpoint_for_first_user.json()["token"]
+
+
 @pytest.fixture(autouse=True)
 def create_a_physician_and_then_delete_him():
     created_user = auth.create_user(
@@ -110,7 +130,9 @@ def create_a_physician_and_then_delete_him():
 
 
 @pytest.fixture(autouse=True)
-def create_another_physician_and_then_delete_him():
+def create_another_physician_and_then_delete_him(
+    create_a_physician_and_then_delete_him,
+):
     created_user = auth.create_user(
         **{
             "email": another_KMK_physician_information["email"],
@@ -127,6 +149,27 @@ def create_another_physician_and_then_delete_him():
         db.collection("physicians").document(pytest.another_physician_uid).delete()
     except:
         print("[+] Physisican has not been created")
+
+
+@pytest.fixture(autouse=True)
+def create_test_appointment(create_another_physician_and_then_delete_him):
+    next_week_day = today_date + timedelta(days=7)
+    next_week_day_first_block = next_week_day.replace(hour=9)
+    an_appointment_data = {
+        "date": round(next_week_day_first_block.timestamp()),
+        "physician_id": pytest.a_physician_uid,
+    }
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        appointment_creation_response = client.post(
+            "/appointments",
+            json=an_appointment_data,
+            headers={"Authorization": f"Bearer {pytest.first_bearer}"},
+        )
+
+    pytest.appointment_id = appointment_creation_response.json()["appointment_id"]
+    yield
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -195,7 +238,7 @@ def test_deny_physician_endpoint_updates_approved_field_in_firestore():
         .document(pytest.a_physician_uid)
         .get()
         .to_dict()["approved"]
-        == "pending"
+        == "approved"
     )
     mocked_response = requests.Response()
     mocked_response.status_code = 200
@@ -218,7 +261,7 @@ def test_deny_physician_endpoint_updates_firestore_collections():
     physician_ref = db.collection("physicians").document(pytest.a_physician_uid)
     physician_data = physician_ref.get().to_dict()
     assert physician_data is not None
-    assert physician_data["approved"] == "pending"
+    assert physician_data["approved"] == "approved"
 
     # Realiza la solicitud para denegar al médico
     mocked_response = requests.Response()
@@ -340,6 +383,24 @@ def test_deny_physician_by_non_admin_returns_403_code_and_message():
     )
 
 
+def test_deny_physicians_endpoint_cancels_physicians_appointments():
+    assert (
+        db.collection("appointments").document(pytest.appointment_id).get().exists
+        == True
+    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        client.post(
+            f"/admin/deny-physician/{pytest.a_physician_uid}",
+            headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
+        )
+    assert (
+        db.collection("appointments").document(pytest.appointment_id).get().exists
+        == False
+    )
+
+
 def test_deny_physicians_endpoint_triggers_notification():
     mocked_response = requests.Response()
     mocked_response.status_code = 200
@@ -349,4 +410,4 @@ def test_deny_physicians_endpoint_triggers_notification():
             headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
         )
 
-    assert mocked_request.call_count == 1
+    assert mocked_request.call_count == 2

@@ -50,6 +50,17 @@ a_KMK_patient_information = {
     "blood_type": "a",
 }
 
+today_date = datetime.fromtimestamp(round(time.time()))
+number_of_day_of_week = today_date.date().strftime("%w")
+next_week_day = today_date + timedelta(days=7)
+next_week_day_first_block = next_week_day.replace(hour=9)
+valid_physician_id = "validphysicianid"
+
+appointment_data = {
+    "physician_id": valid_physician_id,
+    "date": round(next_week_day_first_block.timestamp()),
+}
+
 @pytest.fixture(scope="module", autouse=True)
 def create_patient_and_then_delete_him():
     created_user = auth.create_user(
@@ -97,21 +108,49 @@ def create_physician_and_then_delete_him():
         print("[+] Physisican has not been created")
 
 
-# def test_endpoint_users_add_score():
-#     response = client.post(
-#         "/users/add-score",
-#         json={
-#             "physician_id": pytest.physician_uid,
-#             "puntuality": 2.6,
-#             "attention": 4,
-#             "cleanliness": 2,
-#             "facilities": 1,
-#             "price": 0.3,
-#         },
-#         headers={
-#             "Authorization": f"Bearer {pytest.bearer_token}"
-#         },
-#     )
+@pytest.fixture(autouse=True)
+def create_appointment():
+    today_at_now = datetime.now()
+    next_week = today_at_now + timedelta(days=7)
+    pytest.original_appointment_date = next_week.replace(
+        hour=9, minute=0, second=0, microsecond=0
+    )
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        response_to_appointment_creation_endpoint = client.post(
+            "/appointments",
+            json={
+                "physician_id": pytest.physician_uid,
+                "date": round(pytest.original_appointment_date.timestamp()),
+            },
+            headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+        )
+        pytest.appointment_id = response_to_appointment_creation_endpoint.json()[
+            "appointment_id"
+        ]
+    yield
+    mocked_response = requests.Response()
+    mocked_response.status_code = 200
+    with patch("requests.post", return_value=mocked_response) as mocked_request:
+        client.delete(
+            f"/appointments/{pytest.appointment_id}",
+            headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+        )
 
-#     assert response.status_code == 200
-#     assert response.json()["message"] == "Scores added successfully"
+def test_endpoint_users_add_score(create_appointment):
+    response = client.post(
+        "/users/add-score",
+        json={
+            "appointment_id": pytest.appointment_id,
+            "puntuality": 2,
+            "communication": 5,
+            "attention": 4,
+            "cleanliness": 2,
+            "availability": 1,
+            "price": 3,
+        },
+        headers={"Authorization": f"Bearer {pytest.bearer_token}"},
+    )
+    assert response.status_code == 200
+    assert response.json()["message"] == "Scores added successfully"

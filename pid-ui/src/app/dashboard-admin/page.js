@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Pie } from "react-chartjs-2";
-import Chart from "chart.js/auto";
+import Chart from "chart.js/auto"; // NO BORRAR; Es necesario para que los graficos corran correctamente
 import styles from "../styles/styles.module.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -12,6 +12,7 @@ import { redirect } from "../components/userCheck";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { Header, Footer } from "../components/header";
 import { toast } from "react-toastify";
+import { userCheck } from "../components/userCheck";
 
 const Admin = () => {
     const [isLoading, setIsLoading] = useState(true);
@@ -25,7 +26,7 @@ const Admin = () => {
     const [blockedPhysicians, setBlockedPhysicians] = useState([]);
     const [metrics, setMetrics] = useState({});
     const [showModal, setShowModal] = useState(false);
-    const [selectedSpecialty, setSelectedSpecialty] = useState('');
+    const [selectedSpecialty, setSelectedSpecialty] = useState("");
 
     const agent = new https.Agent({
         rejectUnauthorized: false,
@@ -33,7 +34,7 @@ const Admin = () => {
 
     const fetchSpecialties = async () => {
         try {
-            const response = await axios.get(`${apiURL}specialties`, {
+            const response = await axios.get(`${apiURL}admin/specialties`, {
                 httpsAgent: agent,
             });
             response.data.specialties == undefined
@@ -73,16 +74,17 @@ const Admin = () => {
     const handleDeleteConfirmation = async () => {
         setShowModal(false);
         try {
-            const response = await axios.delete(`${apiURL}specialties/delete/${selectedSpecialty}`);
+            const response = await axios.delete(
+                `${apiURL}specialties/delete/${selectedSpecialty}`
+            );
             console.log(response.data);
-            toast.success('Especialidad borrada');
+            toast.success("Especialidad borrada");
             fetchSpecialties();
         } catch (error) {
             console.error(error);
-            toast.error('Error al borrar especialidad');
+            toast.error("Error al borrar especialidad");
         }
     };
-    
 
     const fetchPendingPhysicians = async () => {
         try {
@@ -160,7 +162,7 @@ const Admin = () => {
             setFirstLoad(false);
         } catch (error) {
             console.log(error);
-            toast.error('Error al aprobar profesional');
+            toast.error("Error al aprobar profesional");
         }
     };
 
@@ -182,7 +184,7 @@ const Admin = () => {
             setFirstLoad(false);
         } catch (error) {
             console.log(error);
-            toast.error('Error al denegar profesional');
+            toast.error("Error al denegar profesional");
         }
     };
 
@@ -204,7 +206,7 @@ const Admin = () => {
             setFirstLoad(false);
         } catch (error) {
             console.log(error);
-            toast.error('Error al desbloquear profesional');
+            toast.error("Error al desbloquear profesional");
         }
     };
 
@@ -225,14 +227,14 @@ const Admin = () => {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
-        redirect(router);
-
-        fetchSpecialties();
-        fetchMetrics();
-        fetchPhysicians();
-        fetchBlockedPhysicians();
-        fetchPendingPhysicians().then(() => setIsLoading(false));
-        setFirstLoad(false);
+        userCheck(router, "admin").then(() => {
+            fetchSpecialties();
+            fetchMetrics();
+            fetchPhysicians();
+            fetchBlockedPhysicians();
+            fetchPendingPhysicians().then(() => setIsLoading(false));
+            setFirstLoad(false);
+        });
     }, []);
 
     return (
@@ -248,8 +250,8 @@ const Admin = () => {
                                 Especialidades
                             </div>
                             <Image
-                                src='/refresh_icon.png'
-                                alt='Notificaciones'
+                                src="/refresh_icon.png"
+                                alt="Notificaciones"
                                 className={styles["refresh-icon"]}
                                 width={200}
                                 height={200}
@@ -265,10 +267,10 @@ const Admin = () => {
                                 Agregar Especialidad
                             </div>
                             <input
-                                type='text'
-                                id='specialty'
-                                name='specialty'
-                                placeholder='Especialidad'
+                                type="text"
+                                id="specialty"
+                                name="specialty"
+                                placeholder="Especialidad"
                                 value={newSpecialty}
                                 onChange={(e) =>
                                     setNewSpecialty(e.target.value)
@@ -280,32 +282,48 @@ const Admin = () => {
                             >
                                 Agregar
                             </button>
-                            <div className={styles['admin-scrollable-section']}>
-                            {/* ... */}
-                            {specialties.map((specialty) => (
-                                <div key={specialty} className={styles['specialty-container']}>
-                                    <p>{specialty}</p>
-                                    <div className={styles['appointment-buttons-container']}>
-                                        <Image
-                                            src='/trash_icon.png'
-                                            alt='borrar'
-                                            className={styles.logo}
-                                            width={25}
-                                            height={25}
-                                            onClick={() => handleDeleteClick(specialty)}
-                                        />
+                            <div className={styles["admin-scrollable-section"]}>
+                                {specialties.length > 0 ? (
+                                    <>
+                                        {specialties.map((specialty) => (
+                                            <div
+                                                key={specialty.name}
+                                                className={
+                                                    styles[
+                                                        "specialty-container"
+                                                    ]
+                                                }
+                                            >
+                                                <p>{specialty.name}</p>
+                                                <div
+                                                    className={
+                                                        styles[
+                                                            "appointment-buttons-container"
+                                                        ]
+                                                    }
+                                                >
+                                                    <Image
+                                                        src="/trash_icon.png"
+                                                        alt="borrar"
+                                                        className={styles.logo}
+                                                        width={25}
+                                                        height={25}
+                                                        onClick={() => {
+                                                            handleSpecialtyDelete(
+                                                                specialty.name
+                                                            );
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </>
+                                ) : (
+                                    <div className={styles["subtitle"]}>
+                                        No hay especialidades
                                     </div>
-                                </div>
-                            ))}
-                            {/* ... */}
-                        </div>
-                        {/* Modal de confirmación */}
-                        <ConfirmationModal
-                            isOpen={showModal}
-                            closeModal={() => setShowModal(false)}
-                            confirmAction={handleDeleteConfirmation}
-                            message={`¿Estás seguro de eliminar la especialidad ${selectedSpecialty}?`}
-                        />
+                                )}
+                            </div>
                         </div>
 
                         <div className={styles.form}>
@@ -313,8 +331,8 @@ const Admin = () => {
                                 Profesionales pendientes de aprobación
                             </div>
                             <Image
-                                src='/refresh_icon.png'
-                                alt='Notificaciones'
+                                src="/refresh_icon.png"
+                                alt="Notificaciones"
                                 className={styles["refresh-icon"]}
                                 width={200}
                                 height={200}
@@ -403,8 +421,8 @@ const Admin = () => {
                                 Profesionales en funciones
                             </div>
                             <Image
-                                src='/refresh_icon.png'
-                                alt='Notificaciones'
+                                src="/refresh_icon.png"
+                                alt="Notificaciones"
                                 className={styles["refresh-icon"]}
                                 width={200}
                                 height={200}
@@ -478,8 +496,8 @@ const Admin = () => {
                                 Profesionales bloqueados / denegados
                             </div>
                             <Image
-                                src='/refresh_icon.png'
-                                alt='Notificaciones'
+                                src="/refresh_icon.png"
+                                alt="Notificaciones"
                                 className={styles["refresh-icon"]}
                                 width={200}
                                 height={200}
@@ -583,7 +601,7 @@ const Admin = () => {
                                                             backgroundColor: [
                                                                 "rgba(43, 59, 127, 0.3)",
                                                                 "rgba(43, 59, 127, 0.5)",
-                                                                "rgba(43, 59, 127, 0.7)", 
+                                                                "rgba(43, 59, 127, 0.7)",
                                                                 "rgba(43, 59, 127, 0.9)",
                                                                 "rgba(43, 59, 127, 1.1)",
                                                                 "rgba(43, 59, 127, 1.3)",

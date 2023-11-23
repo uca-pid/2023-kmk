@@ -1,4 +1,6 @@
 import time
+import requests
+from datetime import datetime
 from firebase_admin import firestore
 from fastapi import HTTPException, status
 
@@ -123,11 +125,11 @@ class Appointment:
             .get()
         )
         return [appointment.to_dict() for appointment in appointments]
-    
+
     @staticmethod
     def update_rated_status(id):
         db.collection("appointments").document(id).update({"status": "rated"})
-    
+
     @staticmethod
     def get_all_closed_appointments_for_patient_with(uid):
         if not Patient.is_patient(uid):
@@ -144,7 +146,7 @@ class Appointment:
         )
 
         return [appointment.to_dict() for appointment in appointments]
-    
+
     @staticmethod
     def get_all_closed_appointments_for_physician_with(uid):
         if not Physician.is_physician(uid):
@@ -161,7 +163,6 @@ class Appointment:
         )
 
         return [appointment.to_dict() for appointment in appointments]
-
 
     def delete(self):
         db.collection("appointments").document(self.id).delete()
@@ -188,12 +189,19 @@ class Appointment:
                 **updated_values,
                 "start_time": updated_values["start_time"],
                 "attended": updated_values["attended"],
-                "status": "closed"
+                "status": "closed",
             }
         )
+        db.collection("patientsPendingToScore").document(self.patient_id).set(
+            {self.id: True}
+        )
 
-    
     def create(self):
+        if Patient.has_pending_scores(self.patient_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Patient has pending appointments to score",
+            )
         id = db.collection("appointments").document().id
         db.collection("appointments").document(id).set(
             {
@@ -207,3 +215,26 @@ class Appointment:
         )
         Physician.schedule_appointment(id=self.physician_id, date=self.date)
         return id
+
+    def cancel_due_physician_denial(self):
+        self.delete()
+        physician = Physician.get_by_id(self.physician_id)
+        patient = Patient.get_by_id(self.patient_id)
+        date = datetime.fromtimestamp(self.date)
+        requests.post(
+            "http://localhost:9000/emails/send",
+            json={
+                "type": "CANCELED_APPOINTMENT_DUE_TO_PHYSICIAN_DENIAL",
+                "data": {
+                    "email": patient["email"],
+                    "name": physician["first_name"],
+                    "last_name": physician["last_name"],
+                    "day": date.day,
+                    "month": date.month,
+                    "year": date.year,
+                    "hour": date.hour,
+                    "minute": date.minute,
+                    "second": date.second,
+                },
+            },
+        )

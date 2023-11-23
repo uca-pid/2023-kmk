@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import styles from "../styles/styles.module.css";
-import { useRouter } from "next/navigation";
 import "react-datepicker/dist/react-datepicker.css";
 import Modal from "react-modal";
 import axios from "axios";
@@ -17,7 +16,6 @@ import { toast } from "react-toastify";
 const PhysicianAgenda = () => {
     const [isLoading, setIsLoading] = useState(true);
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
-    const router = useRouter();
     const [appointments, setAppointments] = useState([]);
     const [isAddObservationModalOpen, setIsAddObervationModalOpen] =
         useState(false);
@@ -31,10 +29,10 @@ const PhysicianAgenda = () => {
 
     const [reviews, setReviews] = useState([
         { id: 1, type: "Puntualidad", rating: 5 },
-        { id: 2, type: "Atencion", rating: 4.5 },
-        { id: 3, type: "Limpieza", rating: 4.5 },
-        { id: 4, type: "Instalaciones", rating: 3 },
-        { id: 5, type: "Precio", rating: 4.5 },
+        { id: 2, type: "Comunicacion", rating: 4.5 },
+        { id: 3, type: "Asistencia", rating: 4.5 },
+        { id: 4, type: "Trato", rating: 3 },
+        { id: 5, type: "Limpieza", rating: 4.5 },
     ]);
 
     const agent = new https.Agent({
@@ -50,17 +48,17 @@ const PhysicianAgenda = () => {
 
             let tempReviews = [
                 { id: 1, type: "Puntualidad", rating: 5 },
-                { id: 2, type: "Atencion", rating: 4.5 },
-                { id: 3, type: "Limpieza", rating: 4.5 },
-                { id: 4, type: "Instalaciones", rating: 3 },
-                { id: 5, type: "Precio", rating: 4.5 },
+                { id: 2, type: "Comunicacion", rating: 4.5 },
+                { id: 3, type: "Asistencia", rating: 4.5 },
+                { id: 4, type: "Trato", rating: 3 },
+                { id: 5, type: "Limpieza", rating: 4.5 },
             ];
 
             tempReviews[0].rating = response.data.score_metrics.puntuality;
-            tempReviews[1].rating = response.data.score_metrics.attention;
-            tempReviews[2].rating = response.data.score_metrics.cleanliness;
-            tempReviews[3].rating = response.data.score_metrics.facilities;
-            tempReviews[4].rating = response.data.score_metrics.price;
+            tempReviews[1].rating = response.data.score_metrics.communication;
+            tempReviews[2].rating = response.data.score_metrics.attendance;
+            tempReviews[3].rating = response.data.score_metrics.treat;
+            tempReviews[4].rating = response.data.score_metrics.cleanliness;
 
             setReviews(tempReviews);
         } catch (error) {
@@ -147,10 +145,10 @@ const PhysicianAgenda = () => {
                 {
                     appointment_id: appointmentToClose.id,
                     puntuality: reviews[0].rating,
-                    attention: reviews[1].rating,
-                    cleanliness: reviews[2].rating,
-                    facilities: reviews[3].rating,
-                    price: reviews[4].rating,
+                    communication: reviews[1].rating,
+                    attendance: reviews[2].rating,
+                    treat: reviews[3].rating,
+                    cleanliness: reviews[4].rating,
                 },
                 {
                     httpsAgent: agent,
@@ -172,9 +170,12 @@ const PhysicianAgenda = () => {
         setShowModal(false);
         toast.info("Eliminando turno...");
         try {
-            await axios.delete(`${apiURL}appointments/${appointmentIdToDelete}`, {
-                httpsAgent: agent,
-            });
+            await axios.delete(
+                `${apiURL}appointments/${appointmentIdToDelete}`,
+                {
+                    httpsAgent: agent,
+                }
+            );
             toast.success("Turno eliminado exitosamente");
             fetchAppointments();
             setAppointmentIdToDelete(null); // Limpiar el ID del turno después de eliminar
@@ -217,9 +218,6 @@ const PhysicianAgenda = () => {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
-
-        redirect(router);
-        getScores();
         fetchAppointments()
             .then(() => setIsLoading(false)) // Marcar como cargado cuando la respuesta llega
             .catch(() => {
@@ -413,7 +411,7 @@ const PhysicianAgenda = () => {
                             </div>
                             <Image
                                 src="/refresh_icon.png"
-                                alt="Notificaciones"
+                                alt="Refrescar"
                                 className={styles["refresh-icon"]}
                                 width={200}
                                 height={200}
@@ -521,11 +519,11 @@ const PhysicianAgenda = () => {
                             </div>
                             {/* Modal de confirmación */}
                             <ConfirmationModal
-                                    isOpen={showModal}
-                                    closeModal={() => setShowModal(false)}
-                                    confirmAction={handleDeleteAppointment}
-                                    message="¿Estás seguro de que deseas cancelar este turno?"
-                                />
+                                isOpen={showModal}
+                                closeModal={() => setShowModal(false)}
+                                confirmAction={handleDeleteAppointment}
+                                message="¿Estás seguro de que deseas cancelar este turno?"
+                            />
                         </div>
                     </div>
 

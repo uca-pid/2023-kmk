@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Union
+from typing import Union, Dict
 
 from .PhysicianResponses import PhysicianResponse
 
@@ -33,4 +33,17 @@ class AllBlockedPhysiciansResponse(BaseModel):
 
 
 class GetBlockedPhysiciansError(BaseModel):
+    detail: str
+
+
+class AdminGetSpecialtyResponse(BaseModel):
+    name: str
+    physicians_count: int
+
+
+class SuccessfulAdminSpecialtiesGetResponse(BaseModel):
+    specialties: list[AdminGetSpecialtyResponse]
+
+
+class AdminSpecialtiesGetError(BaseModel):
     detail: str
