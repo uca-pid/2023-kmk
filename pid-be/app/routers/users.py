@@ -461,7 +461,8 @@ def show_score(user_id: str, uid=Depends(Auth.is_logged_in)):
             scores = []
             for appt in appointments:
                 score = Score.get_by_id(appt["id"])
-                scores.append(score["physician_score"][0])
+                if(len(score["physician_score"]) > 0):
+                    scores.append(score["physician_score"][0])
 
         for score in scores:
             for key, value in score.items():
