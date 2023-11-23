@@ -1,4 +1,6 @@
 import time
+import requests
+from datetime import datetime
 from firebase_admin import firestore
 from fastapi import HTTPException, status
 
@@ -213,3 +215,26 @@ class Appointment:
         )
         Physician.schedule_appointment(id=self.physician_id, date=self.date)
         return id
+
+    def cancel_due_physician_denial(self):
+        self.delete()
+        physician = Physician.get_by_id(self.physician_id)
+        patient = Patient.get_by_id(self.patient_id)
+        date = datetime.fromtimestamp(self.date)
+        requests.post(
+            "http://localhost:9000/emails/send",
+            json={
+                "type": "CANCELED_APPOINTMENT_DUE_TO_PHYSICIAN_DENIAL",
+                "data": {
+                    "email": patient["email"],
+                    "name": physician["first_name"],
+                    "last_name": physician["last_name"],
+                    "day": date.day,
+                    "month": date.month,
+                    "year": date.year,
+                    "hour": date.hour,
+                    "minute": date.minute,
+                    "second": date.second,
+                },
+            },
+        )

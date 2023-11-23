@@ -184,6 +184,28 @@ def test_email_template_handler_generates_correct_HTML_for_canceled_appointment(
     assert generated_template == expected_template.format(**date_data)
 
 
+def test_email_template_handler_generates_correct_HTML_for_canceled_appointment_due_to_physician_denial():
+    template_handler = TemplateHandler(
+        **{
+            "type": "CANCELED_APPOINTMENT_DUE_TO_PHYSICIAN_DENIAL",
+            "data": {
+                "email": patient_account_data["email"],
+                "name": physician_account_data["name"],
+                "last_name": physician_account_data["last_name"],
+                **date_data,
+            },
+        }
+    )
+    generated_template = template_handler.generate_template()
+    with open(
+        "app/models/email_templates/CanceledAppointmentDueToPhysicianDenial.html", "r"
+    ) as fp:
+        expected_template = fp.read()
+    assert generated_template == expected_template.format(
+        **{**physician_account_data, **date_data}
+    )
+
+
 def test_email_template_handler_generates_correct_HTML_for_edited_records():
     template_handler = TemplateHandler(
         **{
