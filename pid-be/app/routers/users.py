@@ -486,6 +486,13 @@ def pending_scores(
         appointments = Appointment.get_all_closed_appointments_for_patient_with(user_id)
         pending_scores = []
         for appointment in appointments:
+            physician = Physician.get_by_id(appointment["physician_id"])
+            physician_info = {
+                "first_name": physician["first_name"],
+                "last_name": physician["last_name"],
+                "specialty": physician["specialty"],
+            }
+            appointment.update(physician_info)
             pending_scores.append(appointment)
         
         return {"pending_scores": pending_scores}
