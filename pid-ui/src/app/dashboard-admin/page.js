@@ -8,7 +8,6 @@ import styles from "../styles/styles.module.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import https from "https";
-import { redirect } from "../components/userCheck";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { Header, Footer } from "../components/header";
 import { toast } from "react-toastify";
@@ -34,9 +33,10 @@ const Admin = () => {
 
     const fetchSpecialties = async () => {
         try {
-            const response = await axios.get(`${apiURL}admin/specialties`, {
+            const response = await axios.get(`${apiURL}specialties/`, {
                 httpsAgent: agent,
             });
+            console.log(response.data.specialties);
             response.data.specialties == undefined
                 ? setSpecialties([])
                 : setSpecialties(response.data.specialties);
@@ -287,14 +287,14 @@ const Admin = () => {
                                     <>
                                         {specialties.map((specialty) => (
                                             <div
-                                                key={specialty.name}
+                                                key={specialty}
                                                 className={
                                                     styles[
                                                         "specialty-container"
                                                     ]
                                                 }
                                             >
-                                                <p>{specialty.name}</p>
+                                                <p>{specialty}</p>
                                                 <div
                                                     className={
                                                         styles[
@@ -309,8 +309,8 @@ const Admin = () => {
                                                         width={25}
                                                         height={25}
                                                         onClick={() => {
-                                                            handleSpecialtyDelete(
-                                                                specialty.name
+                                                            handleDeleteClick(
+                                                                specialty
                                                             );
                                                         }}
                                                     />
