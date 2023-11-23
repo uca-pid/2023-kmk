@@ -8,6 +8,7 @@ import styles from "../styles/styles.module.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import https from "https";
+import ConfirmationModal from "../components/ConfirmationModal";
 import { Header, Footer } from "../components/header";
 import { toast } from "react-toastify";
 import { userCheck } from "../components/userCheck";
@@ -23,6 +24,8 @@ const Admin = () => {
     const [pendingPhysicians, setPendingPhysicians] = useState([]);
     const [blockedPhysicians, setBlockedPhysicians] = useState([]);
     const [metrics, setMetrics] = useState({});
+    const [showModal, setShowModal] = useState(false);
+    const [selectedSpecialty, setSelectedSpecialty] = useState("");
 
     const agent = new https.Agent({
         rejectUnauthorized: false,
@@ -30,9 +33,10 @@ const Admin = () => {
 
     const fetchSpecialties = async () => {
         try {
-            const response = await axios.get(`${apiURL}admin/specialties`, {
+            const response = await axios.get(`${apiURL}specialties/`, {
                 httpsAgent: agent,
             });
+            console.log(response.data.specialties);
             response.data.specialties == undefined
                 ? setSpecialties([])
                 : setSpecialties(response.data.specialties);
@@ -46,6 +50,7 @@ const Admin = () => {
 
     const handleAddSpecialty = async () => {
         try {
+            toast.info("Agregando especialidad...");
             const response = await axios.post(
                 `${apiURL}specialties/add/${newSpecialty}`,
                 {
@@ -53,6 +58,7 @@ const Admin = () => {
                 }
             );
             toast.success("Especialidad agregada");
+            setNewSpecialty("");
             setFirstLoad(true);
             fetchSpecialties();
             setFirstLoad(false);
@@ -62,17 +68,21 @@ const Admin = () => {
         }
     };
 
-    const handleSpecialtyDelete = async (specialty) => {
+    const handleDeleteClick = (specialty) => {
+        setSelectedSpecialty(specialty);
+        setShowModal(true);
+    };
+
+    const handleDeleteConfirmation = async () => {
+        setShowModal(false);
         try {
+            toast.info("Borrando especialidad...");
             const response = await axios.delete(
-                `${apiURL}specialties/delete/${specialty}`,
-                { httpsAgent: agent }
+                `${apiURL}specialties/delete/${selectedSpecialty}`
             );
             console.log(response.data);
-            toast.success("Especialidad borrada");
-            setFirstLoad(true);
+            toast.success("Especialidad eliminada exitosamente");
             fetchSpecialties();
-            setFirstLoad(false);
         } catch (error) {
             console.error(error);
             toast.error("Error al borrar especialidad");
@@ -137,7 +147,9 @@ const Admin = () => {
     };
 
     const handleApprovePhysician = async (physician) => {
+        toast.info("Aprobando profesional...");
         try {
+            toast.info("Aprobando medico...");
             console.log(physician.id);
             const response = await axios.post(
                 `${apiURL}admin/approve-physician/${physician.id}`,
@@ -146,7 +158,7 @@ const Admin = () => {
                 }
             );
             console.log(response.data);
-            toast.info("Profesional aprobado");
+            toast.success("Profesional aprobado");
             setFirstLoad(true);
             fetchPendingPhysicians();
             fetchPhysicians();
@@ -154,11 +166,14 @@ const Admin = () => {
             setFirstLoad(false);
         } catch (error) {
             console.log(error);
+            toast.error("Error al aprobar profesional");
         }
     };
 
     const handleDenyPhysician = async (physician) => {
+        toast.info("Denegando profesional...");
         try {
+            toast.info("Bloquando medico...");
             console.log(physician.id);
             const response = await axios.post(
                 `${apiURL}admin/deny-physician/${physician.id}`,
@@ -166,7 +181,7 @@ const Admin = () => {
                     httpsAgent: agent,
                 }
             );
-            toast.info("Profesional denegado");
+            toast.success("Profesional denegado");
             setFirstLoad(true);
             fetchPendingPhysicians();
             fetchPhysicians();
@@ -174,11 +189,14 @@ const Admin = () => {
             setFirstLoad(false);
         } catch (error) {
             console.log(error);
+            toast.error("Error al denegar profesional");
         }
     };
 
     const handleUnblockPhysician = async (physician) => {
+        toast.info("Desbloqueando profesional...");
         try {
+            toast.info("Desbloqueando medico...");
             console.log(physician.id);
             const response = await axios.post(
                 `${apiURL}admin/unblock-physician/${physician.id}`,
@@ -186,7 +204,7 @@ const Admin = () => {
                     httpsAgent: agent,
                 }
             );
-            toast.info("Profesional desbloqueado");
+            toast.success("Profesional desbloqueado");
             setFirstLoad(true);
             fetchPendingPhysicians();
             fetchPhysicians();
@@ -194,6 +212,7 @@ const Admin = () => {
             setFirstLoad(false);
         } catch (error) {
             console.log(error);
+            toast.error("Error al desbloquear profesional");
         }
     };
 
@@ -226,6 +245,13 @@ const Admin = () => {
 
     return (
         <div className={styles.dashboard}>
+            <ConfirmationModal
+                isOpen={showModal}
+                closeModal={() => setShowModal(false)}
+                confirmAction={handleDeleteConfirmation}
+                message="¿Estás seguro de que deseas eliminar esta especialidad??"
+            />
+
             <Header />
             {isLoading ? (
                 <p>Cargando...</p>
@@ -237,8 +263,8 @@ const Admin = () => {
                                 Especialidades
                             </div>
                             <Image
-                                src='/refresh_icon.png'
-                                alt='Notificaciones'
+                                src="/refresh_icon.png"
+                                alt="Notificaciones"
                                 className={styles["refresh-icon"]}
                                 width={200}
                                 height={200}
@@ -254,10 +280,10 @@ const Admin = () => {
                                 Agregar Especialidad
                             </div>
                             <input
-                                type='text'
-                                id='specialty'
-                                name='specialty'
-                                placeholder='Especialidad'
+                                type="text"
+                                id="specialty"
+                                name="specialty"
+                                placeholder="Especialidad"
                                 value={newSpecialty}
                                 onChange={(e) =>
                                     setNewSpecialty(e.target.value)
@@ -274,14 +300,14 @@ const Admin = () => {
                                     <>
                                         {specialties.map((specialty) => (
                                             <div
-                                                key={specialty.name}
+                                                key={specialty}
                                                 className={
                                                     styles[
                                                         "specialty-container"
                                                     ]
                                                 }
                                             >
-                                                <p>{specialty.name}</p>
+                                                <p>{specialty}</p>
                                                 <div
                                                     className={
                                                         styles[
@@ -290,14 +316,14 @@ const Admin = () => {
                                                     }
                                                 >
                                                     <Image
-                                                        src='/trash_icon.png'
-                                                        alt='borrar'
+                                                        src="/trash_icon.png"
+                                                        alt="borrar"
                                                         className={styles.logo}
                                                         width={25}
                                                         height={25}
                                                         onClick={() => {
-                                                            handleSpecialtyDelete(
-                                                                specialty.name
+                                                            handleDeleteClick(
+                                                                specialty
                                                             );
                                                         }}
                                                     />
@@ -318,8 +344,8 @@ const Admin = () => {
                                 Profesionales pendientes de aprobación
                             </div>
                             <Image
-                                src='/refresh_icon.png'
-                                alt='Notificaciones'
+                                src="/refresh_icon.png"
+                                alt="Notificaciones"
                                 className={styles["refresh-icon"]}
                                 width={200}
                                 height={200}
@@ -408,8 +434,8 @@ const Admin = () => {
                                 Profesionales en funciones
                             </div>
                             <Image
-                                src='/refresh_icon.png'
-                                alt='Notificaciones'
+                                src="/refresh_icon.png"
+                                alt="Notificaciones"
                                 className={styles["refresh-icon"]}
                                 width={200}
                                 height={200}
@@ -483,8 +509,8 @@ const Admin = () => {
                                 Profesionales bloqueados / denegados
                             </div>
                             <Image
-                                src='/refresh_icon.png'
-                                alt='Notificaciones'
+                                src="/refresh_icon.png"
+                                alt="Notificaciones"
                                 className={styles["refresh-icon"]}
                                 width={200}
                                 height={200}
@@ -558,7 +584,10 @@ const Admin = () => {
                         <div className={styles.form}>
                             <div className={styles["title"]}>Metricas</div>
                             <div className={styles["admin-section"]}>
-                                {metrics.all_appointments_by_specialty ? (
+                                {metrics.all_appointments_by_specialty &&
+                                Object.keys(
+                                    metrics.all_appointments_by_specialty
+                                ).length > 0 ? (
                                     <div>
                                         <div className={styles["subtitle"]}>
                                             Turnos por especialidad
@@ -585,6 +614,17 @@ const Admin = () => {
                                                             data: Object.values(
                                                                 metrics.all_appointments_by_specialty
                                                             ),
+                                                            backgroundColor: [
+                                                                "rgba(43, 59, 127, 0.3)",
+                                                                "rgba(43, 59, 127, 0.5)",
+                                                                "rgba(43, 59, 127, 0.7)",
+                                                                "rgba(43, 59, 127, 0.9)",
+                                                                "rgba(43, 59, 127, 1.1)",
+                                                                "rgba(43, 59, 127, 1.3)",
+                                                                "rgba(43, 59, 127, 1.5)",
+                                                                "rgba(43, 59, 127, 1.7)",
+                                                                "rgba(43, 59, 127, 1.9)",
+                                                            ],
                                                         },
                                                     ],
                                                 }}
@@ -614,7 +654,12 @@ const Admin = () => {
                                             />
                                         </div>
                                     </div>
-                                ) : null}
+                                ) : (
+                                    <div className={styles["subtitle"]}>
+                                        No hay datos suficientes para mostrar
+                                        metricas
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
