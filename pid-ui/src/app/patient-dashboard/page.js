@@ -35,6 +35,8 @@ const DashboardPatient = () => {
     const [editingAppointment, setEditingAppointment] = useState({});
     const [showModal, setShowModal] = useState(false);
     const [appointmentIdToDelete, setAppointmentIdToDelete] = useState(null);
+    const [disabledAppointmentButton, setDisabledAppointmentButton] =
+        useState(false);
 
     const [physicianScores, setPhysicianScores] = useState([]);
     const [appointmentScores, setAppointmentScores] = useState([]);
@@ -294,6 +296,7 @@ const DashboardPatient = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setDisabledAppointmentButton(true);
         try {
             toast.info("Solicitando turno...");
             const response = await axios.post(
@@ -316,6 +319,7 @@ const DashboardPatient = () => {
             console.error(error);
             toast.error("Error al solicitar turno");
         }
+        setDisabledAppointmentButton(false);
     };
 
     const customStyles = {
@@ -651,7 +655,7 @@ const DashboardPatient = () => {
                                 isOpen={showModal}
                                 closeModal={() => setShowModal(false)}
                                 confirmAction={handleDeleteAppointment}
-                                message="¿Estás seguro de que deseas cancelar este turno?"
+                                message='¿Estás seguro de que deseas cancelar este turno?'
                             />
                         </div>
 
@@ -677,7 +681,8 @@ const DashboardPatient = () => {
                                 <option value=''>Especialidad</option>
                                 {specialties.map((specialty) => (
                                     <option key={specialty} value={specialty}>
-                                        {specialty}
+                                        {specialty.charAt(0).toUpperCase() +
+                                            specialty.slice(1)}
                                     </option>
                                 ))}
                             </select>
@@ -839,11 +844,13 @@ const DashboardPatient = () => {
                             <button
                                 type='submit'
                                 className={`${styles["submit-button"]} ${
-                                    !selectedDoctor
+                                    !selectedDoctor || disabledAppointmentButton
                                         ? styles["disabled-button"]
                                         : ""
                                 }`}
-                                disabled={!selectedDoctor}
+                                disabled={
+                                    !selectedDoctor || disabledAppointmentButton
+                                }
                             >
                                 Solicitar turno
                             </button>

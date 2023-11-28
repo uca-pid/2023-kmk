@@ -226,7 +226,8 @@ const Registro = () => {
                                 </option>
                                 {specialties.map((specialty) => (
                                     <option key={specialty} value={specialty}>
-                                        {specialty}
+                                        {specialty.charAt(0).toUpperCase() +
+                                            specialty.slice(1)}
                                     </option>
                                 ))}
                             </select>
@@ -324,7 +325,9 @@ const Registro = () => {
                 <button
                     type='submit'
                     className={`${styles["button"]} ${
-                        password !== confirmPassword || error
+                        password !== confirmPassword ||
+                        error ||
+                        disabledRegisterButton
                             ? styles["disabled-button"]
                             : ""
                     }`}
