@@ -30,7 +30,7 @@ class Physician:
         self.name = name
         self.last_name = last_name
         self.tuition = tuition
-        self.specialty = specialty
+        self.specialty = specialty.lower()
         self.email = email
         self.id = id
         self.approved = approved

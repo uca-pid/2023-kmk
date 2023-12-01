@@ -26,6 +26,8 @@ const PhysicianAgenda = () => {
     const [appointmentToClose, setAppointmentToClose] = useState("");
     const [showModal, setShowModal] = useState(false);
     const [appointmentIdToDelete, setAppointmentIdToDelete] = useState(null);
+    const [disabledCloseAppointmentButton, setDisabledCloseAppointmentButton] =
+        useState(false);
 
     const [reviews, setReviews] = useState([
         { id: 1, type: "Puntualidad", rating: 5 },
@@ -92,6 +94,7 @@ const PhysicianAgenda = () => {
     };
 
     const handleAppointmentClosure = async () => {
+        setDisabledCloseAppointmentButton(true);
         console.log(appointmentToClose.id);
         console.log(appointmentAttended);
         console.log(startTime);
@@ -159,6 +162,7 @@ const PhysicianAgenda = () => {
             toast.error("Error al agregar la puntaje");
             console.error(error);
         }
+        setDisabledCloseAppointmentButton(false);
     };
 
     const handleDeleteClick = (appointmentId) => {
@@ -245,8 +249,8 @@ const PhysicianAgenda = () => {
                             </div>
                             <select
                                 className={styles["select"]}
-                                name="attended"
-                                id="attended"
+                                name='attended'
+                                id='attended'
                                 onChange={(e) => {
                                     console.log(e.target.value);
                                     setAppointmentAttended(e.target.value);
@@ -261,9 +265,9 @@ const PhysicianAgenda = () => {
                             </div>
 
                             <input
-                                type="time"
-                                id="time"
-                                name="time"
+                                type='time'
+                                id='time'
+                                name='time'
                                 onChange={(date) => {
                                     setStartTime(date.target.value.toString());
                                     console.log(date.target.value.toString());
@@ -282,20 +286,20 @@ const PhysicianAgenda = () => {
                             </div>
 
                             <textarea
-                                id="observation"
+                                id='observation'
                                 value={newObservationContent}
                                 onChange={(e) => {
                                     console.log(e.target.value);
                                     setNewObservationContent(e.target.value);
                                 }}
-                                placeholder="Escribe una nueva observación"
+                                placeholder='Escribe una nueva observación'
                                 required
                                 className={`${styles["observation-input"]} ${
                                     appointmentAttended === "false"
                                         ? styles["disabled-input"]
                                         : ""
                                 }`}
-                                wrap="soft"
+                                wrap='soft'
                                 disabled={appointmentAttended == "false"}
                             />
                         </div>
@@ -340,11 +344,11 @@ const PhysicianAgenda = () => {
                                                         }
                                                     >
                                                         <input
-                                                            type="number"
-                                                            id="points"
-                                                            name="points"
-                                                            min="0"
-                                                            max="5"
+                                                            type='number'
+                                                            id='points'
+                                                            name='points'
+                                                            min='0'
+                                                            max='5'
                                                             placeholder={
                                                                 review.rating
                                                             }
@@ -383,12 +387,18 @@ const PhysicianAgenda = () => {
 
                         <button
                             className={`${styles["edit-button"]} ${
-                                !newObservationContent || !startTime
+                                !newObservationContent ||
+                                !startTime ||
+                                disabledCloseAppointmentButton
                                     ? styles["disabled-button"]
                                     : ""
                             }`}
                             onClick={handleAppointmentClosure}
-                            disabled={!newObservationContent || !startTime}
+                            disabled={
+                                !newObservationContent ||
+                                !startTime ||
+                                disabledCloseAppointmentButton
+                            }
                         >
                             Agregar
                         </button>
@@ -398,7 +408,7 @@ const PhysicianAgenda = () => {
 
             <PhysicianTabBar highlight={"TurnosDelDia"} />
 
-            <Header role="physician" />
+            <Header role='physician' />
 
             {isLoading ? (
                 <p>Cargando...</p>
@@ -410,8 +420,8 @@ const PhysicianAgenda = () => {
                                 Mis Proximos Turnos
                             </div>
                             <Image
-                                src="/refresh_icon.png"
-                                alt="Refrescar"
+                                src='/refresh_icon.png'
+                                alt='Refrescar'
                                 className={styles["refresh-icon"]}
                                 width={200}
                                 height={200}
@@ -522,7 +532,7 @@ const PhysicianAgenda = () => {
                                 isOpen={showModal}
                                 closeModal={() => setShowModal(false)}
                                 confirmAction={handleDeleteAppointment}
-                                message="¿Estás seguro de que deseas cancelar este turno?"
+                                message='¿Estás seguro de que deseas cancelar este turno?'
                             />
                         </div>
                     </div>

@@ -372,16 +372,16 @@ def add_score(add_score_request: LoadScoreRequest, uid=Depends(Auth.is_logged_in
     * Add score.
     * Raise an error if password change fails.
     """
+    add_score_request = add_score_request.model_dump(exclude_none=True)
+    appointment_id = add_score_request.pop("appointment_id")
     try:
         if Patient.get_by_id(uid):
-            Score.add_physician_score(add_score_request)
-            Appointment.update_rated_status(add_score_request.appointment_id)
-            Appointment.remove_pending_to_score_patient_register(
-                uid, add_score_request.appointment_id
-            )
+            Score.add_physician_score(add_score_request, appointment_id)
+            Appointment.update_rated_status(appointment_id)
+            Appointment.remove_pending_to_score_patient_register(uid, appointment_id)
             return {"message": "Scores added successfully"}
         if Physician.get_by_id(uid):
-            Score.add_patient_score(add_score_request)
+            Score.add_patient_score(add_score_request, appointment_id)
             return {"message": "Scores added successfully"}
         else:
             return JSONResponse(
@@ -403,9 +403,10 @@ def add_score(add_score_request: LoadScoreRequest, uid=Depends(Auth.is_logged_in
         401: {"model": ScoreErrorResponse},
     },
 )
-def show_score(user_id: str, 
-               #uid=Depends(Auth.is_logged_in)
-               ):
+def show_score(
+    user_id: str,
+    # uid=Depends(Auth.is_logged_in)
+):
     """
     Show scores from a physician.
 
@@ -463,7 +464,7 @@ def show_score(user_id: str,
             scores = []
             for appt in appointments:
                 score = Score.get_by_id(appt["id"])
-                if(len(score["physician_score"]) > 0):
+                if len(score["physician_score"]) > 0:
                     scores.append(score["physician_score"][0])
 
         for score in scores:
@@ -477,7 +478,7 @@ def show_score(user_id: str,
             if score_counts[key] > 0:
                 score_averages[key] = value / score_counts[key]
             else:
-                score_averages[key] = 0
+                score_averages[key] = "No hay reviews"
 
         print(score_averages)
 

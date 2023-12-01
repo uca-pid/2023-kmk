@@ -15,6 +15,9 @@ import ConfirmationModal from "../components/ConfirmationModal";
 import { redirect } from "../components/userCheck";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import InfoIcon from "@mui/icons-material/Info";
+import IconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
 
 registerLocale("es", es);
 
@@ -715,6 +718,14 @@ const DashboardPatient = () => {
 
                             <div className={styles["subtitle"]}>
                                 Puntuaciones del médico{" "}
+                                <Tooltip
+                                    title='Las puntuaciones muestran la opinion de los usuarios acerca de los medicos. La puntuacion mas baja es 0 (muy malo) y la mas alta es 5 (excelente). En caso de que el medico no haya sido puntuado en una categoria aun, se mostrara que dicha seccion no tiene reviews.'
+                                    placement='right'
+                                >
+                                    <IconButton>
+                                        <InfoIcon />
+                                    </IconButton>
+                                </Tooltip>
                             </div>
 
                             <div
