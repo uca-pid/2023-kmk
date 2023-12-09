@@ -217,34 +217,6 @@ const DashboardPatient = () => {
                                                                 Excelente
                                                             </option>
                                                         </select>
-                                                        {/* <input
-                                                            type='number'
-                                                            id='points'
-                                                            name='points'
-                                                            min='0'
-                                                            max='5'
-                                                            placeholder={
-                                                                review.rating
-                                                            }
-                                                            onChange={(e) => {
-                                                                setReviews(
-                                                                    reviews.map(
-                                                                        (
-                                                                            item
-                                                                        ) =>
-                                                                            item.id ===
-                                                                            review.id
-                                                                                ? {
-                                                                                      ...item,
-                                                                                      rating: e
-                                                                                          .target
-                                                                                          .value,
-                                                                                  }
-                                                                                : item
-                                                                    )
-                                                                );
-                                                            }}
-                                                        ></input> */}
                                                     </div>
                                                 </div>
                                             </div>
