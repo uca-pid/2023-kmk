@@ -1,16 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
-import Link from "next/link";
 import { Bar } from "react-chartjs-2";
-import Chart from "chart.js/auto";
+import Chart from "chart.js/auto"; // NO BORRAR
 import styles from "../styles/styles.module.css";
 import { useRouter } from "next/navigation";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
 import https from "https";
-import { redirect } from "../components/userCheck";
 import { Header, Footer, PhysicianTabBar } from "../components/header";
 import { toast } from "react-toastify";
 
@@ -34,6 +31,7 @@ const PhysicianPendingAppointments = () => {
                 : setMetrics(response.data.dashboard_metrics);
         } catch (error) {
             console.error(error);
+            toast.error("Error al cargar las métricas");
         }
     };
 
@@ -42,7 +40,6 @@ const PhysicianPendingAppointments = () => {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
         fetchMetrics();
-        // userCheck(router);
     }, []);
 
     return (

@@ -117,3 +117,9 @@
 .cta-button:hover {
     background-color: #0056b3;
 }
+
+.disabled-button {
+    background-color: #ccc;
+    color: #fff;
+    cursor: not-allowed;
+}

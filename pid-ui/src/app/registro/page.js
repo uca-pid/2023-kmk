@@ -27,6 +27,7 @@ const Registro = () => {
     const [gender, setGender] = useState("");
     const [blood_types, setBloodTypes] = useState([]);
     const [blood_type, setBloodType] = useState("");
+    const [disabledRegisterButton, setDisabledRegisterButton] = useState(false);
     const router = useRouter();
     const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -91,6 +92,7 @@ const Registro = () => {
 
         toast.info("Registrando...");
         e.preventDefault();
+        setDisabledRegisterButton(true);
 
         let userData = {
             name: nombre,
@@ -128,6 +130,7 @@ const Registro = () => {
                 router.push("/");
             }
         } catch (error) {
+            setDisabledRegisterButton(false);
             console.error(error);
             toast.error("Ha ocurrido un error");
         }
@@ -151,42 +154,42 @@ const Registro = () => {
                     Ingrese sus datos para comenzar
                 </div>
                 <div className={styles["form-group"]}>
-                    <label htmlFor="userType">Tipo de Usuario</label>
+                    <label htmlFor='userType'>Tipo de Usuario</label>
                     <select
-                        id="role"
+                        id='role'
                         value={role}
                         onChange={(e) => setRole(e.target.value)}
                         required
                     >
-                        <option value="patient">Paciente</option>
-                        <option value="physician">Médico</option>
+                        <option value='patient'>Paciente</option>
+                        <option value='physician'>Médico</option>
                     </select>
                 </div>
                 <div className={styles["form-group"]}>
-                    <label htmlFor="nombre">Nombre</label>
+                    <label htmlFor='nombre'>Nombre</label>
                     <input
-                        type="text"
-                        id="nombre"
+                        type='text'
+                        id='nombre'
                         value={nombre}
                         onChange={(e) => setNombre(e.target.value)}
                         required
                     />
                 </div>
                 <div className={styles["form-group"]}>
-                    <label htmlFor="apellido">Apellido</label>
+                    <label htmlFor='apellido'>Apellido</label>
                     <input
-                        type="text"
-                        id="apellido"
+                        type='text'
+                        id='apellido'
                         value={apellido}
                         onChange={(e) => setApellido(e.target.value)}
                         required
                     />
                 </div>
                 <div className={styles["form-group"]}>
-                    <label htmlFor="email">Correo Electrónico</label>
+                    <label htmlFor='email'>Correo Electrónico</label>
                     <input
-                        type="email"
-                        id="email"
+                        type='email'
+                        id='email'
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
@@ -195,12 +198,12 @@ const Registro = () => {
                 {role === "physician" && (
                     <>
                         <div className={styles["form-group"]}>
-                            <label htmlFor="numeroMatricula">
+                            <label htmlFor='numeroMatricula'>
                                 Número de Matrícula
                             </label>
                             <input
-                                type="text"
-                                id="numeroMatricula"
+                                type='text'
+                                id='numeroMatricula'
                                 value={numeroMatricula}
                                 onChange={(e) =>
                                     setNumeroMatricula(e.target.value)
@@ -209,21 +212,22 @@ const Registro = () => {
                             />
                         </div>
                         <div className={styles["form-group"]}>
-                            <label htmlFor="specialty">Especialidad:</label>
+                            <label htmlFor='specialty'>Especialidad:</label>
                             <select
-                                id="specialty"
+                                id='specialty'
                                 value={especialidad}
                                 required
                                 onChange={(e) => {
                                     setEspecialidad(e.target.value);
                                 }}
                             >
-                                <option value="">
+                                <option value=''>
                                     Selecciona una especialidad
                                 </option>
                                 {specialties.map((specialty) => (
                                     <option key={specialty} value={specialty}>
-                                        {specialty}
+                                        {specialty.charAt(0).toUpperCase() +
+                                            specialty.slice(1)}
                                     </option>
                                 ))}
                             </select>
@@ -233,28 +237,28 @@ const Registro = () => {
                 {role === "patient" && (
                     <>
                         <div className={styles["form-group"]}>
-                            <label htmlFor="birth_date">
+                            <label htmlFor='birth_date'>
                                 Fecha de Nacimiento
                             </label>
                             <input
-                                type="date"
-                                id="birth_date"
+                                type='date'
+                                id='birth_date'
                                 value={birth_date}
                                 onChange={(e) => setBirthDate(e.target.value)}
                                 required
                             />
                         </div>
                         <div className={styles["form-group"]}>
-                            <label htmlFor="gender">Género:</label>
+                            <label htmlFor='gender'>Género:</label>
                             <select
-                                id="gender"
+                                id='gender'
                                 value={gender}
                                 required
                                 onChange={(e) => {
                                     setGender(e.target.value);
                                 }}
                             >
-                                <option value="">Selecciona tu género</option>
+                                <option value=''>Selecciona tu género</option>
                                 {genders.map((gender) => (
                                     <option key={gender} value={gender}>
                                         {gender}
@@ -263,16 +267,16 @@ const Registro = () => {
                             </select>
                         </div>
                         <div className={styles["form-group"]}>
-                            <label htmlFor="blood_type">Grupo sanguíneo:</label>
+                            <label htmlFor='blood_type'>Grupo sanguíneo:</label>
                             <select
-                                id="blood_type"
+                                id='blood_type'
                                 value={blood_type}
                                 required
                                 onChange={(e) => {
                                     setBloodType(e.target.value);
                                 }}
                             >
-                                <option value="">
+                                <option value=''>
                                     Selecciona tu grupo sanguíneo
                                 </option>
                                 {blood_types.map((blood_type) => (
@@ -285,10 +289,10 @@ const Registro = () => {
                     </>
                 )}
                 <div className={styles["form-group"]}>
-                    <label htmlFor="password">Contraseña</label>
+                    <label htmlFor='password'>Contraseña</label>
                     <input
-                        type="password"
-                        id="password"
+                        type='password'
+                        id='password'
                         value={password}
                         onChange={(e) => {
                             setPassword(e.target.value);
@@ -298,10 +302,10 @@ const Registro = () => {
                     />
                 </div>
                 <div className={styles["form-group"]}>
-                    <label htmlFor="confirmPassword">Repetir Contraseña</label>
+                    <label htmlFor='confirmPassword'>Repetir Contraseña</label>
                     <input
-                        type="password"
-                        id="confirmPassword"
+                        type='password'
+                        id='confirmPassword'
                         value={confirmPassword}
                         onChange={(e) => {
                             setConfirmPassword(e.target.value);
@@ -319,19 +323,25 @@ const Registro = () => {
                     </div>
                 )}
                 <button
-                    type="submit"
+                    type='submit'
                     className={`${styles["button"]} ${
-                        password !== confirmPassword || error
+                        password !== confirmPassword ||
+                        error ||
+                        disabledRegisterButton
                             ? styles["disabled-button"]
                             : ""
                     }`}
-                    disabled={password !== confirmPassword || error}
+                    disabled={
+                        password !== confirmPassword ||
+                        error ||
+                        disabledRegisterButton
+                    }
                 >
                     Registrarse
                 </button>
             </form>
             <div className={styles["sign-in-link"]}>
-                <Link legacyBehavior href="/">
+                <Link legacyBehavior href='/'>
                     <a>¿Ya tienes una cuenta? Inicia Sesión</a>
                 </Link>
             </div>

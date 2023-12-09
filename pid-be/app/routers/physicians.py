@@ -1,4 +1,5 @@
 import requests
+from datetime import datetime
 from typing import Dict
 from fastapi import APIRouter, status, Depends
 from fastapi.responses import JSONResponse
@@ -93,14 +94,22 @@ async def approve_appointment(appointment_id: str, uid=Depends(Auth.is_logged_in
         appointment = Appointment.get_by_id(appointment_id)
         patient = Patient.get_by_id(appointment.patient_id)
         physician = Physician.get_by_id(appointment.physician_id)
+        date = datetime.fromtimestamp(appointment.date)
         requests.post(
             "http://localhost:9000/emails/send",
             json={
-                "type": "APPROVED_APPOINTMENT",
+                "type": "APPROVED_APPOINTMENT"
+                if not appointment.updated_at
+                else "APPROVED_UPDATED_APPOINTMENT",
                 "data": {
                     "physician_first_name": physician["first_name"],
                     "physician_last_name": physician["last_name"],
                     "email": patient["email"],
+                    "day": date.day,
+                    "month": date.month,
+                    "year": date.year,
+                    "hour": date.hour,
+                    "minute": date.minute,
                 },
             },
         )

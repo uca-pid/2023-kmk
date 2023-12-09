@@ -4,17 +4,15 @@ import React, { useState, useEffect, useRef } from "react";
 import styles from "../styles/styles.module.css";
 import axios from "axios";
 import https from "https";
-import { useRouter } from "next/navigation";
 import { Footer, Header, TabBar } from "../components/header";
+import ConfirmationModal from "../components/ConfirmationModal";
 import Image from "next/image";
 import { toast } from "react-toastify";
-import { userCheck } from "../components/userCheck";
 import "react-toastify/dist/ReactToastify.css";
 
 const MyRecord = () => {
     const [isLoading, setIsLoading] = useState(true);
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
-    const router = useRouter();
     const [file, setFile] = useState([]); // File to be uploaded
     const [analysis, setAnalysis] = useState([]);
     const [record, setRecord] = useState({
@@ -27,6 +25,8 @@ const MyRecord = () => {
         observations: [],
     });
     const inputRef = useRef(null);
+    const [showModal, setShowModal] = useState(false);
+    const [selectedFile, setSelectedFile] = useState('');
 
     const agent = new https.Agent({
         rejectUnauthorized: false,
@@ -64,9 +64,15 @@ const MyRecord = () => {
         link.click();
     };
 
-    const handleFileDelete = async (id) => {
+    const handleDeleteClick = (file) => {
+        setSelectedFile(file);
+        setShowModal(true);
+    };
+
+    const handleDeleteFile = async () => {
+        setShowModal(false);
         try {
-            const response = await axios.delete(`${apiURL}analysis/${id}`);
+            const response = await axios.delete(`${apiURL}analysis/${selectedFile}`);
             console.log(response);
             toast.success("Analisis eliminado con exito");
             fetchMyAnalysis();
@@ -75,6 +81,18 @@ const MyRecord = () => {
             toast.error("Error al eliminar analisis");
         }
     };
+    
+    // const handleFileDelete = async (id) => {
+    //     try {
+    //         const response = await axios.delete(`${apiURL}analysis/${id}`);
+    //         console.log(response);
+    //         toast.success("Analisis eliminado con exito");
+    //         fetchMyAnalysis();
+    //     } catch (error) {
+    //         console.error(error);
+    //         toast.error("Error al eliminar analisis");
+    //     }
+    // };
 
     const resetFileInput = () => {
         inputRef.current.value = null;
@@ -82,7 +100,6 @@ const MyRecord = () => {
     };
 
     const onSubmit = async (e) => {
-        // e.preventDefault();
         toast.info("Subiendo analisis");
         const formData = new FormData();
         Array.from(e).forEach((file_to_upload) =>
@@ -104,7 +121,6 @@ const MyRecord = () => {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
-        userCheck(router);
         fetchData();
         fetchMyAnalysis().then(() => setIsLoading(false));
     }, []);
@@ -131,9 +147,9 @@ const MyRecord = () => {
                                 width={200}
                                 height={200}
                                 onClick={() => {
+                                    toast.info("Actualizando...");
                                     fetchData();
                                     fetchMyAnalysis();
-                                    toast.info("Datos actualizados");
                                 }}
                             />
                             <div className={styles["subtitle"]}>
@@ -155,7 +171,7 @@ const MyRecord = () => {
                                     {analysis.length > 0 ? (
                                         analysis.map((uploaded_analysis) => {
                                             return (
-                                                <div
+                                                <a
                                                     className={
                                                         styles["estudio-card"]
                                                     }
@@ -195,7 +211,6 @@ const MyRecord = () => {
                                                             }}
                                                             width={100}
                                                             height={100}
-                                                            onClick={() => {}}
                                                         />
                                                         <div
                                                             className={
@@ -235,12 +250,12 @@ const MyRecord = () => {
                                                         width={25}
                                                         height={25}
                                                         onClick={() => {
-                                                            handleFileDelete(
+                                                            handleDeleteClick(
                                                                 uploaded_analysis.id
                                                             );
                                                         }}
                                                     />
-                                                </div>
+                                                </a>
                                             );
                                         })
                                     ) : (
@@ -254,12 +269,17 @@ const MyRecord = () => {
                                             No hay analisis cargados
                                         </div>
                                     )}
+                                    {/* ... */}
                                 </div>
+                                {/* Modal de confirmación */}
+                                <ConfirmationModal
+                                    isOpen={showModal}
+                                    closeModal={() => setShowModal(false)}
+                                    confirmAction={handleDeleteFile}
+                                    message="¿Estás seguro de que deseas eliminar este archivo?"
+                                />
 
-                                <form
-                                    className={styles["file-upload-form"]}
-                                    // onSubmit={onSubmit}
-                                >
+                                <form className={styles["file-upload-form"]}>
                                     <label
                                         htmlFor="files"
                                         className={styles["upload-button"]}
@@ -290,10 +310,10 @@ const MyRecord = () => {
 
                         <div className={styles["records-section"]}>
                             {record.observations.length > 0 ? (
-                                // If there are appointments, map through them and display each appointment
                                 <>
                                     {record.observations.map(
                                         (observation, index) => {
+                                            console.log(observation);
                                             return (
                                                 <div
                                                     className={
@@ -309,11 +329,12 @@ const MyRecord = () => {
                                                         }
                                                     >
                                                         Observacion del{" "}
-                                                        {Date(
-                                                            observation.appointment_date
-                                                        ).toLocaleString(
+                                                        {new Date(
+                                                            observation.appointment_date *
+                                                                1000
+                                                        ).toLocaleDateString(
                                                             "es-AR"
-                                                        )}
+                                                        )}{" "}
                                                         - Médico:{" "}
                                                         {observation.physician}
                                                     </div>
@@ -334,7 +355,6 @@ const MyRecord = () => {
                                     )}
                                 </>
                             ) : (
-                                // If there are no appointments, display the message
                                 <div className={styles["subtitle"]}>
                                     No hay observaciones en esta historia
                                     clinica

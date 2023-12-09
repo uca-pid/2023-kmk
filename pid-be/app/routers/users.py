@@ -30,9 +30,11 @@ from app.models.responses.ScoreResponses import (
     ScoreErrorResponse,
     SuccessfullScoreResponse,
     PendingScoresErrorResponse,
-    PendingScoresResponse
+    PendingScoresResponse,
 )
-from app.models.requests.ScoreRequests import LoadScoreRequest
+from app.models.requests.ScoreRequests import (
+    LoadScoreRequest,
+)
 from app.models.responses.PatientResponses import PatientResponse
 from app.models.responses.PhysicianResponses import PhysicianResponse
 
@@ -224,7 +226,6 @@ def get_user_roles(user_id=Depends(Auth.is_logged_in)):
     * Return the users roles.
     * Throw an error if users role retrieving process fails.
     """
-    print(user_id)
     roles = []
     try:
         if Admin.is_admin(user_id):
@@ -360,9 +361,7 @@ def change_password(
         401: {"model": ScoreErrorResponse},
     },
 )
-def add_score(
-    add_score_request: LoadScoreRequest, uid=Depends(Auth.is_logged_in)
-):
+def add_score(add_score_request: LoadScoreRequest, uid=Depends(Auth.is_logged_in)):
     """
     Add score.
 
@@ -373,15 +372,16 @@ def add_score(
     * Add score.
     * Raise an error if password change fails.
     """
+    add_score_request = add_score_request.model_dump(exclude_none=True)
+    appointment_id = add_score_request.pop("appointment_id")
     try:
         if Patient.get_by_id(uid):
-            score = Score(**{**add_score_request.model_dump()})
-            new_score_id = score.create()
-            Appointment.update_rated_status(new_score_id)
+            Score.add_physician_score(add_score_request, appointment_id)
+            Appointment.update_rated_status(appointment_id)
+            Appointment.remove_pending_to_score_patient_register(uid, appointment_id)
             return {"message": "Scores added successfully"}
         if Physician.get_by_id(uid):
-            score = Score(**{**add_score_request.model_dump()})
-            score.create()
+            Score.add_patient_score(add_score_request, appointment_id)
             return {"message": "Scores added successfully"}
         else:
             return JSONResponse(
@@ -405,7 +405,7 @@ def add_score(
 )
 def show_score(
     user_id: str,
-    uid=Depends(Auth.is_logged_in)
+    # uid=Depends(Auth.is_logged_in)
 ):
     """
     Show scores from a physician.
@@ -419,44 +419,76 @@ def show_score(
     """
     try:
         if Patient.is_patient(user_id):
-            appointments = Appointment.get_all_closed_appointments_for_patient_with(user_id)
-        if Physician.is_physician(user_id):
-            appointments = Appointment.get_all_closed_appointments_for_physician_with(user_id)
-
-        scores = {
-            "puntuality": 0,
-            "attention": 0,
-            "cleanliness": 0,
-            "facilities": 0,
-            "price": 0,
-        }
-        ratings = 0
-        for appointment in appointments:
-            score = Score.get_score(appointment["id"])
-            if score != None:
-                scores["puntuality"] += score["puntuality"]
-                scores["attention"] += score["attention"]
-                scores["cleanliness"] += score["cleanliness"]
-                scores["facilities"] += score["facilities"]
-                scores["price"] += score["price"]
-                ratings += 1
-
-        return {
-
-            "score_metrics": {
-                "puntuality": 0 if ratings == 0 else scores["puntuality"] / ratings,
-                "attention": 0 if ratings == 0 else scores["attention"] / ratings,
-                "cleanliness": 0 if ratings == 0 else scores["cleanliness"] / ratings,
-                "facilities": 0 if ratings == 0 else scores["facilities"] / ratings,
-                "price": 0 if ratings == 0 else scores["price"] / ratings,
+            appointments = Appointment.get_all_closed_appointments_for_patient_with(
+                user_id
+            )
+            score_sums = {
+                "puntuality": 0,
+                "communication": 0,
+                "attendance": 0,
+                "treat": 0,
+                "cleanliness": 0,
             }
-        }
+            score_counts = {
+                "puntuality": 0,
+                "communication": 0,
+                "attendance": 0,
+                "treat": 0,
+                "cleanliness": 0,
+            }
+            scores = []
+            for appt in appointments:
+                score = Score.get_by_id(appt["id"])
+                scores.append(score["patient_score"][0])
+
+        if Physician.is_physician(user_id):
+            appointments = Appointment.get_all_rated_appointments_for_physician_with(
+                user_id
+            )
+            score_sums = {
+                "puntuality": 0,
+                "attention": 0,
+                "cleanliness": 0,
+                "availability": 0,
+                "price": 0,
+                "communication": 0,
+            }
+            score_counts = {
+                "puntuality": 0,
+                "attention": 0,
+                "cleanliness": 0,
+                "availability": 0,
+                "price": 0,
+                "communication": 0,
+            }
+            scores = []
+            for appt in appointments:
+                score = Score.get_by_id(appt["id"])
+                if len(score["physician_score"]) > 0:
+                    scores.append(score["physician_score"][0])
+
+        for score in scores:
+            for key, value in score.items():
+                if key in score_sums:
+                    score_sums[key] += value
+                    score_counts[key] += 1
+
+        score_averages = {}
+        for key, value in score_sums.items():
+            if score_counts[key] > 0:
+                score_averages[key] = value / score_counts[key]
+            else:
+                score_averages[key] = "No hay reviews"
+
+        print(score_averages)
+
+        return {"score_metrics": score_averages}
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal server error"},
         )
-    
+
 
 @router.get(
     "/patient-pending-scores",
@@ -467,9 +499,7 @@ def show_score(
         401: {"model": PendingScoresErrorResponse},
     },
 )
-def pending_scores(
-    user_id=Depends(Auth.is_logged_in)
-):
+def pending_scores(user_id=Depends(Auth.is_logged_in)):
     """
     Get pending scores for a patient.
 
@@ -485,8 +515,15 @@ def pending_scores(
         appointments = Appointment.get_all_closed_appointments_for_patient_with(user_id)
         pending_scores = []
         for appointment in appointments:
+            physician = Physician.get_by_id(appointment["physician_id"])
+            physician_info = {
+                "first_name": physician["first_name"],
+                "last_name": physician["last_name"],
+                "specialty": physician["specialty"],
+            }
+            appointment.update(physician_info)
             pending_scores.append(appointment)
-        
+
         return {"pending_scores": pending_scores}
     except:
         return JSONResponse(

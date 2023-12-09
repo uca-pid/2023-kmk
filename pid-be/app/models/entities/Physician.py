@@ -30,7 +30,7 @@ class Physician:
         self.name = name
         self.last_name = last_name
         self.tuition = tuition
-        self.specialty = specialty
+        self.specialty = specialty.lower()
         self.email = email
         self.id = id
         self.approved = approved
@@ -38,6 +38,10 @@ class Physician:
     @staticmethod
     def get_by_id(id):
         return db.collection("physicians").document(id).get().to_dict()
+
+    @staticmethod
+    def get_blocked_by_id(id):
+        return db.collection("deniedPhysicians").document(id).get().to_dict()
 
     @staticmethod
     def get_by_specialty(specialty_name):
@@ -94,8 +98,24 @@ class Physician:
         return [physician.to_dict() for physician in physicians]
 
     @staticmethod
+    def get_physicians_working():
+        physicians = (
+            db.collection("physicians").where("approved", "==", "approved").get()
+        )
+        return [physician.to_dict() for physician in physicians]
+
+    @staticmethod
+    def get_physicians_denied():
+        physicians = db.collection("deniedPhysicians").get()
+        return [physician.to_dict() for physician in physicians]
+
+    @staticmethod
     def is_physician(id):
         return db.collection("physicians").document(id).get().exists
+
+    @staticmethod
+    def is_blocked_physician(id):
+        return db.collection("deniedPhysicians").document(id).get().exists
 
     @staticmethod
     def free_agenda(id, date):

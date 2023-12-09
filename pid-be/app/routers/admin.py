@@ -19,6 +19,12 @@ from app.models.responses.ValidationResponses import (
     ValidationErrorResponse,
     AllPendingValidationsResponse,
     GetPendingValidationsError,
+    AllWorkingPhysiciansResponse,
+    GetWorkingPhysiciansError,
+    AllBlockedPhysiciansResponse,
+    GetBlockedPhysiciansError,
+    AdminSpecialtiesGetError,
+    SuccessfulAdminSpecialtiesGetResponse,
 )
 
 load_dotenv()
@@ -122,7 +128,57 @@ async def deny_physician(physician_id: str, uid=Depends(Auth.is_admin)):
             },
         )
         return {"message": "Physician denied successfully"}
-    except:
+    except Exception as e:
+        print(e)
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "Internal server error"},
+        )
+
+
+@router.post(
+    "/unblock-physician/{physician_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessfullValidationResponse,
+    responses={
+        400: {"model": ValidationErrorResponse},
+        401: {"model": ValidationErrorResponse},
+        403: {"model": ValidationErrorResponse},
+        500: {"model": ValidationErrorResponse},
+    },
+)
+async def unblock_physician(physician_id: str, uid=Depends(Auth.is_admin)):
+    """
+    Validate a physician.
+
+    This will allow superusers to unblock blocked physicians.
+
+    This path operation will:
+
+    * Validate a physician.
+    * Change the _approved_ field from Physicians from _denied_ to _pending_.
+    * Throw an error if the validation fails.
+    """
+    try:
+        if not Physician.is_blocked_physician(physician_id):
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"detail": "Can only unblock blocked physicians"},
+            )
+        physician = Physician.get_blocked_by_id(physician_id)
+        Admin.unblock_physician(physician)
+        requests.post(
+            "http://localhost:9000/emails/send",
+            json={
+                "type": "PHYSICIAN_UNBLOCKED_ACCOUNT",
+                "data": {
+                    "email": physician["email"],
+                },
+            },
+        )
+        return {"message": "Physician unblocked successfully"}
+    except Exception as e:
+        print(e)
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal server error"},
@@ -153,6 +209,68 @@ def get_all_pending_validations(uid=Depends(Auth.is_admin)):
     try:
         physicians_to_validate = Physician.get_pending_physicians()
         return {"physicians_pending_validation": physicians_to_validate}
+    except:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "Internal server error"},
+        )
+
+
+@router.get(
+    "/physicians-working",
+    status_code=status.HTTP_200_OK,
+    response_model=AllWorkingPhysiciansResponse,
+    responses={
+        401: {"model": GetWorkingPhysiciansError},
+        403: {"model": GetWorkingPhysiciansError},
+        500: {"model": GetWorkingPhysiciansError},
+    },
+)
+def get_all_working_physicians(uid=Depends(Auth.is_admin)):
+    """
+    Get all working physicians.
+
+    This will allow superusers to retrieve all working physicians.
+
+    This path operation will:
+
+    * Return all of the working physicians.
+    * Throw an error if appointment retrieving fails.
+    """
+    try:
+        physicians_working = Physician.get_physicians_working()
+        return {"physicians_working": physicians_working}
+    except:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "Internal server error"},
+        )
+
+
+@router.get(
+    "/physicians-blocked",
+    status_code=status.HTTP_200_OK,
+    response_model=AllBlockedPhysiciansResponse,
+    responses={
+        401: {"model": GetBlockedPhysiciansError},
+        403: {"model": GetBlockedPhysiciansError},
+        500: {"model": GetBlockedPhysiciansError},
+    },
+)
+def get_all_blocked_physicians(uid=Depends(Auth.is_admin)):
+    """
+    Get all blocked physicians.
+
+    This will allow superusers to retrieve all blocked physicians.
+
+    This path operation will:
+
+    * Return all of the blocked physicians.
+    * Throw an error if appointment retrieving fails.
+    """
+    try:
+        physicians_blocked = Physician.get_physicians_denied()
+        return {"physicians_blocked": physicians_blocked}
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -215,3 +333,19 @@ def regsiter_admin(
     )
     admin.create()
     return {"message": "Successfull registration"}
+
+
+@router.get(
+    "/specialties",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessfulAdminSpecialtiesGetResponse,
+    responses={
+        400: {"model": AdminSpecialtiesGetError},
+        401: {"model": AdminSpecialtiesGetError},
+        403: {"model": AdminSpecialtiesGetError},
+        500: {"model": AdminSpecialtiesGetError},
+    },
+)
+def get_specialties_with_physician_count(uid=Depends(Auth.is_admin)):
+    specialies_with_physician_count = Admin.get_specialies_with_physician_count()
+    return {"specialties": specialies_with_physician_count}

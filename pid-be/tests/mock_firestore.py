@@ -1,31 +1,31 @@
 import time
 from datetime import datetime
 from config import *
-from firebase_admin import firestore
+from firebase_admin import firestore, auth
 
 if __name__ == "__main__":
     db = firestore.client()
 
     specialties = [
-        "Cardiologia",
-        "Dermatologia",
-        "Endocrinologia",
-        "Gastroenterologia",
-        "Geriatria",
-        "Ginecologia",
-        "Hematologia",
-        "Infectologia",
-        "Nefrologia",
-        "Neurologia",
-        "Oftalmologia",
-        "Oncologia",
-        "Ortopedia",
-        "Otorrinolaringologia",
-        "Pediatria",
-        "Pneumologia",
-        "Psiquiatria",
-        "Reumatologia",
-        "Urologia",
+        "cardiologia",
+        "dermatologia",
+        "endocrinologia",
+        "gastroenterologia",
+        "geriatria",
+        "ginecologia",
+        "hematologia",
+        "infectologia",
+        "nefrologia",
+        "neurologia",
+        "oftalmologia",
+        "oncologia",
+        "ortopedia",
+        "otorrinolaringologia",
+        "pediatria",
+        "pneumologia",
+        "psiquiatria",
+        "reumatologia",
+        "urologia",
     ]
 
     blood_types = [
@@ -121,6 +121,11 @@ if __name__ == "__main__":
         },
     }
 
+    admin_information = {
+        "email": "admin@admin.com",
+        "password": "Admin1234",
+    }
+
     db.collection("physicians").document(a_physician_information["id"]).set(
         a_physician_information
     )
@@ -161,3 +166,6 @@ if __name__ == "__main__":
 
     for gender in genders:
         db.collection("genders").document().set({"gender": gender})
+
+    admin_uid = auth.create_user(**admin_information).uid
+    db.collection("superusers").document(admin_uid).set(admin_information)

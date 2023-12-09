@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useLayoutEffect } from "react";
 import Image from "next/image";
 import styles from "../styles/Header.module.css";
 import axios from "axios";
-import { loginCheck, redirect } from "../components/userCheck";
+import { loginCheck, redirect, userCheck } from "../components/userCheck";
 import { useRouter } from "next/navigation";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -86,6 +86,10 @@ const TabBar = (props) => {
         loginCheck(router);
     };
 
+    useLayoutEffect(() => {
+        userCheck(router, "patient");
+    }, []);
+
     return (
         <div className={styles["tab-bar"]}>
             <div
@@ -110,6 +114,10 @@ const TabBar = (props) => {
 
 const PhysicianTabBar = (props) => {
     const router = useRouter();
+    useLayoutEffect(() => {
+        userCheck(router, "physician");
+    }, []);
+
     return (
         <div className={styles["tab-bar"]}>
             <div
@@ -120,7 +128,7 @@ const PhysicianTabBar = (props) => {
                 }`}
                 onClick={() => router.push("/physician-agenda")}
             >
-                Turnos del día
+                Próximos turnos
             </div>
             <div
                 className={`${styles["tab"]} ${

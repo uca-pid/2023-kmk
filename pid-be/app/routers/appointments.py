@@ -7,6 +7,7 @@ from app.models.entities.Physician import Physician
 from app.models.entities.Patient import Patient
 from app.models.entities.Auth import Auth
 from app.models.entities.Appointment import Appointment
+from app.models.entities.Score import Score
 from app.models.requests.AppointmentRequests import (
     AppointmentCreationRequest,
     UpdateAppointmentRequest,
@@ -62,6 +63,10 @@ async def create_appointment(
     )
     try:
         appointment_id = appointment.create()
+        score = Score(
+            appointment_id=appointment_id, patient_score=[], physician_score=[]
+        )
+        score.create()
         physician = Physician.get_by_id(appointment_creation_request.physician_id)
         patient = Patient.get_by_id(patient_id)
         date = datetime.fromtimestamp(appointment_creation_request.date)
@@ -83,8 +88,12 @@ async def create_appointment(
             },
         )
         return {"appointment_id": appointment_id}
-    except Exception as e:
-        print(e)
+    except HTTPException as http_exception:
+        return JSONResponse(
+            status_code=http_exception.status_code,
+            content={"detail": http_exception.detail},
+        )
+    except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal server error"},
@@ -146,10 +155,10 @@ def get_all_appointments_for_physician(uid=Depends(Auth.is_logged_in)):
     * Throw an error if appointment retrieving fails.
     """
     try:
-        appointments = Appointment.get_all_appointments_for_physician_with(uid)
-        print (appointments)
+        appointments = Appointment.get_all_approved_appointments_for_physician_with(uid)
+        print(appointments)
         return {"appointments": appointments}
-    
+
     except HTTPException as http_exception:
         raise http_exception
     except:
@@ -193,6 +202,7 @@ def delete_appointment_by_id(id: str, uid=Depends(Auth.is_logged_in)):
                 content={"detail": "Invalid appointment id"},
             )
         appointment.delete()
+        date = datetime.fromtimestamp(appointment.date)
         physician = Physician.get_by_id(appointment.physician_id)
         requests.post(
             "http://localhost:9000/emails/send",
@@ -200,6 +210,12 @@ def delete_appointment_by_id(id: str, uid=Depends(Auth.is_logged_in)):
                 "type": "CANCELED_APPOINTMENT",
                 "data": {
                     "email": physician["email"],
+                    "day": date.day,
+                    "month": date.month,
+                    "year": date.year,
+                    "hour": date.hour,
+                    "minute": date.minute,
+                    "second": date.second,
                 },
             },
         )
@@ -210,6 +226,12 @@ def delete_appointment_by_id(id: str, uid=Depends(Auth.is_logged_in)):
                 "type": "CANCELED_APPOINTMENT",
                 "data": {
                     "email": patient["email"],
+                    "day": date.day,
+                    "month": date.month,
+                    "year": date.year,
+                    "hour": date.hour,
+                    "minute": date.minute,
+                    "second": date.second,
                 },
             },
         )

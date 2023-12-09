@@ -4,19 +4,18 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import styles from "../styles/styles.module.css";
-import { useRouter } from "next/navigation";
 import "react-datepicker/dist/react-datepicker.css";
 import Modal from "react-modal";
 import axios from "axios";
 import https from "https";
 import { Header, Footer, PhysicianTabBar } from "../components/header";
+import ConfirmationModal from "../components/ConfirmationModal";
 import { redirect } from "../components/userCheck";
 import { toast } from "react-toastify";
 
 const PhysicianAgenda = () => {
     const [isLoading, setIsLoading] = useState(true);
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
-    const router = useRouter();
     const [appointments, setAppointments] = useState([]);
     const [isAddObservationModalOpen, setIsAddObervationModalOpen] =
         useState(false);
@@ -25,46 +24,37 @@ const PhysicianAgenda = () => {
     const [newObservationContent, setNewObservationContent] = useState("");
     const [appointmentAttended, setAppointmentAttended] = useState(true);
     const [appointmentToClose, setAppointmentToClose] = useState("");
+    const [showModal, setShowModal] = useState(false);
+    const [appointmentIdToDelete, setAppointmentIdToDelete] = useState(null);
+    const [disabledCloseAppointmentButton, setDisabledCloseAppointmentButton] =
+        useState(false);
 
-    const [reviews, setReviews] = useState([
-        { id: 1, type: "Puntualidad", rating: 5 },
-        { id: 2, type: "Atencion", rating: 4.5 },
-        { id: 3, type: "Limpieza", rating: 4.5 },
-        { id: 4, type: "Instalaciones", rating: 3 },
-        { id: 5, type: "Precio", rating: 4.5 },
-    ]);
+    const [reviews, setReviews] = useState({
+        puntuality: {
+            name: "Puntualidad",
+            rating: -1,
+        },
+        cleanliness: {
+            name: "Limpieza",
+            rating: -1,
+        },
+        attendance: {
+            name: "Asistencia",
+            rating: -1,
+        },
+        treat: {
+            name: "Trato",
+            rating: -1,
+        },
+        communication: {
+            name: "Comunicacion",
+            rating: -1,
+        },
+    });
 
     const agent = new https.Agent({
         rejectUnauthorized: false,
     });
-
-    const getScores = async (id) => {
-        try {
-            const response = await axios.get(`${apiURL}users/score/${id}`, {
-                httpsAgent: agent,
-            });
-            console.log(response.data.score_metrics);
-
-            let tempReviews = [
-                { id: 1, type: "Puntualidad", rating: 5 },
-                { id: 2, type: "Atencion", rating: 4.5 },
-                { id: 3, type: "Limpieza", rating: 4.5 },
-                { id: 4, type: "Instalaciones", rating: 3 },
-                { id: 5, type: "Precio", rating: 4.5 },
-            ];
-
-            tempReviews[0].rating = response.data.score_metrics.puntuality;
-            tempReviews[1].rating = response.data.score_metrics.attention;
-            tempReviews[2].rating = response.data.score_metrics.cleanliness;
-            tempReviews[3].rating = response.data.score_metrics.facilities;
-            tempReviews[4].rating = response.data.score_metrics.price;
-
-            setReviews(tempReviews);
-        } catch (error) {
-            toast.error("Error al obtener los puntajes");
-            console.error(error);
-        }
-    };
 
     const fetchAppointments = async () => {
         try {
@@ -84,13 +74,13 @@ const PhysicianAgenda = () => {
     };
 
     const handleOpenAppointmentClosureModal = (appointment) => {
-        getScores(appointment.patient.id);
         setIsAddObervationModalOpen(true);
         setAppointmentToClose(appointment);
         setPatientId(appointment.patient.id);
     };
 
     const handleAppointmentClosure = async () => {
+        setDisabledCloseAppointmentButton(true);
         console.log(appointmentToClose.id);
         console.log(appointmentAttended);
         console.log(startTime);
@@ -137,17 +127,18 @@ const PhysicianAgenda = () => {
             toast.error("Error al agregar la observación");
             console.error(error);
         }
-
         try {
+            let reviewsToSend = {};
+            Object.keys(reviews).forEach((review) => {
+                if (reviews[review].rating >= 0)
+                    reviewsToSend[review] = reviews[review].rating;
+            });
+            console.log(reviewsToSend);
             const response = await axios.post(
                 `${apiURL}users/add-score`,
                 {
                     appointment_id: appointmentToClose.id,
-                    puntuality: reviews[0].rating,
-                    attention: reviews[1].rating,
-                    cleanliness: reviews[2].rating,
-                    facilities: reviews[3].rating,
-                    price: reviews[4].rating,
+                    ...reviewsToSend,
                 },
                 {
                     httpsAgent: agent,
@@ -158,19 +149,30 @@ const PhysicianAgenda = () => {
             toast.error("Error al agregar la puntaje");
             console.error(error);
         }
+        setDisabledCloseAppointmentButton(false);
     };
 
-    const handleDeleteAppointment = async (appointmentId) => {
-        console.log(appointmentId);
+    const handleDeleteClick = (appointmentId) => {
+        setAppointmentIdToDelete(appointmentId);
+        setShowModal(true);
+    };
+
+    const handleDeleteAppointment = async () => {
+        setShowModal(false);
+        toast.info("Eliminando turno...");
         try {
-            await axios.delete(`${apiURL}appointments/${appointmentId}`, {
-                httpsAgent: agent,
-            });
-            toast.info("Turno eliminado exitosamente");
+            await axios.delete(
+                `${apiURL}appointments/${appointmentIdToDelete}`,
+                {
+                    httpsAgent: agent,
+                }
+            );
+            toast.success("Turno eliminado exitosamente");
             fetchAppointments();
+            setAppointmentIdToDelete(null); // Limpiar el ID del turno después de eliminar
         } catch (error) {
-            toast.error("Error al eliminar el turno");
             console.error(error);
+            toast.error("Error al eliminar turno");
         }
     };
 
@@ -207,9 +209,6 @@ const PhysicianAgenda = () => {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
-
-        redirect(router);
-        getScores();
         fetchAppointments()
             .then(() => setIsLoading(false)) // Marcar como cargado cuando la respuesta llega
             .catch(() => {
@@ -237,8 +236,8 @@ const PhysicianAgenda = () => {
                             </div>
                             <select
                                 className={styles["select"]}
-                                name="attended"
-                                id="attended"
+                                name='attended'
+                                id='attended'
                                 onChange={(e) => {
                                     console.log(e.target.value);
                                     setAppointmentAttended(e.target.value);
@@ -253,9 +252,9 @@ const PhysicianAgenda = () => {
                             </div>
 
                             <input
-                                type="time"
-                                id="time"
-                                name="time"
+                                type='time'
+                                id='time'
+                                name='time'
                                 onChange={(date) => {
                                     setStartTime(date.target.value.toString());
                                     console.log(date.target.value.toString());
@@ -274,20 +273,20 @@ const PhysicianAgenda = () => {
                             </div>
 
                             <textarea
-                                id="observation"
+                                id='observation'
                                 value={newObservationContent}
                                 onChange={(e) => {
                                     console.log(e.target.value);
                                     setNewObservationContent(e.target.value);
                                 }}
-                                placeholder="Escribe una nueva observación"
+                                placeholder='Escribe una nueva observación'
                                 required
                                 className={`${styles["observation-input"]} ${
                                     appointmentAttended === "false"
                                         ? styles["disabled-input"]
                                         : ""
                                 }`}
-                                wrap="soft"
+                                wrap='soft'
                                 disabled={appointmentAttended == "false"}
                             />
                         </div>
@@ -296,11 +295,11 @@ const PhysicianAgenda = () => {
                             key={reviews.key}
                             className={styles["reviews-container"]}
                         >
-                            {reviews.length > 0 ? (
+                            {Object.keys(reviews).length > 0 ? (
                                 <>
-                                    {reviews.map((review) => (
+                                    {Object.keys(reviews).map((review) => (
                                         <div
-                                            key={review.id}
+                                            key={review}
                                             className={styles["review"]}
                                         >
                                             <div
@@ -322,7 +321,7 @@ const PhysicianAgenda = () => {
                                                             ]
                                                         }
                                                     >
-                                                        {review.type}
+                                                        {reviews[review].name}
                                                     </div>
                                                     <div
                                                         className={
@@ -331,34 +330,45 @@ const PhysicianAgenda = () => {
                                                             ]
                                                         }
                                                     >
-                                                        <input
-                                                            type="number"
-                                                            id="points"
-                                                            name="points"
-                                                            min="0"
-                                                            max="5"
-                                                            placeholder={
-                                                                review.rating
+                                                        <select
+                                                            onChange={(e) =>
+                                                                setReviews({
+                                                                    ...reviews,
+                                                                    [review]: {
+                                                                        name: reviews[
+                                                                            review
+                                                                        ].name,
+                                                                        rating: Number(
+                                                                            e
+                                                                                .target
+                                                                                .value
+                                                                        ),
+                                                                    },
+                                                                })
                                                             }
-                                                            onChange={(e) => {
-                                                                setReviews(
-                                                                    reviews.map(
-                                                                        (
-                                                                            item
-                                                                        ) =>
-                                                                            item.id ===
-                                                                            review.id
-                                                                                ? {
-                                                                                      ...item,
-                                                                                      rating: e
-                                                                                          .target
-                                                                                          .value,
-                                                                                  }
-                                                                                : item
-                                                                    )
-                                                                );
-                                                            }}
-                                                        ></input>
+                                                        >
+                                                            <option value={-1}>
+                                                                N/A
+                                                            </option>
+                                                            <option value={0}>
+                                                                Muy Malo
+                                                            </option>
+                                                            <option value={1}>
+                                                                Malo
+                                                            </option>
+                                                            <option value={2}>
+                                                                Neutro
+                                                            </option>
+                                                            <option value={3}>
+                                                                Bueno
+                                                            </option>
+                                                            <option value={4}>
+                                                                Muy Bueno
+                                                            </option>
+                                                            <option value={5}>
+                                                                Excelente
+                                                            </option>
+                                                        </select>
                                                     </div>
                                                 </div>
                                             </div>
@@ -375,12 +385,18 @@ const PhysicianAgenda = () => {
 
                         <button
                             className={`${styles["edit-button"]} ${
-                                !newObservationContent || !startTime
+                                !newObservationContent ||
+                                !startTime ||
+                                disabledCloseAppointmentButton
                                     ? styles["disabled-button"]
                                     : ""
                             }`}
                             onClick={handleAppointmentClosure}
-                            disabled={!newObservationContent || !startTime}
+                            disabled={
+                                !newObservationContent ||
+                                !startTime ||
+                                disabledCloseAppointmentButton
+                            }
                         >
                             Agregar
                         </button>
@@ -390,7 +406,7 @@ const PhysicianAgenda = () => {
 
             <PhysicianTabBar highlight={"TurnosDelDia"} />
 
-            <Header role="physician" />
+            <Header role='physician' />
 
             {isLoading ? (
                 <p>Cargando...</p>
@@ -402,8 +418,8 @@ const PhysicianAgenda = () => {
                                 Mis Proximos Turnos
                             </div>
                             <Image
-                                src="/refresh_icon.png"
-                                alt="Notificaciones"
+                                src='/refresh_icon.png'
+                                alt='Refrescar'
                                 className={styles["refresh-icon"]}
                                 width={200}
                                 height={200}
@@ -416,6 +432,7 @@ const PhysicianAgenda = () => {
                                 {appointments.length > 0 ? (
                                     // If there are appointments, map through them and display each appointment
                                     <div>
+                                        {/* ... */}
                                         {appointments.map((appointment) => (
                                             <div
                                                 key={appointment.id}
@@ -489,7 +506,7 @@ const PhysicianAgenda = () => {
                                                             ]
                                                         }
                                                         onClick={() =>
-                                                            handleDeleteAppointment(
+                                                            handleDeleteClick(
                                                                 appointment.id
                                                             )
                                                         }
@@ -506,7 +523,15 @@ const PhysicianAgenda = () => {
                                         No hay turnos pendientes
                                     </div>
                                 )}
+                                {/* ... */}
                             </div>
+                            {/* Modal de confirmación */}
+                            <ConfirmationModal
+                                isOpen={showModal}
+                                closeModal={() => setShowModal(false)}
+                                confirmAction={handleDeleteAppointment}
+                                message='¿Estás seguro de que deseas cancelar este turno?'
+                            />
                         </div>
                     </div>
 

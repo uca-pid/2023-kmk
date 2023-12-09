@@ -7,8 +7,8 @@ import styles from "../styles/styles.module.css";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
 import https from "https";
-import { userCheck } from "../components/userCheck";
 import { Header, Footer, PhysicianTabBar } from "../components/header";
+import ConfirmationModal from "../components/ConfirmationModal";
 import { toast } from "react-toastify";
 
 const PhysicianPendingAppointments = () => {
@@ -16,6 +16,8 @@ const PhysicianPendingAppointments = () => {
     const router = useRouter();
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
     const [appointments, setAppointments] = useState([]);
+    const [showModal, setShowModal] = useState(false);
+    const [appointmentIdToDeny, setAppointmentIdToDeny] = useState(null);
 
     const agent = new https.Agent({
         rejectUnauthorized: false,
@@ -37,6 +39,7 @@ const PhysicianPendingAppointments = () => {
 
     const handleApproveAppointment = async (appointmentId) => {
         console.log(appointmentId);
+        toast.info("Aprobando turno...");
         try {
             await axios.post(
                 `${apiURL}physicians/approve-appointment/${appointmentId}`
@@ -48,17 +51,23 @@ const PhysicianPendingAppointments = () => {
         }
     };
 
-    const handleDenyAppointment = async (appointmentId) => {
-        console.log(appointmentId);
+    const handleDenyClick = (appointmentId) => {
+        setAppointmentIdToDeny(appointmentId);
+        setShowModal(true);
+    }; 
+
+    const handleDenyAppointment = async () => {
+        setShowModal(false);
+        toast.info("Rechazando turno...");
         try {
-            await axios.delete(`${apiURL}appointments/${appointmentId}`, {
+            await axios.delete(`${apiURL}appointments/${appointmentIdToDeny}`, {
                 httpsAgent: agent,
             });
-            toast.info("Turno eliminado exitosamente");
-
+            toast.success("Turno rechazado exitosamente");
             fetchAppointments();
         } catch (error) {
             console.log(error);
+            toast.error("Error al rechazar turno");
         }
     };
 
@@ -66,8 +75,6 @@ const PhysicianPendingAppointments = () => {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
-
-        userCheck(router);
         fetchAppointments()
             .then(() => setIsLoading(false)) // Marcar como cargado cuando la respuesta llega
             .catch(() => {
@@ -106,6 +113,7 @@ const PhysicianPendingAppointments = () => {
                                 {appointments.length > 0 ? (
                                     // If there are appointments, map through them and display each appointment
                                     <div>
+                                        {/* ... */}
                                         {appointments.map((appointment) => (
                                             <div
                                                 key={appointment.id}
@@ -160,7 +168,7 @@ const PhysicianPendingAppointments = () => {
                                                             ]
                                                         }
                                                         onClick={() =>
-                                                            handleDenyAppointment(
+                                                            handleDenyClick(
                                                                 appointment.id
                                                             )
                                                         }
@@ -177,7 +185,15 @@ const PhysicianPendingAppointments = () => {
                                         No hay turnos pendientes
                                     </div>
                                 )}
+                                {/* ... */}
                             </div>
+                            {/* Modal de confirmación */}
+                            <ConfirmationModal
+                                    isOpen={showModal}
+                                    closeModal={() => setShowModal(false)}
+                                    confirmAction={handleDenyAppointment}
+                                    message="¿Estás seguro de que deseas rechazar este turno?"
+                                /> 
                         </div>
                     </div>
 

@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import styles from "../styles/styles.module.css";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import styles from "../styles/styles.module.css";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import es from "date-fns/locale/es";
@@ -12,8 +11,13 @@ import Modal from "react-modal";
 import axios from "axios";
 import https from "https";
 import { Footer, Header, TabBar } from "../components/header";
+import ConfirmationModal from "../components/ConfirmationModal";
 import { redirect } from "../components/userCheck";
 import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import InfoIcon from "@mui/icons-material/Info";
+import IconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
 
 registerLocale("es", es);
 
@@ -32,15 +36,37 @@ const DashboardPatient = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
     const [editingAppointment, setEditingAppointment] = useState({});
+    const [showModal, setShowModal] = useState(false);
+    const [appointmentIdToDelete, setAppointmentIdToDelete] = useState(null);
+    const [disabledAppointmentButton, setDisabledAppointmentButton] =
+        useState(false);
 
-    const [reviews, setReviews] = useState([]);
-    const [rating, setRating] = useState([]);
+    const [physicianScores, setPhysicianScores] = useState([]);
+    const [appointmentScores, setAppointmentScores] = useState([]);
 
     const agent = new https.Agent({
         rejectUnauthorized: false,
     });
 
-    const getScores = async (id) => {
+    const checkPendingReviews = async () => {
+        try {
+            const response = await axios.get(
+                `${apiURL}users/patient-pending-scores`,
+                {
+                    httpsAgent: agent,
+                }
+            );
+            console.log(response.data);
+            if (response.data.pending_scores.length > 0) {
+                router.push("/patient-dashboard/pending-reviews");
+            }
+        } catch (error) {
+            toast.error("Error al obtener las reseñas pendientes");
+            console.error(error);
+        }
+    };
+
+    const getPhysicianScores = async (id) => {
         try {
             const response = await axios.get(`${apiURL}users/score/${id}`, {
                 httpsAgent: agent,
@@ -48,27 +74,41 @@ const DashboardPatient = () => {
             console.log(response.data.score_metrics);
 
             let tempReviews = [
-                { id: 1, type: "Puntualidad", rating: 5 },
-                { id: 2, type: "Atencion", rating: 4.5 },
-                { id: 3, type: "Limpieza", rating: 4.5 },
-                { id: 4, type: "Instalaciones", rating: 3 },
-                { id: 5, type: "Precio", rating: 4.5 },
+                { id: 1, type: "Puntualidad", rating: 0 },
+                { id: 2, type: "Atencion", rating: 0 },
+                { id: 3, type: "Limpieza", rating: 0 },
+                { id: 4, type: "Disponibilidad", rating: 0 },
+                { id: 5, type: "Precio", rating: 0 },
+                { id: 6, type: "Comunicacion", rating: 0 },
             ];
 
             tempReviews[0].rating = response.data.score_metrics.puntuality;
             tempReviews[1].rating = response.data.score_metrics.attention;
             tempReviews[2].rating = response.data.score_metrics.cleanliness;
-            tempReviews[3].rating = response.data.score_metrics.facilities;
+            tempReviews[3].rating = response.data.score_metrics.availability;
             tempReviews[4].rating = response.data.score_metrics.price;
+            tempReviews[5].rating = response.data.score_metrics.communication;
 
-            setReviews(tempReviews);
+            if (
+                tempReviews[0].rating +
+                    tempReviews[1].rating +
+                    tempReviews[2].rating +
+                    tempReviews[3].rating +
+                    tempReviews[4].rating +
+                    tempReviews[5].rating ==
+                0
+            ) {
+                setPhysicianScores([]);
+            } else {
+                setPhysicianScores(tempReviews);
+            }
         } catch (error) {
             toast.error("Error al obtener los puntajes");
             console.error(error);
         }
     };
 
-    const getRating = async (id) => {
+    const getAppointmentScores = async (id) => {
         try {
             const response = await axios.get(`${apiURL}users/score/${id}`, {
                 httpsAgent: agent,
@@ -79,17 +119,31 @@ const DashboardPatient = () => {
                 { id: 1, type: "Puntualidad", rating: 5 },
                 { id: 2, type: "Atencion", rating: 4.5 },
                 { id: 3, type: "Limpieza", rating: 4.5 },
-                { id: 4, type: "Instalaciones", rating: 3 },
+                { id: 4, type: "Disponibilidad", rating: 3 },
                 { id: 5, type: "Precio", rating: 4.5 },
+                { id: 6, type: "Comunicacion", rating: 2.5 },
             ];
 
             tempReviews[0].rating = response.data.score_metrics.puntuality;
             tempReviews[1].rating = response.data.score_metrics.attention;
             tempReviews[2].rating = response.data.score_metrics.cleanliness;
-            tempReviews[3].rating = response.data.score_metrics.facilities;
+            tempReviews[3].rating = response.data.score_metrics.availability;
             tempReviews[4].rating = response.data.score_metrics.price;
+            tempReviews[5].rating = response.data.score_metrics.communication;
 
-            setRating(tempReviews);
+            if (
+                tempReviews[0].rating +
+                    tempReviews[1].rating +
+                    tempReviews[2].rating +
+                    tempReviews[3].rating +
+                    tempReviews[4].rating +
+                    tempReviews[5].rating ==
+                0
+            ) {
+                setPhysicianScores([]);
+            } else {
+                setAppointmentScores(tempReviews);
+            }
         } catch (error) {
             toast.error("Error al obtener los puntajes");
             console.error(error);
@@ -193,7 +247,7 @@ const DashboardPatient = () => {
     };
 
     const handleOpenRatingModal = (doctorId) => {
-        getRating(doctorId);
+        getAppointmentScores(doctorId);
         setIsRatingModalOpen(true);
 
         console.log(doctorId);
@@ -201,7 +255,7 @@ const DashboardPatient = () => {
     };
 
     const handleCloseRatingModal = () => {
-        setRating([]);
+        setAppointmentScores([]);
         setIsRatingModalOpen(false);
     };
 
@@ -213,19 +267,30 @@ const DashboardPatient = () => {
             setPhysiciansAgenda(
                 doctors.filter((doctor) => doctor.id == doctorId)[0].agenda
             );
-            getScores(doctorId);
+            getPhysicianScores(doctorId);
         } else {
             setPhysiciansAgenda({});
         }
     };
 
-    const handleDeleteAppointment = async (appointmentId) => {
+    const handleDeleteClick = (appointmentId) => {
+        setAppointmentIdToDelete(appointmentId);
+        setShowModal(true);
+    };
+
+    const handleDeleteAppointment = async () => {
+        setShowModal(false);
+        toast.info("Eliminando turno...");
         try {
-            await axios.delete(`${apiURL}appointments/${appointmentId}`, {
-                httpsAgent: agent,
-            });
-            toast.info("Turno eliminado exitosamente");
+            await axios.delete(
+                `${apiURL}appointments/${appointmentIdToDelete}`,
+                {
+                    httpsAgent: agent,
+                }
+            );
+            toast.success("Turno eliminado exitosamente");
             fetchAppointments();
+            setAppointmentIdToDelete(null); // Limpiar el ID del turno después de eliminar
         } catch (error) {
             console.error(error);
             toast.error("Error al eliminar turno");
@@ -234,7 +299,9 @@ const DashboardPatient = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setDisabledAppointmentButton(true);
         try {
+            toast.info("Solicitando turno...");
             const response = await axios.post(
                 `${apiURL}appointments/`,
                 {
@@ -245,7 +312,7 @@ const DashboardPatient = () => {
                     httpsAgent: agent,
                 }
             );
-            toast.info("Turno solicitado. Aguarde aprobacion del mismo");
+            toast.success("Turno solicitado. Aguarde aprobacion del mismo");
             setSelectedDoctor("");
             setDate(new Date());
             setSelectedSpecialty("");
@@ -255,6 +322,7 @@ const DashboardPatient = () => {
             console.error(error);
             toast.error("Error al solicitar turno");
         }
+        setDisabledAppointmentButton(false);
     };
 
     const customStyles = {
@@ -276,7 +344,7 @@ const DashboardPatient = () => {
             bottom: "auto",
             marginRight: "-50%",
             transform: "translate(-50%, -50%)",
-            width: "70%",
+            width: "auto",
         },
     };
 
@@ -284,9 +352,12 @@ const DashboardPatient = () => {
         axios.defaults.headers.common = {
             Authorization: `bearer ${localStorage.getItem("token")}`,
         };
-        redirect(router);
-        fetchSpecialties();
-        fetchAppointments().then(() => setIsLoading(false));
+        checkPendingReviews()
+            .then(() => {
+                fetchSpecialties();
+                fetchAppointments();
+            })
+            .then(() => setIsLoading(false));
     }, []);
 
     return (
@@ -298,7 +369,7 @@ const DashboardPatient = () => {
                     isOpen={isEditModalOpen}
                     onRequestClose={handleCloseEditModal}
                     style={customStyles}
-                    contentLabel="Example Modal"
+                    contentLabel='Example Modal'
                 >
                     {/* Campos de edición de especialidad, médico y fecha */}
 
@@ -306,15 +377,15 @@ const DashboardPatient = () => {
                         <div className={styles["title"]}>Editar Cita</div>
 
                         {/* Selector de fechas */}
-                        <label htmlFor="fecha">Fechas disponibles:</label>
+                        <label htmlFor='fecha'>Fechas disponibles:</label>
 
                         <DatePicker
-                            locale="es"
+                            locale='es'
                             selected={dateToEdit}
                             onChange={(date) => {
                                 setDateToEdit(date);
                             }}
-                            timeCaption="Hora"
+                            timeCaption='Hora'
                             timeIntervals={30}
                             showPopperArrow={false}
                             showTimeSelect
@@ -389,15 +460,15 @@ const DashboardPatient = () => {
                     isOpen={isRatingModalOpen}
                     onRequestClose={handleCloseRatingModal}
                     style={ratingModalStyles}
-                    contentLabel="Example Modal"
+                    contentLabel='Example Modal'
                 >
                     <div
-                        key={rating.key}
+                        key={appointmentScores.key}
                         className={styles["reviews-container"]}
                     >
-                        {rating.length > 0 ? (
+                        {appointmentScores.length > 0 ? (
                             <>
-                                {rating.map((review) => (
+                                {appointmentScores.map((review) => (
                                     <div
                                         key={review.id}
                                         className={styles["review"]}
@@ -457,9 +528,9 @@ const DashboardPatient = () => {
                 </Modal>
             )}
 
-            <TabBar highlight="Turnos" />
+            <TabBar highlight='Turnos' />
 
-            <Header role="patient" />
+            <Header role='patient' />
 
             {isLoading ? (
                 <p>Cargando...</p>
@@ -471,8 +542,8 @@ const DashboardPatient = () => {
                                 Mis Proximos Turnos
                             </div>
                             <Image
-                                src="/refresh_icon.png"
-                                alt="Notificaciones"
+                                src='/refresh_icon.png'
+                                alt='Notificaciones'
                                 className={styles["refresh-icon"]}
                                 width={200}
                                 height={200}
@@ -485,6 +556,7 @@ const DashboardPatient = () => {
                                 {appointments.length > 0 ? (
                                     // If there are appointments, map through them and display each appointment
                                     <div>
+                                        {/* ... */}
                                         {appointments.map((appointment) => (
                                             <div
                                                 key={appointment.id}
@@ -555,7 +627,6 @@ const DashboardPatient = () => {
                                                     >
                                                         Modificar
                                                     </button>
-
                                                     <button
                                                         className={
                                                             styles[
@@ -563,7 +634,7 @@ const DashboardPatient = () => {
                                                             ]
                                                         }
                                                         onClick={() =>
-                                                            handleDeleteAppointment(
+                                                            handleDeleteClick(
                                                                 appointment.id
                                                             )
                                                         }
@@ -580,7 +651,15 @@ const DashboardPatient = () => {
                                         No hay turnos pendientes
                                     </div>
                                 )}
+                                {/* ... */}
                             </div>
+                            {/* Modal de confirmación */}
+                            <ConfirmationModal
+                                isOpen={showModal}
+                                closeModal={() => setShowModal(false)}
+                                confirmAction={handleDeleteAppointment}
+                                message='¿Estás seguro de que deseas cancelar este turno?'
+                            />
                         </div>
 
                         {/* Formulario de selección de especialidad y doctor */}
@@ -594,7 +673,7 @@ const DashboardPatient = () => {
                                 Seleccione una especialidad
                             </div>
                             <select
-                                id="specialty"
+                                id='specialty'
                                 value={selectedSpecialty}
                                 required
                                 onChange={(e) => {
@@ -602,10 +681,11 @@ const DashboardPatient = () => {
                                     fetchPhysicians(e.target.value);
                                 }}
                             >
-                                <option value="">Especialidad</option>
+                                <option value=''>Especialidad</option>
                                 {specialties.map((specialty) => (
                                     <option key={specialty} value={specialty}>
-                                        {specialty}
+                                        {specialty.charAt(0).toUpperCase() +
+                                            specialty.slice(1)}
                                     </option>
                                 ))}
                             </select>
@@ -615,7 +695,7 @@ const DashboardPatient = () => {
                                 Seleccione un médico
                             </div>
                             <select
-                                id="doctor"
+                                id='doctor'
                                 value={selectedDoctor}
                                 required
                                 onChange={(e) => {
@@ -624,7 +704,7 @@ const DashboardPatient = () => {
                                 }}
                                 disabled={!selectedSpecialty}
                             >
-                                <option value="">Médico</option>
+                                <option value=''>Médico</option>
                                 {doctors.map((doctor) => (
                                     <option
                                         key={doctor.id}
@@ -638,15 +718,23 @@ const DashboardPatient = () => {
 
                             <div className={styles["subtitle"]}>
                                 Puntuaciones del médico{" "}
+                                <Tooltip
+                                    title='Las puntuaciones muestran la opinion de los usuarios acerca de los medicos. La puntuacion mas baja es 0 (muy malo) y la mas alta es 5 (excelente). En caso de que el medico no haya sido puntuado en una categoria aun, se mostrara que dicha seccion no tiene reviews.'
+                                    placement='right'
+                                >
+                                    <IconButton>
+                                        <InfoIcon />
+                                    </IconButton>
+                                </Tooltip>
                             </div>
 
                             <div
-                                key={reviews.key}
+                                key={physicianScores.key}
                                 className={styles["reviews-container"]}
                             >
-                                {reviews.length > 0 ? (
+                                {physicianScores.length > 0 ? (
                                     <>
-                                        {reviews.map((review) => (
+                                        {physicianScores.map((review) => (
                                             <div
                                                 key={review.id}
                                                 className={styles["review"]}
@@ -690,7 +778,13 @@ const DashboardPatient = () => {
                                     </>
                                 ) : (
                                     // If there are no reviews, display the message
-                                    <div className={styles["subtitle"]}>
+                                    <div
+                                        style={{
+                                            fontSize: "20px",
+                                            paddingLeft: "1rem",
+                                            marginBottom: "1rem",
+                                        }}
+                                    >
                                         No hay reviews
                                     </div>
                                 )}
@@ -703,12 +797,12 @@ const DashboardPatient = () => {
                             <div className={styles["physician-info-container"]}>
                                 <div className={styles["datepicker-container"]}>
                                     <DatePicker
-                                        locale="es"
+                                        locale='es'
                                         selected={date}
                                         onChange={(date) => {
                                             setDate(date);
                                         }}
-                                        timeCaption="Hora"
+                                        timeCaption='Hora'
                                         timeIntervals={30}
                                         showPopperArrow={false}
                                         showTimeSelect
@@ -743,6 +837,9 @@ const DashboardPatient = () => {
                                                     time.getHours() +
                                                     time.getMinutes() / 60;
                                                 return (
+                                                    workingHour &&
+                                                    workingHour.start_time &&
+                                                    workingHour.finish_time &&
                                                     workingHour.start_time <=
                                                         parsedTime &&
                                                     workingHour.finish_time >
@@ -756,13 +853,15 @@ const DashboardPatient = () => {
                             </div>
 
                             <button
-                                type="submit"
+                                type='submit'
                                 className={`${styles["submit-button"]} ${
-                                    !selectedDoctor
+                                    !selectedDoctor || disabledAppointmentButton
                                         ? styles["disabled-button"]
                                         : ""
                                 }`}
-                                disabled={!selectedDoctor}
+                                disabled={
+                                    !selectedDoctor || disabledAppointmentButton
+                                }
                             >
                                 Solicitar turno
                             </button>
