@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, status, Depends, HTTPException
 from fastapi.responses import JSONResponse
 
 from app.models.entities.Auth import Auth
@@ -46,11 +46,13 @@ def get_all_specialties():
             content={"detail": "Internal server error"},
         )
 
+
 @router.post(
     "/add/{specialty_name}",
     status_code=status.HTTP_200_OK,
     response_model=UpdateSpecialtiesResponse,
     responses={
+        400: {"model": UpdateSpecialtiesError},
         401: {"model": UpdateSpecialtiesError},
         403: {"model": UpdateSpecialtiesError},
         500: {"model": UpdateSpecialtiesError},
@@ -75,12 +77,18 @@ def add_specialty(
         Specialty.add_specialty(specialty_name)
         updated_specialties = Specialty.get_all()
         return {"specialties": updated_specialties}
+    except HTTPException as http_exception:
+        return JSONResponse(
+            status_code=http_exception.status_code,
+            content={"detail": http_exception.detail},
+        )
     except:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal server error"},
         )
-    
+
+
 @router.delete(
     "/delete/{specialty_name}",
     status_code=status.HTTP_200_OK,
@@ -91,7 +99,6 @@ def add_specialty(
         500: {"model": UpdateSpecialtiesError},
     },
 )
-
 def delete_specialty(
     specialty_name: str,
     uid=Depends(Auth.is_admin),

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "../styles/styles.module.css";
+import subTabStyles from "../styles/subTab.module.css";
 import axios from "axios";
 import validator from "validator";
 import { Footer, Header, TabBar } from "../components/header";
@@ -20,6 +21,7 @@ const UserProfile = () => {
     const [newPassword, setNewPassword] = useState("");
     const [confirmNewPassword, setConfirmNewPassword] = useState("");
     const [error, setError] = useState("");
+    const [activeSubTab, setActiveSubTab] = useState("tab1");
 
     const validate = (value) => {
         if (
@@ -92,6 +94,9 @@ const UserProfile = () => {
         }
     };
 
+    const handleTab1 = () => setActiveSubTab("tab1");
+    const handleTab2 = () => setActiveSubTab("tab2");
+
     useEffect(() => {
         getUserData().then(() => setIsLoading(false));
     }, []);
@@ -100,114 +105,144 @@ const UserProfile = () => {
         <div className={styles.dashboard}>
             <TabBar />
 
-            <Header role="patient" />
+            <Header role='patient' />
 
             {isLoading ? (
                 <p>Cargando...</p>
             ) : (
                 <>
                     <div className={styles["tab-content"]}>
-                        <div className={styles.form}>
-                            {/* Datos del usuario */}
-                            <div className={styles["title"]}>
-                                Datos del Usuario
-                            </div>
-                            <div className={styles["form-group"]}>
-                                <label htmlFor="firstName">Nombre:</label>
-                                <input
-                                    type="text"
-                                    id="firstName"
-                                    value={user.firstName}
-                                    readOnly
-                                />
-                            </div>
-                            <div className={styles["form-group"]}>
-                                <label htmlFor="lastName">Apellido:</label>
-                                <input
-                                    type="text"
-                                    id="lastName"
-                                    value={user.lastName}
-                                    readOnly
-                                />
-                            </div>
-                            <div className={styles["form-group"]}>
-                                <label htmlFor="email">
-                                    Correo Electrónico:
-                                </label>
-                                <input
-                                    type="email"
-                                    id="email"
-                                    value={user.email}
-                                    readOnly
-                                />
-                            </div>
+                        <div className={subTabStyles.subTabNav}>
+                            <ul className={subTabStyles.subTabList}>
+                                <li
+                                    className={`${subTabStyles.subTabElement} ${
+                                        activeSubTab === "tab1"
+                                            ? subTabStyles.activeSubTabElement
+                                            : subTabStyles.inactiveSubTabElement
+                                    }`}
+                                    onClick={handleTab1}
+                                >
+                                    Datos del usuario
+                                </li>
+                                <li
+                                    className={`${subTabStyles.subTabElement} ${
+                                        activeSubTab === "tab2"
+                                            ? subTabStyles.activeSubTabElement
+                                            : subTabStyles.inactiveSubTabElement
+                                    }`}
+                                    onClick={handleTab2}
+                                >
+                                    Cambiar contrase&ntilde;a
+                                </li>
+                            </ul>
                         </div>
 
-                        {/* Cambio de Contraseña */}
-                        <div className={styles["form"]}>
-                            <div className={styles["title"]}>
-                                Cambiar Contraseña
+                        {activeSubTab === "tab1" ? (
+                            <div className={styles.form}>
+                                {/* Datos del usuario */}
+                                <div className={styles["title"]}>
+                                    Datos del Usuario
+                                </div>
+                                <div className={styles["form-group"]}>
+                                    <label htmlFor='firstName'>Nombre:</label>
+                                    <input
+                                        type='text'
+                                        id='firstName'
+                                        value={user.firstName}
+                                        readOnly
+                                    />
+                                </div>
+                                <div className={styles["form-group"]}>
+                                    <label htmlFor='lastName'>Apellido:</label>
+                                    <input
+                                        type='text'
+                                        id='lastName'
+                                        value={user.lastName}
+                                        readOnly
+                                    />
+                                </div>
+                                <div className={styles["form-group"]}>
+                                    <label htmlFor='email'>
+                                        Correo Electrónico:
+                                    </label>
+                                    <input
+                                        type='email'
+                                        id='email'
+                                        value={user.email}
+                                        readOnly
+                                    />
+                                </div>
                             </div>
-                            <div className={styles["form-group"]}>
-                                <label htmlFor="currentPassword">
-                                    Contraseña Actual:
-                                </label>
-                                <input
-                                    type="password"
-                                    id="currentPassword"
-                                    value={password}
-                                    onChange={(e) =>
-                                        setPassword(e.target.value)
+                        ) : (
+                            <div className={styles["form"]}>
+                                <div className={styles["title"]}>
+                                    Cambiar Contraseña
+                                </div>
+                                <div className={styles["form-group"]}>
+                                    <label htmlFor='currentPassword'>
+                                        Contraseña Actual:
+                                    </label>
+                                    <input
+                                        type='password'
+                                        id='currentPassword'
+                                        value={password}
+                                        onChange={(e) =>
+                                            setPassword(e.target.value)
+                                        }
+                                        required
+                                        autoComplete='current-password'
+                                    />
+                                </div>
+                                <div className={styles["form-group"]}>
+                                    <label htmlFor='newPassword'>
+                                        Nueva Contraseña:
+                                    </label>
+                                    <input
+                                        type='password'
+                                        id='newPassword'
+                                        value={newPassword}
+                                        onChange={(e) =>
+                                            setNewPassword(e.target.value)
+                                        }
+                                        required
+                                        autoComplete='new-password'
+                                    />
+                                </div>
+                                <div className={styles["form-group"]}>
+                                    <label htmlFor='confirmNewPassword'>
+                                        Confirmar Nueva Contraseña:
+                                    </label>
+                                    <input
+                                        type='password'
+                                        id='confirmNewPassword'
+                                        value={confirmNewPassword}
+                                        onChange={(e) =>
+                                            setConfirmNewPassword(
+                                                e.target.value
+                                            )
+                                        }
+                                        required
+                                        autoComplete='new-password'
+                                    />
+                                </div>
+                                <button
+                                    type='submit'
+                                    className={`${styles["standard-button"]} ${
+                                        newPassword !== confirmNewPassword ||
+                                        error
+                                            ? styles["disabled-button"]
+                                            : ""
+                                    }`}
+                                    onClick={handleChangePassword}
+                                    disabled={
+                                        newPassword !== confirmNewPassword ||
+                                        error
                                     }
-                                    required
-                                    autoComplete="current-password"
-                                />
+                                >
+                                    Cambiar Contraseña
+                                </button>
                             </div>
-                            <div className={styles["form-group"]}>
-                                <label htmlFor="newPassword">
-                                    Nueva Contraseña:
-                                </label>
-                                <input
-                                    type="password"
-                                    id="newPassword"
-                                    value={newPassword}
-                                    onChange={(e) =>
-                                        setNewPassword(e.target.value)
-                                    }
-                                    required
-                                    autoComplete="new-password"
-                                />
-                            </div>
-                            <div className={styles["form-group"]}>
-                                <label htmlFor="confirmNewPassword">
-                                    Confirmar Nueva Contraseña:
-                                </label>
-                                <input
-                                    type="password"
-                                    id="confirmNewPassword"
-                                    value={confirmNewPassword}
-                                    onChange={(e) =>
-                                        setConfirmNewPassword(e.target.value)
-                                    }
-                                    required
-                                    autoComplete="new-password"
-                                />
-                            </div>
-                            <button
-                                type="submit"
-                                className={`${styles["standard-button"]} ${
-                                    newPassword !== confirmNewPassword || error
-                                        ? styles["disabled-button"]
-                                        : ""
-                                }`}
-                                onClick={handleChangePassword}
-                                disabled={
-                                    newPassword !== confirmNewPassword || error
-                                }
-                            >
-                                Cambiar Contraseña
-                            </button>
-                        </div>
+                        )}
                     </div>
                     <Footer />
                 </>

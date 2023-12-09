@@ -30,6 +30,7 @@ initial_admin_information = {
     "password": "verySecurePassword123",
 }
 
+
 @pytest.fixture(scope="module", autouse=True)
 def load_and_delete_specialties():
     for specialty in specialties:
@@ -38,6 +39,7 @@ def load_and_delete_specialties():
     specilaties_doc = db.collection("specialties").list_documents()
     for specialty_doc in specilaties_doc:
         specialty_doc.delete()
+
 
 @pytest.fixture(scope="module", autouse=True)
 def create_initial_admin_and_then_delete_him():
@@ -48,6 +50,7 @@ def create_initial_admin_and_then_delete_him():
     yield
     auth.delete_user(pytest.initial_admin_uid)
     db.collection("superusers").document(pytest.initial_admin_uid).delete()
+
 
 @pytest.fixture(scope="module", autouse=True)
 def log_in_initial_admin_user(create_initial_admin_and_then_delete_him):
@@ -60,6 +63,7 @@ def log_in_initial_admin_user(create_initial_admin_and_then_delete_him):
     ).json()["token"]
     yield
 
+
 # def test_add_specialty_updates_document_in_firestore():
 #     specialties_before_update = ( db.collection("specialties").get())
 
@@ -71,11 +75,12 @@ def log_in_initial_admin_user(create_initial_admin_and_then_delete_him):
 #     assert len(specialties_before_update) + 1 == len(specialties_after_update)
 #     assert "aNewSpecialty" in specialties_after_update
 
-def test_add_specialty_updates_document_in_firestore():
-    specialties_before_update = db.collection("specialties").get()
 
-    pytest.initial_admin_bearer = client.post(
-        "/specialties/add/aNewSpecialty",
+def test_add_specialty_updates_document_in_firestore_in_lowercase():
+    specialties_before_update = db.collection("specialties").get()
+    new_specialty = "aNewSpecialty"
+    client.post(
+        f"/specialties/add/{new_specialty}",
         headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
     )
     specialties_after_update = db.collection("specialties").get()
@@ -84,13 +89,12 @@ def test_add_specialty_updates_document_in_firestore():
     new_specialty_added = False
     for doc in specialties_after_update:
         data = doc.to_dict()
-        if "name" in data and data["name"] == "aNewSpecialty":
+        if "name" in data and data["name"] == new_specialty.lower():
             new_specialty_added = True
             break
 
     assert len(specialties_before_update) + 1 == len(specialties_after_update)
     assert new_specialty_added
-
 
 
 def test_delete_specialty_updates_document_in_firestore():
@@ -99,10 +103,20 @@ def test_delete_specialty_updates_document_in_firestore():
     with patch("requests.post", return_value=mocked_response) as mocked_request:
         client.delete(
             f"/specialties/delete/{specialties[0]}",
-            headers={"Authorization": f"Bearer {pytest.first_bearer}"},
+            headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
         )
     print("*******")
+    assert db.collection("appointments").document(specialties[0]).get().exists == False
+
+
+def test_add_specialty_with_repeated_name_returns_400_code_and_detail():
+    response_from_add_specialty_endpoint = client.post(
+        f"/specialties/add/{specialties[1].upper()}",
+        headers={"Authorization": f"Bearer {pytest.initial_admin_bearer}"},
+    )
+
+    assert response_from_add_specialty_endpoint.status_code == 400
     assert (
-        db.collection("appointments").document(specialties[0]).get().exists
-        == False
+        response_from_add_specialty_endpoint.json()["detail"]
+        == "Specialty already exists"
     )

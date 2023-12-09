@@ -20,16 +20,36 @@ const DashboardPatient = () => {
     const [isReviewModalOpen, setIsAddObervationModalOpen] = useState(false);
     const [appointmentToReview, setAppointmentToReview] = useState("");
     const [appointmentScores, setAppointmentScores] = useState([]);
+    const [disabledAddReviewButton, setDisabledAddReiewButton] =
+        useState(false);
     const router = useRouter();
     const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-    const [reviews, setReviews] = useState([
-        { id: 1, type: "Puntualidad", rating: 5 },
-        { id: 2, type: "Atencion", rating: 4.5 },
-        { id: 3, type: "Limpieza", rating: 4.5 },
-        { id: 4, type: "Disponibilidad", rating: 3 },
-        { id: 5, type: "Precio", rating: 4.5 },
-        { id: 6, type: "Comunicacion", rating: 2.5 },
-    ]);
+    const [reviews, setReviews] = useState({
+        puntuality: {
+            name: "Puntualidad",
+            rating: -1,
+        },
+        attention: {
+            name: "Atencion",
+            rating: -1,
+        },
+        cleanliness: {
+            name: "Limpieza",
+            rating: -1,
+        },
+        availability: {
+            name: "Disponibilidad",
+            rating: -1,
+        },
+        price: {
+            name: "Precio",
+            rating: -1,
+        },
+        communication: {
+            name: "Comunicacion",
+            rating: -1,
+        },
+    });
 
     const agent = new https.Agent({
         rejectUnauthorized: false,
@@ -54,39 +74,8 @@ const DashboardPatient = () => {
         }
     };
 
-    const getScores = async (id) => {
-        try {
-            const response = await axios.get(`${apiURL}users/score/${id}`, {
-                httpsAgent: agent,
-            });
-            console.log(response.data.score_metrics);
-
-            let tempReviews = [
-                { id: 1, type: "Puntualidad", rating: 5 },
-                { id: 2, type: "Atencion", rating: 4.5 },
-                { id: 3, type: "Limpieza", rating: 4.5 },
-                { id: 4, type: "Disponibilidad", rating: 3 },
-                { id: 5, type: "Precio", rating: 4.5 },
-                { id: 6, type: "Comunicacion", rating: 2.5 },
-            ];
-
-            tempReviews[0].rating = response.data.score_metrics.puntuality;
-            tempReviews[1].rating = response.data.score_metrics.attention;
-            tempReviews[2].rating = response.data.score_metrics.cleanliness;
-            tempReviews[3].rating = response.data.score_metrics.availability;
-            tempReviews[4].rating = response.data.score_metrics.price;
-            tempReviews[5].rating = response.data.score_metrics.communication;
-
-            setReviews(tempReviews);
-        } catch (error) {
-            toast.error("Error al obtener los puntajes");
-            console.error(error);
-        }
-    };
-
     const handleOpenReviewModal = (appointment) => {
         setAppointmentToReview(appointment);
-        getScores(appointment.physician_id);
         setIsAddObervationModalOpen(true);
     };
 
@@ -95,18 +84,16 @@ const DashboardPatient = () => {
     };
 
     const addReview = async () => {
+        setDisabledAddReiewButton(true);
         try {
+            let reviewsToSend = {};
+            Object.keys(reviews).forEach((review) => {
+                if (reviews[review].rating >= 0)
+                    reviewsToSend[review] = reviews[review].rating;
+            });
             const response = await axios.post(
                 `${apiURL}users/add-score`,
-                {
-                    appointment_id: appointmentToReview.id,
-                    puntuality: reviews[0].rating,
-                    attention: reviews[1].rating,
-                    cleanliness: reviews[2].rating,
-                    availability: reviews[3].rating,
-                    price: reviews[4].rating,
-                    communication: reviews[5].rating,
-                },
+                { ...reviewsToSend, appointment_id: appointmentToReview.id },
                 {
                     httpsAgent: agent,
                 }
@@ -118,6 +105,7 @@ const DashboardPatient = () => {
             toast.error("Error al agregar la puntaje");
             console.error(error);
         }
+        setDisabledAddReiewButton(false);
     };
 
     const ratingModalStyles = {
@@ -155,11 +143,11 @@ const DashboardPatient = () => {
                             key={reviews.key}
                             className={styles["reviews-container"]}
                         >
-                            {reviews.length > 0 ? (
+                            {Object.keys(reviews).length > 0 ? (
                                 <>
-                                    {reviews.map((review) => (
+                                    {Object.keys(reviews).map((review) => (
                                         <div
-                                            key={review.id}
+                                            key={review}
                                             className={styles["review"]}
                                         >
                                             <div
@@ -181,7 +169,7 @@ const DashboardPatient = () => {
                                                             ]
                                                         }
                                                     >
-                                                        {review.type}
+                                                        {reviews[review].name}
                                                     </div>
                                                     <div
                                                         className={
@@ -190,34 +178,45 @@ const DashboardPatient = () => {
                                                             ]
                                                         }
                                                     >
-                                                        <input
-                                                            type="number"
-                                                            id="points"
-                                                            name="points"
-                                                            min="0"
-                                                            max="5"
-                                                            placeholder={
-                                                                review.rating
+                                                        <select
+                                                            onChange={(e) =>
+                                                                setReviews({
+                                                                    ...reviews,
+                                                                    [review]: {
+                                                                        name: reviews[
+                                                                            review
+                                                                        ].name,
+                                                                        rating: Number(
+                                                                            e
+                                                                                .target
+                                                                                .value
+                                                                        ),
+                                                                    },
+                                                                })
                                                             }
-                                                            onChange={(e) => {
-                                                                setReviews(
-                                                                    reviews.map(
-                                                                        (
-                                                                            item
-                                                                        ) =>
-                                                                            item.id ===
-                                                                            review.id
-                                                                                ? {
-                                                                                      ...item,
-                                                                                      rating: e
-                                                                                          .target
-                                                                                          .value,
-                                                                                  }
-                                                                                : item
-                                                                    )
-                                                                );
-                                                            }}
-                                                        ></input>
+                                                        >
+                                                            <option value={-1}>
+                                                                N/A
+                                                            </option>
+                                                            <option value={0}>
+                                                                Muy Malo
+                                                            </option>
+                                                            <option value={1}>
+                                                                Malo
+                                                            </option>
+                                                            <option value={2}>
+                                                                Neutro
+                                                            </option>
+                                                            <option value={3}>
+                                                                Bueno
+                                                            </option>
+                                                            <option value={4}>
+                                                                Muy Bueno
+                                                            </option>
+                                                            <option value={5}>
+                                                                Excelente
+                                                            </option>
+                                                        </select>
                                                     </div>
                                                 </div>
                                             </div>
@@ -233,8 +232,13 @@ const DashboardPatient = () => {
                         </div>
 
                         <button
-                            className={styles["edit-button"]}
+                            className={`${styles["edit-button"]} ${
+                                disabledAddReviewButton
+                                    ? styles["disabled-button"]
+                                    : ""
+                            }`}
                             onClick={addReview}
+                            disabled={disabledAddReviewButton}
                         >
                             Agregar
                         </button>
@@ -243,9 +247,9 @@ const DashboardPatient = () => {
             )}
 
             <div className={styles.dashboard}>
-                <TabBar highlight="Turnos" />
+                <TabBar highlight='Turnos' />
 
-                <Header role="patient" />
+                <Header role='patient' />
 
                 {isLoading ? (
                     <p>Cargando...</p>
@@ -268,8 +272,8 @@ const DashboardPatient = () => {
                                 </div>
 
                                 <Image
-                                    src="/refresh_icon.png"
-                                    alt="Notificaciones"
+                                    src='/refresh_icon.png'
+                                    alt='Notificaciones'
                                     className={styles["refresh-icon"]}
                                     width={200}
                                     height={200}

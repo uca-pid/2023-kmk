@@ -6,8 +6,8 @@ from fastapi import Query
 
 class LoadScoreRequest(BaseModel):
     appointment_id: str
-    puntuality: int
-    communication: int
+    puntuality: Union[int, None] = None
+    communication: Union[int, None] = None
     attendance: Union[int, None] = None
     treat: Union[int, None] = None
     cleanliness: Union[int, None] = None

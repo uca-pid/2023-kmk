@@ -15,6 +15,9 @@ import ConfirmationModal from "../components/ConfirmationModal";
 import { redirect } from "../components/userCheck";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import InfoIcon from "@mui/icons-material/Info";
+import IconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
 
 registerLocale("es", es);
 
@@ -35,6 +38,8 @@ const DashboardPatient = () => {
     const [editingAppointment, setEditingAppointment] = useState({});
     const [showModal, setShowModal] = useState(false);
     const [appointmentIdToDelete, setAppointmentIdToDelete] = useState(null);
+    const [disabledAppointmentButton, setDisabledAppointmentButton] =
+        useState(false);
 
     const [physicianScores, setPhysicianScores] = useState([]);
     const [appointmentScores, setAppointmentScores] = useState([]);
@@ -294,6 +299,7 @@ const DashboardPatient = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setDisabledAppointmentButton(true);
         try {
             toast.info("Solicitando turno...");
             const response = await axios.post(
@@ -316,6 +322,7 @@ const DashboardPatient = () => {
             console.error(error);
             toast.error("Error al solicitar turno");
         }
+        setDisabledAppointmentButton(false);
     };
 
     const customStyles = {
@@ -651,7 +658,7 @@ const DashboardPatient = () => {
                                 isOpen={showModal}
                                 closeModal={() => setShowModal(false)}
                                 confirmAction={handleDeleteAppointment}
-                                message="¿Estás seguro de que deseas cancelar este turno?"
+                                message='¿Estás seguro de que deseas cancelar este turno?'
                             />
                         </div>
 
@@ -677,7 +684,8 @@ const DashboardPatient = () => {
                                 <option value=''>Especialidad</option>
                                 {specialties.map((specialty) => (
                                     <option key={specialty} value={specialty}>
-                                        {specialty}
+                                        {specialty.charAt(0).toUpperCase() +
+                                            specialty.slice(1)}
                                     </option>
                                 ))}
                             </select>
@@ -710,6 +718,14 @@ const DashboardPatient = () => {
 
                             <div className={styles["subtitle"]}>
                                 Puntuaciones del médico{" "}
+                                <Tooltip
+                                    title='Las puntuaciones muestran la opinion de los usuarios acerca de los medicos. La puntuacion mas baja es 0 (muy malo) y la mas alta es 5 (excelente). En caso de que el medico no haya sido puntuado en una categoria aun, se mostrara que dicha seccion no tiene reviews.'
+                                    placement='right'
+                                >
+                                    <IconButton>
+                                        <InfoIcon />
+                                    </IconButton>
+                                </Tooltip>
                             </div>
 
                             <div
@@ -839,11 +855,13 @@ const DashboardPatient = () => {
                             <button
                                 type='submit'
                                 className={`${styles["submit-button"]} ${
-                                    !selectedDoctor
+                                    !selectedDoctor || disabledAppointmentButton
                                         ? styles["disabled-button"]
                                         : ""
                                 }`}
-                                disabled={!selectedDoctor}
+                                disabled={
+                                    !selectedDoctor || disabledAppointmentButton
+                                }
                             >
                                 Solicitar turno
                             </button>
